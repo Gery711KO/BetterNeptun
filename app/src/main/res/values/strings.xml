@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">OE Neptun</string>
+    <string name="kor">Kor:</string>
+    <string name="minAge">minKor</string>
+    <string name="maxAge">maxKor</string>
+    <string name="keyWord">nem/betegség</string>
+    <string name="filter">Szűrés</string>
+    <string name="reset">Újra</string>
+    <string name="noInternet">Nincs internetkapcsolat!</string>
+    <string name="test_detail">Kedves Hallgatók!\nA HSUP Hungarian Startup University Program kreditpontos képzés jelentkezési határideje 2022.09.16-ig  meghosszabbításra került!\nAz utólagos tárgyfelvételhez a "OE-0033 - Utólagos tárgyfelvételi kérelem" kérvény kell beadni, ami a Neptunban az Ügyintézés/Kérvények menüpont alatt található.\nKérvényhez az alábbi adatokat kell megadni:\nTantárgy neve: HSUP I. Hungarian Startup University Program\nTantárgy kódja: EKEHSU1TTEKurzus(ok) kódja(i): 01Indoklás: HSUP program\nAz utólagos tárgyfelvétel a HSUP tárgy esetén díjmentes!\nAz első félév sikeres elvégzése esetén a legeredményesebb hallgatók 600.000 Ft ösztöndíjban is részesülhetnek!\nAz 1. félévben 4 kreditpontért egy alapozó képzésen vehettek részt, ahol egy szabadon választott ötletet dolgozhattok ki, és elsajátíthatjátok a startup indításához szükséges ismereteket.\nA 2. félévben további 4 kreditpontért az ötlet megvalósítása lesz a feladat. Ha jól teljesítetek 600.000 Ft ösztöndíjat kaphattok és a képzés végére akár saját startupotok is lehet.\nA képzésről és a tárgyfelvételről részletek itt:\nhttps://innovacio.uni-obuda.hu/hsup-program-az-obudai-egyetemen/\nMindenkinek sikeres tárgyfelvételt kívánunk!\nTovábbi információkat az innovacio@uni-obuda.hu email címen, vagy az Innovációs Iroda telefonszámán: +36 (1) 666-5623 kaphattok.\nInnovációs Iroda\nÓbudai Egyetem </string>
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+</resources>

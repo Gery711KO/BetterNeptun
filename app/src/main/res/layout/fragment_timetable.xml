@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.timetable.TimetableFragment">
+
+    <ImageView
+        android:id="@+id/back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:elevation="11dp"
+        android:src="@drawable/ic_back"
+        app:layout_constraintBottom_toBottomOf="@id/calendar_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/base_text_color" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/calendar_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/card_bg"
+        android:fontFamily="@font/armata"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:text="Órarend"
+        android:textColor="@color/base_text_color"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/back_button"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/base_text_color" />
+
+    <com.alamkanak.weekview.WeekView
+        android:id="@+id/weekView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="58dp"
+        app:columnGap="8dp"
+        app:dayBackgroundColor="@color/base_fragment_bg"
+        app:defaultEventColor="#0061AE"
+        app:eventTextColor="@color/black"
+        app:headerBackgroundColor="@color/card_bg"
+        app:headerPadding="12dp"
+        app:hourHeight="60dp"
+        app:nowLineColor="@color/base_text_color"
+        app:nowLineDotColor="@color/base_text_color"
+        app:showNowLineDot="true"
+        app:nowLineDotRadius="4dp"
+        app:showFirstDayOfWeekFirst="false"
+        app:showCurrentTimeFirst="true"
+        app:numberOfVisibleDays="5"
+        app:showNowLine="true"
+        app:timeColumnBackgroundColor="@color/card_bg"
+        app:timeColumnPadding="8dp"
+        app:timeColumnTextColor="@color/base_text_color"
+        app:timeColumnTextSize="12sp"
+        app:todayBackgroundColor="@color/base_button_bg"
+        app:todayHeaderTextColor="@color/base_text_color" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

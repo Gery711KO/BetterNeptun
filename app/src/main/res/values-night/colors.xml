@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="base_fragment_bg">#202020</color>
+    <color name="base_text_color">@color/white</color>
+    <color name="text_input_box_color">#B3FFFFFF</color>
+    <color name="card_bg">#131313</color>
+    <color name="message_bg">#1A1A1A</color>
+    <color name="radio_button_color">#244799</color>
+</resources>
