@@ -1,18 +1,130 @@
 package hu.kocsisgeri.betterneptun.data.repository.course
 
-import androidx.lifecycle.asLiveData
+import android.graphics.Color
+import androidx.lifecycle.MutableLiveData
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
+import hu.kocsisgeri.betterneptun.utils.*
+import hu.kocsisgeri.betterneptun.utils.data_manager.DataManager
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.time.LocalDateTime
+import java.time.ZoneOffset
+import kotlin.coroutines.CoroutineContext
 
-object CourseRepo {
-    val courses : MutableStateFlow<List<CalendarEntity.Event>> = MutableStateFlow(listOf())
-    val sorted = courses.map { list ->
-        list.sortedBy { it.startTime }.firstOrNull {
-            it.startTime.isAfter(LocalDateTime.now())
+object CourseRepo : CoroutineScope, KoinComponent {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
+
+    private val dataManager: DataManager by inject()
+
+    val fetchNew = MutableSharedFlow<Unit>(1,100)
+    val courses: MutableStateFlow<List<CalendarEntity.Event>> = MutableStateFlow(listOf())
+    val nextCourse = MutableLiveData<CalendarEntity.Event>()
+    val currentCourse = MutableLiveData<CalendarEntity.Event>()
+
+    val getCurrent = fetchNew.onStart { emit(Unit) }.flatMapLatest {
+        courses.map { list ->
+            list/*.toMutableList().apply {
+                add(
+                    CalendarEntity.Event(
+                        687857665437,
+                        "Teszt esemeny valami jo hosszu targy nevvel",
+                        LocalDateTime.of(2022, 9, 11, 1, 35),
+                        LocalDateTime.of(2022, 9, 11, 1, 45),
+                        "Itthon",
+                        Color.RED,
+                        isAllDay = false,
+                        isCanceled = false
+                    )
+                )
+            }*/.sortedBy { it.startTime }.firstOrNull {
+                it.startTime.isBefore(LocalDateTime.now()) && it.endTime.isAfter(LocalDateTime.now())
+            }.let {
+                Timer.currentEvent = it
+                currentCourse.postValue(it)
+                it
+            }
         }
-    }.mapNotNull { it }.asLiveData()
+    }
+
+    val startTimer = fetchNew.onStart { emit(Unit) }.flatMapLatest {
+        courses.map { list ->
+            list.sortedBy { it.startTime }.firstOrNull {
+                it.startTime.isAfter(LocalDateTime.now())
+            }.let { event ->
+                nextCourse.postValue(event)
+                Timer.nextEvent = event
+                event?.startTime
+                    ?.toEpochSecond(ZoneOffset.UTC)
+                    ?.minus(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
+                    ?.let { it < 3600000 }
+            }
+        }
+    }
+
     val unreadMessages = MutableStateFlow(0)
+    val firstClassTime = MutableStateFlow<String?>(null)
+    val lastClassTime = MutableStateFlow<String?>(null)
+
+    fun fetchCalendarTimes() {
+        dataManager.sharedPreferences.get(PREF_FIRST_CLASS_TIME, "8:00").let {
+            firstClassTime.tryEmit(it)
+        }
+
+        dataManager.sharedPreferences.get(PREF_LAST_CLASS_TIME, "23:00").let {
+            lastClassTime.tryEmit(it)
+        }
+    }
+
+    init {
+        firstClassTime.onEach {
+            it?.let {
+                val save = dataManager.getDefault(PREF_STAY_LOGGED_ID, false)
+                if (save) dataManager.sharedPreferences.put(PREF_FIRST_CLASS_TIME, it)
+            }
+        }.launchIn(this)
+
+        lastClassTime.onEach {
+            it?.let {
+                val save = dataManager.getDefault(PREF_STAY_LOGGED_ID, false)
+                if (save) dataManager.sharedPreferences.put(PREF_LAST_CLASS_TIME, it)
+            }
+        }.launchIn(this)
+    }
+}
+
+object Timer : CoroutineScope {
+
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
+    var nextEvent: CalendarEntity.Event? = null
+    var currentEvent: CalendarEntity.Event? = null
+    var duration: Long = 60000
+
+    fun nextLooper(enabled: Boolean) {
+        launch {
+            delay(duration)
+            withContext(Dispatchers.Main) {
+                if (enabled) {
+                    CourseRepo.nextCourse.postValue(nextEvent)
+                    CourseRepo.fetchNew.tryEmit(Unit)
+                    nextLooper(enabled)
+                }
+            }
+        }
+    }
+
+    fun currentLooper(enabled: Boolean) {
+        launch {
+            delay(duration)
+            withContext(Dispatchers.Main) {
+                if (enabled) {
+                    CourseRepo.currentCourse.postValue(nextEvent)
+                    CourseRepo.fetchNew.tryEmit(Unit)
+                    currentLooper(enabled)
+                }
+            }
+        }
+    }
+
 }

@@ -1,15 +1,14 @@
 package hu.kocsisgeri.betterneptun.ui.home
 
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
+import hu.kocsisgeri.betterneptun.data.repository.course.Timer
 import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.utils.PREF_SAVED_THEME
-import hu.kocsisgeri.betterneptun.utils.ThemeMode
-import hu.kocsisgeri.betterneptun.utils.data_manager.DataManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
@@ -21,8 +20,18 @@ class HomeViewModel(
     fun fetchMessages() {
         viewModelScope.launch(Dispatchers.IO) {
             CourseRepo.fetchCalendarTimes()
-            neptunRepository.fetchMessages()
+
+            CourseRepo.startTimer.onEach {
+                Timer.nextLooper(it == true)
+            }.launchIn(this)
+
+            CourseRepo.getCurrent.onEach {
+                Timer.currentLooper(it != null)
+            }.launchIn(this)
+
             if (!isLoggedIn.value) neptunRepository.fetchCalendarData()
+
+            neptunRepository.fetchMessages()
             isLoggedIn.tryEmit(true)
         }
     }

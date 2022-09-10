@@ -169,8 +169,10 @@ class NeptunRepositoryImpl(
             mapped.filter { event ->
                 !event.isAllDay
             }.let {
-                CourseRepo.courses.tryEmit(it)
-                events.tryEmit(it)
+                it.let { event ->
+                    CourseRepo.courses.tryEmit(event)
+                    events.tryEmit(event)
+                }
             }
         }
     }

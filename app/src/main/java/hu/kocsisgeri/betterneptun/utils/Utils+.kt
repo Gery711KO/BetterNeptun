@@ -33,7 +33,9 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 enum class ThemeMode(val mode: Int) {
-    AUTO(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM), DARK(AppCompatDelegate.MODE_NIGHT_YES), LIGHT(AppCompatDelegate.MODE_NIGHT_NO)
+    AUTO(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM), DARK(AppCompatDelegate.MODE_NIGHT_YES), LIGHT(
+        AppCompatDelegate.MODE_NIGHT_NO
+    )
 }
 
 fun openUrl(url: String?, context: Context) {
@@ -66,6 +68,7 @@ fun TextView.setHtmlText(
         Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY)
     }
 }
+
 fun TextView.setTextAndAddClickableLinks(
     markdown: String?,
     context: Context,
@@ -152,15 +155,24 @@ fun LocalDateTime.getCourseDateString(): String {
     val diff =
         this.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
     val hours = TimeUnit.MILLISECONDS.toHours(diff * 1000)
-    val minutes = TimeUnit.MILLISECONDS.toMinutes(diff * 1000)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+    val minutes = kotlin.math.ceil(seconds / 60f).roundToInt()
     val days = kotlin.math.ceil(hours / 24f).roundToInt()
-        return when {
+    return when {
         minutes < 60 -> "$minutes perc múlva"
         hours <= hour -> "$hours óra múlva"
         days < 1 -> "Holnap"
         days >= 1 -> "$days nap múlva"
         else -> "$days nap múlva"
     }
+}
+
+fun LocalDateTime.getTimeLeft(): String {
+    val diff =
+        this.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+    val minutes = kotlin.math.ceil(seconds / 60f).roundToInt()
+    return "$minutes perc"
 }
 
 fun Fragment.setBackButton(view: View) {
