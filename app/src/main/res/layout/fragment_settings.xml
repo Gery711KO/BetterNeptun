@@ -170,7 +170,7 @@
                 android:alpha="1"
                 android:fontFamily="@font/armata"
                 android:paddingHorizontal="30dp"
-                android:text="Minden elmentett adat törlése és kijeletkezés"
+                android:text="Minden elmentett adat törlése és kijelentkezés"
                 android:textAlignment="center"
                 android:textColor="#DCDCDC"
                 android:textSize="12sp"
