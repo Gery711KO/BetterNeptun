@@ -22,6 +22,7 @@ import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -36,90 +37,99 @@ class NeptunRepositoryImpl(
     override val currentUser = MutableStateFlow(NeptunUser())
     override var currentMessagePage = 0
 
-    override fun fetchMessages(maxPage: Int) {
+    override fun fetchMessages() {
         launch {
             dao.getData().let { cache ->
+                val list = mutableListOf<MessageDto>()
                 val maxId = cache.maxByOrNull { it.id }?.id ?: 0
-
-                if (cache.isEmpty()) {
-                    currentUser.first().let { user ->
-                        var idx = maxPage
-                        var counter = 1f
-                        val list = mutableListOf<MessageDto>()
-                        while (idx > 0) {
-                            networkDataSource.getMessages(user.copy(CurrentPage = idx))
-                                .let { response ->
-                                    when (response) {
-                                        is NetworkResponse.Failure<*> -> {}
-                                        is NetworkResponse.Success -> response.data.MessagesList?.let { rList ->
-                                            rList.filter { it.Id > maxId }.let {
-                                                list.addAll(it)
-                                                dao.insertAll(it.map { dto ->
-                                                    Message(
-                                                        id = dto.Id,
-                                                        subject = dto.Subject,
-                                                        detail = dto.Detail,
-                                                        senderName = dto.Name,
-                                                        date = dto.SendDate,
-                                                        isNew = dto.IsNew
-                                                    )
-                                                })
-                                            }
-                                        }
-                                    }
-                                }
-                            val progress = (counter / maxPage) * 100
-                            messages.emit(ApiResult.Progress(progress.roundToInt()))
-                            counter++
-                            idx--
+                var counter = 1f
+                currentUser.first().let { user ->
+                    networkDataSource.getMessages(user.copy(CurrentPage = 0)).let { result ->
+                        when (result) {
+                            is NetworkResponse.Failure<*> -> 0
+                            is NetworkResponse.Success -> result.data.TotalRowCount
                         }
-                        messages.emit(ApiResult.Success(list.sortedByDescending { it.Id }))
-                    }
-                } else {
-                    currentUser.first().let { user ->
-                        var idx = 1f
-                        val list = mutableListOf<MessageDto>()
-                        while (idx < maxPage) {
-                            networkDataSource.getMessages(user.copy(CurrentPage = idx.roundToInt()))
-                                .let { response ->
-                                    when (response) {
-                                        is NetworkResponse.Failure<*> -> {}
-                                        is NetworkResponse.Success -> response.data.MessagesList?.let { rList ->
-                                            rList.filter { it.Id > maxId }.let {
-                                                if (it.isEmpty()) {
-                                                    messages.emit(ApiResult.Success(cache.map { mes ->
-                                                        MessageDto(
-                                                            Id = mes.id,
-                                                            Detail = mes.detail,
-                                                            Name = mes.senderName,
-                                                            Subject = mes.subject,
-                                                            SendDate = mes.date,
-                                                            IsNew = mes.isNew
-                                                        )
-                                                    }.sortedByDescending { message -> message.Id }))
-                                                    return@launch
-                                                } else {
-                                                    list.addAll(it)
-                                                    dao.insertAll(it.map { dto ->
-                                                        Message(
-                                                            id = dto.Id,
-                                                            subject = dto.Subject,
-                                                            detail = dto.Detail,
-                                                            senderName = dto.Name,
-                                                            date = dto.SendDate,
-                                                            isNew = dto.IsNew
-                                                        )
-                                                    })
+                    }?.let {
+                        val lastPage = ceil((it / 10f).toDouble()).roundToInt()
+                        if (cache.isEmpty()) {
+                            var idx = lastPage
+                            currentUser.first().let { user ->
+                                while (idx > 0) {
+                                    networkDataSource.getMessages(user.copy(CurrentPage = idx))
+                                        .let { response ->
+                                            when (response) {
+                                                is NetworkResponse.Failure<*> -> {}
+                                                is NetworkResponse.Success -> response.data.MessagesList?.let { rList ->
+                                                    rList.filter { it.Id > maxId }.let {
+                                                        list.addAll(it)
+                                                        dao.insertAll(it.map { dto ->
+                                                            Message(
+                                                                id = dto.Id,
+                                                                subject = dto.Subject,
+                                                                detail = dto.Detail,
+                                                                senderName = dto.Name,
+                                                                date = dto.SendDate,
+                                                                isNew = dto.IsNew
+                                                            )
+                                                        })
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
+                                    val progress = (counter / lastPage) * 100
+                                    messages.emit(ApiResult.Progress(progress.roundToInt()))
+                                    counter++
+                                    idx--
                                 }
-                            val progress = (idx / maxPage) * 100
-                            messages.emit(ApiResult.Progress(progress.roundToInt()))
-                            idx++
+                                messages.emit(ApiResult.Success(list.sortedByDescending { it.Id }))
+                            }
+                        } else {
+                            currentUser.first().let { user ->
+                                var idx = 1f
+                                while (idx < lastPage) {
+                                    networkDataSource.getMessages(user.copy(CurrentPage = idx.roundToInt()))
+                                        .let { response ->
+                                            when (response) {
+                                                is NetworkResponse.Failure<*> -> {}
+                                                is NetworkResponse.Success -> response.data.MessagesList?.let { rList ->
+                                                    rList.filter { it.Id > maxId }.let {
+                                                        if (it.isEmpty()) {
+                                                            messages.emit(ApiResult.Success(cache.map { mes ->
+                                                                MessageDto(
+                                                                    Id = mes.id,
+                                                                    Detail = mes.detail,
+                                                                    Name = mes.senderName,
+                                                                    Subject = mes.subject,
+                                                                    SendDate = mes.date,
+                                                                    IsNew = mes.isNew
+                                                                )
+                                                            }
+                                                                .sortedByDescending { message -> message.Id }))
+                                                            return@launch
+                                                        } else {
+                                                            list.addAll(it)
+                                                            dao.insertAll(it.map { dto ->
+                                                                Message(
+                                                                    id = dto.Id,
+                                                                    subject = dto.Subject,
+                                                                    detail = dto.Detail,
+                                                                    senderName = dto.Name,
+                                                                    date = dto.SendDate,
+                                                                    isNew = dto.IsNew
+                                                                )
+                                                            })
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    val progress = (idx / lastPage) * 100
+                                    messages.emit(ApiResult.Progress(progress.roundToInt()))
+                                    idx++
+                                }
+                                messages.emit(ApiResult.Success(list.sortedByDescending { it.Id }))
+                            }
                         }
-                        messages.emit(ApiResult.Success(list.sortedByDescending { it.Id }))
                     }
                 }
             }
@@ -153,7 +163,10 @@ class NeptunRepositoryImpl(
                         }
                         ?: LocalDateTime.now(),
                     it.location.toString(),
-                    getRandomColor(it.title, colorMap),
+                    getRandomColor(
+                        it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
+                        colorMap
+                    ),
                     isAllDay = it.allday != 0,
                     false
                 )

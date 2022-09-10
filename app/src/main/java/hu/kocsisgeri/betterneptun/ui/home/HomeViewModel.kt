@@ -17,9 +17,9 @@ class HomeViewModel(
 
     val isLoggedIn = MutableStateFlow(false)
 
-    fun fetchMessages(maxPage: Int) {
+    fun fetchMessages() {
         viewModelScope.launch(Dispatchers.IO) {
-            neptunRepository.fetchMessages(maxPage)
+            neptunRepository.fetchMessages()
             neptunRepository.fetchCalendarData()
             isLoggedIn.tryEmit(true)
         }

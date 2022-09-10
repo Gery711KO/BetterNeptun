@@ -12,7 +12,7 @@ interface NeptunRepository {
     val messages : MutableStateFlow<ApiResult<List<MessageDto>>>
     val currentUser : MutableStateFlow<NeptunUser>
     var currentMessagePage : Int
-    fun fetchMessages(maxPage: Int)
+    fun fetchMessages()
     fun fetchCalendarData()
     fun resetMessagePage()
 }

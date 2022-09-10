@@ -61,8 +61,6 @@ class NetworkDataSourceImpl(
         val dataText = doc.getElementsByAttributeValue("id", "upTraining").first()?.child(2)?.text()
             ?.split("-")
         val unread = doc.getElementsByAttributeValue("id", "_lnkInbox").first()?.text()
-        val maxpage = doc.getElementsByAttributeValue("class", "pagerlink_np_rmax")
-            .attr("onclick").split("('")?.get(1)?.removeSuffix("')")?.toInt()
         StudentData(
             name = dataText?.get(0)?.trim(),
             neptun = dataText?.get(1)?.trim(),
@@ -71,7 +69,6 @@ class NetworkDataSourceImpl(
             } else {
                 "0"
             },
-            maxPage = 10
         )
     }
 

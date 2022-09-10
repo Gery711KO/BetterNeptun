@@ -6,7 +6,8 @@ import java.util.*
 
 data class MessageResponseDto(
     val CurrentPage: Int?,
-    val MessagesList: List<MessageDto>?
+    val MessagesList: List<MessageDto>?,
+    val TotalRowCount: Int?
 )
 
 data class MessageDto(

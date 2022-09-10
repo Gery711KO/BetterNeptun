@@ -38,7 +38,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setUserData()
         setButtons()
-        fetchNewDataOnAppStart(args.currentUser?.maxPage)
+        fetchNewDataOnAppStart()
     }
 
     @SuppressLint("SetTextI18n")
@@ -49,11 +49,9 @@ class HomeFragment : Fragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun fetchNewDataOnAppStart(maxPage: Int?) {
+    private fun fetchNewDataOnAppStart() {
         if (!viewModel.isLoggedIn.value) {
-            maxPage?.let {
-                viewModel.fetchMessages(it)
-            }?: viewModel.fetchMessages(1)
+            viewModel.fetchMessages()
         }
 
         CourseRepo.sorted.distinctUntilChanged().observe(viewLifecycleOwner) {
