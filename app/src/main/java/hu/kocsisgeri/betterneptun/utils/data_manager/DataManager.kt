@@ -30,6 +30,10 @@ class DataManager(
         }
     }
 
+    inline fun <reified T> getDefault(key: String, default: T) : T {
+        return sharedPreferences.get(key, default)
+    }
+
     inline fun <reified T> putData(key: String, data: T) {
         val json = moshi.adapter(T::class.java).toJson(data)
         sharedPreferences.put(key, json)

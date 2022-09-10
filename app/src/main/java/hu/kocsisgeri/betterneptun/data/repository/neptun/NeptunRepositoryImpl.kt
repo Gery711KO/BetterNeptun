@@ -12,6 +12,8 @@ import hu.kocsisgeri.betterneptun.domain.api.dto.MessageDto
 import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
 import hu.kocsisgeri.betterneptun.ui.model.NeptunUser
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
+import hu.kocsisgeri.betterneptun.utils.PREF_STAY_LOGGED_ID
+import hu.kocsisgeri.betterneptun.utils.data_manager.DataManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +33,8 @@ import kotlin.math.roundToInt
 class NeptunRepositoryImpl(
     override val coroutineContext: CoroutineContext = Dispatchers.IO,
     private val networkDataSource: NetworkDataSource,
-    private val dao: MessageDao
+    private val dao: MessageDao,
+    private val dataManager: DataManager,
 ) : NeptunRepository, CoroutineScope {
 
     override val events = MutableStateFlow<List<CalendarEntity.Event>>(listOf())
@@ -40,6 +43,8 @@ class NeptunRepositoryImpl(
     override var currentMessagePage = 0
 
     override fun fetchMessages() {
+        val save = dataManager.getDefault(PREF_STAY_LOGGED_ID, false)
+
         launch {
             dao.getData().let { cache ->
                 val list = mutableListOf<MessageDto>()
@@ -62,18 +67,12 @@ class NeptunRepositoryImpl(
                                             when (response) {
                                                 is NetworkResponse.Failure<*> -> {}
                                                 is NetworkResponse.Success -> response.data.MessagesList?.let { rList ->
-                                                    rList.filter { it.Id > maxId }.let {
-                                                        list.addAll(it)
-                                                        dao.insertAll(it.map { dto ->
-                                                            Message(
-                                                                id = dto.Id,
-                                                                subject = dto.Subject,
-                                                                detail = dto.Detail,
-                                                                senderName = dto.Name,
-                                                                date = dto.SendDate,
-                                                                isNew = dto.IsNew
-                                                            )
-                                                        })
+                                                    response.data.NewMessagesNumber?.let { unread ->
+                                                        CourseRepo.unreadMessages.tryEmit(unread)
+                                                    }
+                                                    rList.filter { message -> message.Id > maxId }.let { filtered ->
+                                                        list.addAll(filtered)
+                                                        filtered.saveMessages(save)
                                                     }
                                                 }
                                             }
@@ -83,7 +82,7 @@ class NeptunRepositoryImpl(
                                     counter++
                                     idx--
                                 }
-                                messages.emit(ApiResult.Success(list.sortedByDescending { it.Id }))
+                                messages.emit(ApiResult.Success(list.sortedByDescending { message -> message.Id }))
                             }
                         } else {
                             currentUser.first().let { user ->
@@ -94,8 +93,11 @@ class NeptunRepositoryImpl(
                                             when (response) {
                                                 is NetworkResponse.Failure<*> -> {}
                                                 is NetworkResponse.Success -> response.data.MessagesList?.let { rList ->
-                                                    rList.filter { it.Id > maxId }.let {
-                                                        if (it.isEmpty()) {
+                                                    response.data.NewMessagesNumber?.let { unread ->
+                                                        CourseRepo.unreadMessages.tryEmit(unread)
+                                                    }
+                                                    rList.filter { message -> message.Id > maxId }.let { filtered ->
+                                                        if (filtered.isEmpty()) {
                                                             messages.emit(ApiResult.Success(cache.map { mes ->
                                                                 MessageDto(
                                                                     Id = mes.id,
@@ -109,17 +111,8 @@ class NeptunRepositoryImpl(
                                                                 .sortedByDescending { message -> message.Id }))
                                                             return@launch
                                                         } else {
-                                                            list.addAll(it)
-                                                            dao.insertAll(it.map { dto ->
-                                                                Message(
-                                                                    id = dto.Id,
-                                                                    subject = dto.Subject,
-                                                                    detail = dto.Detail,
-                                                                    senderName = dto.Name,
-                                                                    date = dto.SendDate,
-                                                                    isNew = dto.IsNew
-                                                                )
-                                                            })
+                                                            list.addAll(filtered)
+                                                            filtered.saveMessages(save)
                                                         }
                                                     }
                                                 }
@@ -129,7 +122,7 @@ class NeptunRepositoryImpl(
                                     messages.emit(ApiResult.Progress(progress.roundToInt()))
                                     idx++
                                 }
-                                messages.emit(ApiResult.Success(list.sortedByDescending { it.Id }))
+                                messages.emit(ApiResult.Success(list.sortedByDescending { message -> message.Id }))
                             }
                         }
                     }
@@ -227,6 +220,23 @@ class NeptunRepositoryImpl(
                     color = getRandomColor(it.title.toString(), colorMap)
                 )
             }
+        }
+    }
+
+    private suspend fun List<MessageDto>.saveMessages(save: Boolean) {
+        if (save) {
+            dao.insertAll(
+                map { dto ->
+                    Message(
+                        id = dto.Id,
+                        subject = dto.Subject,
+                        detail = dto.Detail,
+                        senderName = dto.Name,
+                        date = dto.SendDate,
+                        isNew = dto.IsNew
+                    )
+                }
+            )
         }
     }
 }

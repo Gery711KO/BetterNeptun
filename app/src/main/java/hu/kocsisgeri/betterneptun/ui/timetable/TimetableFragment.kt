@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.distinctUntilChanged
 import androidx.navigation.fragment.findNavController
 import hu.kocsisgeri.betterneptun.databinding.FragmentTimetableBinding
 import hu.kocsisgeri.betterneptun.ui.timetable.model.FragmentWeekViewAdapter
@@ -36,15 +37,15 @@ class TimetableFragment : Fragment() {
     private fun initTable() {
         adapter = FragmentWeekViewAdapter(loadMoreHandler = viewModel::addEvents)
         binding.weekView.adapter = adapter
-        viewModel.eventList.observe(viewLifecycleOwner) {
+        viewModel.eventList.distinctUntilChanged().observe(viewLifecycleOwner) {
             adapter.submitList(it)
+            adapter.refresh()
         }
     }
 
     private fun setRandomColorButton() {
         binding.newColors.setOnClickListener {
             viewModel.randomizeColors()
-            adapter.refresh()
         }
     }
 }

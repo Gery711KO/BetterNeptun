@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.domain.api.datasource
 
 import com.google.gson.Gson
+import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
 import hu.kocsisgeri.betterneptun.domain.api.APIService
 import hu.kocsisgeri.betterneptun.domain.api.dto.*
 import hu.kocsisgeri.betterneptun.domain.api.network.CustomCookieJar
@@ -9,6 +10,7 @@ import hu.kocsisgeri.betterneptun.domain.model.StudentData
 import hu.kocsisgeri.betterneptun.ui.model.NeptunUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import java.util.*
@@ -60,15 +62,10 @@ class NetworkDataSourceImpl(
             }).get()
         val dataText = doc.getElementsByAttributeValue("id", "upTraining").first()?.child(2)?.text()
             ?.split("-")
-        val unread = doc.getElementsByAttributeValue("id", "_lnkInbox").first()?.text()
         StudentData(
             name = dataText?.get(0)?.trim(),
             neptun = dataText?.get(1)?.trim(),
-            unreadMessages = if (unread?.contains("(") == true) {
-                unread.split("(")?.get(1)?.removeSuffix(")")
-            } else {
-                "0"
-            },
+            unreadMessages = CourseRepo.unreadMessages.first().toString()
         )
     }
 

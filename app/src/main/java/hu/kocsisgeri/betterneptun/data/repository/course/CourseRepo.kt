@@ -14,4 +14,5 @@ object CourseRepo {
             it.startTime.isAfter(LocalDateTime.now())
         }
     }.mapNotNull { it }.asLiveData()
+    val unreadMessages = MutableStateFlow(0)
 }

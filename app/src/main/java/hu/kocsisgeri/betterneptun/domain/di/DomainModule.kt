@@ -105,7 +105,8 @@ val dataModule = module {
     single<NeptunRepository> {
         NeptunRepositoryImpl(
             networkDataSource =  get(),
-            dao = get()
+            dao = get(),
+            dataManager = get()
         )
     }
 }
