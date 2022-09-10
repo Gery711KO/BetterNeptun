@@ -6,4 +6,6 @@
     <color name="card_bg">#131313</color>
     <color name="message_bg">#1A1A1A</color>
     <color name="radio_button_color">#244799</color>
+    <color name="fab_ripple">#535353</color>
+
 </resources>

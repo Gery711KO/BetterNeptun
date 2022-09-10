@@ -26,9 +26,11 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import hu.kocsisgeri.betterneptun.R
 import io.noties.markwon.Markwon
+import java.lang.Math.ceil
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
 enum class ThemeMode(val mode: Int) {
     AUTO(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM), DARK(AppCompatDelegate.MODE_NIGHT_YES), LIGHT(AppCompatDelegate.MODE_NIGHT_NO)
@@ -149,14 +151,14 @@ fun Context.getCurrentTheme(): ThemeMode {
 fun LocalDateTime.getCourseDateString(): String {
     val diff =
         this.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
-    val days = TimeUnit.MILLISECONDS.toDays(diff * 1000)
     val hours = TimeUnit.MILLISECONDS.toHours(diff * 1000)
     val minutes = TimeUnit.MILLISECONDS.toMinutes(diff * 1000)
-    return when {
+    val days = kotlin.math.ceil(hours / 24f).roundToInt()
+        return when {
         minutes < 60 -> "$minutes perc múlva"
-        hours < 24 -> "$hours óra múlva"
-        days in 1..1 -> "Holnap"
-        days >= 2 -> "$days nap múlva"
+        hours <= 8 -> "$hours óra múlva"
+        days < 1 -> "Holnap"
+        days >= 1 -> "$days nap múlva"
         else -> "$days nap múlva"
     }
 }

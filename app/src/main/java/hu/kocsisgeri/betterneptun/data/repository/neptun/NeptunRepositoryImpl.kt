@@ -16,8 +16,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -201,7 +203,30 @@ class NeptunRepositoryImpl(
         }
     }
 
+
+
     override fun resetMessagePage() {
         currentMessagePage = 0
+    }
+
+    override fun randomiseCalendarColors() {
+        launch {
+            getRandomizedColoredEvents()?.let {
+                events.tryEmit(it)
+                CourseRepo.courses.tryEmit(it)
+            }
+        }
+    }
+
+    private suspend fun getRandomizedColoredEvents() : List<CalendarEntity.Event>? = withContext(Dispatchers.IO) {
+        CourseRepo.courses.firstOrNull()?.let {  list ->
+            val colorMap = mutableMapOf<String?, Int>()
+
+            list.map {
+                it.copy(
+                    color = getRandomColor(it.title.toString(), colorMap)
+                )
+            }
+        }
     }
 }

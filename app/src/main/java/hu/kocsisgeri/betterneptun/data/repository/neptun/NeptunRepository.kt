@@ -15,4 +15,5 @@ interface NeptunRepository {
     fun fetchMessages()
     fun fetchCalendarData()
     fun resetMessagePage()
+    fun randomiseCalendarColors()
 }

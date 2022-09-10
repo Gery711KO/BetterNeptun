@@ -16,6 +16,8 @@ class TimetableFragment : Fragment() {
     private val viewModel: TimetableViewModel by viewModel()
     private lateinit var binding : FragmentTimetableBinding
 
+    private lateinit var adapter : FragmentWeekViewAdapter
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -28,14 +30,21 @@ class TimetableFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initTable()
         setBackButton(binding.backButton)
+        setRandomColorButton()
     }
 
     private fun initTable() {
-        val adapter = FragmentWeekViewAdapter(loadMoreHandler = viewModel::addEvents)
+        adapter = FragmentWeekViewAdapter(loadMoreHandler = viewModel::addEvents)
         binding.weekView.adapter = adapter
         viewModel.eventList.observe(viewLifecycleOwner) {
             adapter.submitList(it)
         }
     }
 
+    private fun setRandomColorButton() {
+        binding.newColors.setOnClickListener {
+            viewModel.randomizeColors()
+            adapter.refresh()
+        }
+    }
 }

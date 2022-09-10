@@ -41,6 +41,7 @@
     <color name="message_bg">#ECECEC</color>
     <color name="new_message_stroke_color">@color/base_button_bg</color>
     <color name="radio_button_color">#275CDB</color>
+    <color name="fab_ripple">#6B6B6B</color>
 
     <color name="mtrl_textinput_default_box_stroke_color">@color/mainTextColor</color>
 
