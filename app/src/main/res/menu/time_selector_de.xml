@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/option_7"
+        android:title="7:00" />
+    <item android:id="@+id/option_8"
+        android:title="8:00" />
+    <item android:id="@+id/option_9"
+        android:title="9:00" />
+    <item android:id="@+id/option_10"
+        android:title="10:00" />
+    <item android:id="@+id/option_11"
+        android:title="11:00" />
+    <item android:id="@+id/option_12"
+        android:title="12:00" />
+</menu>

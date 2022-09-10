@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.api.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
@@ -44,26 +45,26 @@ class LoginViewModel(
     private val neptunUser = MutableStateFlow(NeptunUser())
 
     fun login() {
-        loading.tryEmit(true)
-        neptunUser.tryEmit(NeptunUser(neptunCode.value, password.value))
         viewModelScope.launch {
-            networkDataSource.initiateLogin(neptunUser.value.loginRequestData()).let {
-                when (it) {
-                    is NetworkResponse.Success -> {
-                        if (!it.data.isSuccess()) isFailed.tryEmit(it.data.getError())
-                        else {
-                            sharedPreferences.put(PREF_STAY_LOGGED_ID, stayLoggedIn.value)
-                            dataManager.putData(PREF_CURRENT_USER, neptunUser.value)
-                            neptunRepository.currentUser.tryEmit(neptunUser.value)
-                            isSucceeded.tryEmit(networkDataSource.getData())
-                        }
-                    }
-                    is NetworkResponse.Failure<*> -> {
-                        isFailed.tryEmit(it.error.toString())
+            loading.emit(true)
+            neptunUser.emit(NeptunUser(neptunCode.value, password.value))
+            neptunRepository.login(neptunUser.value).let { result ->
+                when (result) {
+                    is ApiResult.Error -> isFailed.emit(result.error)
+                    is ApiResult.Progress -> loading.emit(true)
+                    is ApiResult.Success -> {
+                        sharedPreferences.put(PREF_STAY_LOGGED_ID, stayLoggedIn.value)
+                        dataManager.putData(PREF_CURRENT_USER, neptunUser.value)
+                        neptunRepository.currentUser.emit(neptunUser.value)
+                        isSucceeded.emit(result.data)
                     }
                 }
             }
         }
+    }
+
+    fun setUserData(user: StudentData) {
+        neptunRepository.studentData.tryEmit(user)
     }
 
     fun passwordInput(input: String) {

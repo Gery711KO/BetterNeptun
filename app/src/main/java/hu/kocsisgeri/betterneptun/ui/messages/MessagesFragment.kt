@@ -14,8 +14,7 @@ import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.databinding.FragmentMessagesBinding
 import hu.kocsisgeri.betterneptun.ui.adapter.DiffListAdapter
-import hu.kocsisgeri.betterneptun.ui.adapter.cell.NavigationEvent
-import hu.kocsisgeri.betterneptun.ui.adapter.cell.cellMessageDelegate
+import hu.kocsisgeri.betterneptun.ui.adapter.cell.*
 import hu.kocsisgeri.betterneptun.utils.NotifyingLinearLayoutManager
 import hu.kocsisgeri.betterneptun.utils.setBackButton
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,9 +28,9 @@ class MessagesFragment : Fragment() {
 
     private val viewModel: MessagesViewModel by viewModel()
     private lateinit var binding: FragmentMessagesBinding
-    private val navigationEvent = MutableSharedFlow<NavigationEvent>(1, 50)
+    private val events = MutableSharedFlow<InteractionEvent>(1, 50)
 
-    private val listAdapter = DiffListAdapter(cellMessageDelegate(navigationEvent))
+    private val listAdapter = DiffListAdapter(cellMessageDelegate(events))
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,12 +50,12 @@ class MessagesFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     private fun setList() {
         binding.messageList.apply {
-            layoutManager = NotifyingLinearLayoutManager(context)
+            layoutManager = LinearLayoutManager(context)
             adapter = listAdapter
         }
 
         viewModel.listItems.observe(viewLifecycleOwner) { result ->
-            when(result) {
+            when (result) {
                 is ApiResult.Success -> {
                     listAdapter.updateData(result.data.map { it.mapToModel() })
                     binding.progressLayout.isVisible = false
@@ -71,32 +70,19 @@ class MessagesFragment : Fragment() {
                 }
             }
         }
-
-        binding.messageList.setOnScrollChangeListener { _, _, _, _, _ ->
-            if (isLastVisible()) {
-                //viewModel.fetch()
-            }
-        }
-
-        (binding.messageList.layoutManager as NotifyingLinearLayoutManager).mCallback =
-            object : NotifyingLinearLayoutManager.OnLayoutCompleteCallback {
-                override fun onLayoutComplete() {
-                    binding.messageList.scrollToPosition(viewModel.getCurrentPosition())
-                }
-            }
-    }
-
-    private fun isLastVisible(): Boolean {
-        val layoutManager = binding.messageList.layoutManager as LinearLayoutManager
-        val pos = layoutManager.findLastCompletelyVisibleItemPosition()
-        val numItems: Int = listAdapter.itemCount
-        return pos >= numItems - 1
     }
 
     private fun observeNavigation() {
-        navigationEvent.onEach {
-            if (findNavController().currentDestination?.id == R.id.messagesFragment)
-                findNavController().navigate(it.navDirections)
+        events.onEach {
+            when (it) {
+                is NavigationEvent -> {
+                    if (findNavController().currentDestination?.id == R.id.messagesFragment)
+                        findNavController().navigate(it.navDirections)
+                }
+                is ReadMessageEvent -> {
+                    viewModel.readMessage(it.messageId)
+                }
+            }
         }.launchIn(viewModel.viewModelScope)
     }
 }

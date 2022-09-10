@@ -12,12 +12,20 @@ plugins {
 android {
     signingConfigs {
         getByName("debug") {
-            storeFile = file("/Users/gery711k/Documents/GitHub/BetterNeptun/debug.jks")
+            storeFile = project.file("../android-debug.jks")
             storePassword = "android"
-            keyAlias = "debug"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+
+        create("release") {
+            storeFile = project.file("../android-debug.jks")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
     }
+
     compileSdk = AndroidSdk.compileApi
     buildToolsVersion = AndroidSdk.buildTools
 
@@ -25,8 +33,8 @@ android {
         applicationId = "hu.kocsisgeri.betterneptun"
         minSdk = AndroidSdk.minApi
         targetSdk = AndroidSdk.targetApi
-        versionCode = Release.versionCode
-        versionName = Release.versionName
+        versionCode = hu.kocsisgeri.betterneptun.Release.versionCode
+        versionName = hu.kocsisgeri.betterneptun.Release.versionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,14 +46,16 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
         getByName("debug") {
+            versionNameSuffix = "-debug"
             isDebuggable = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
@@ -114,7 +124,8 @@ dependencies {
     implementation("com.github.thellmund.Android-Week-View:core:5.2.4")
     implementation("com.github.thellmund.Android-Week-View:jsr310:5.2.4")
     implementation("io.noties.markwon:core:4.6.2")
-
+    implementation("com.github.madrapps:pikolo:2.0.2")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     addDependency(Libraries.material)
     addDependency(Libraries.timber)

@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -21,17 +22,28 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
+import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import hu.kocsisgeri.betterneptun.R
+import hu.kocsisgeri.betterneptun.ui.model.SubjectState
+import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import io.noties.markwon.Markwon
+import kotlinx.coroutines.flow.Flow
+import org.jsoup.nodes.Element
+import java.lang.Math.ceil
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
 enum class ThemeMode(val mode: Int) {
-    AUTO(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM), DARK(AppCompatDelegate.MODE_NIGHT_YES), LIGHT(AppCompatDelegate.MODE_NIGHT_NO)
+    AUTO(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM), DARK(AppCompatDelegate.MODE_NIGHT_YES), LIGHT(
+        AppCompatDelegate.MODE_NIGHT_NO
+    )
 }
 
 fun openUrl(url: String?, context: Context) {
@@ -64,6 +76,7 @@ fun TextView.setHtmlText(
         Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY)
     }
 }
+
 fun TextView.setTextAndAddClickableLinks(
     markdown: String?,
     context: Context,
@@ -149,16 +162,25 @@ fun Context.getCurrentTheme(): ThemeMode {
 fun LocalDateTime.getCourseDateString(): String {
     val diff =
         this.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
-    val days = TimeUnit.MILLISECONDS.toDays(diff * 1000)
     val hours = TimeUnit.MILLISECONDS.toHours(diff * 1000)
-    val minutes = TimeUnit.MILLISECONDS.toMinutes(diff * 1000)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+    val minutes = kotlin.math.ceil(seconds / 60f).roundToInt()
+    val days = hours / 24f
     return when {
         minutes < 60 -> "$minutes perc múlva"
-        hours < 24 -> "$hours óra múlva"
-        days in 1..1 -> "Holnap"
-        days >= 2 -> "$days nap múlva"
-        else -> "$days nap múlva"
+        hours <= hour -> "$hours óra múlva"
+        days < 1 -> "Holnap"
+        days > 1 -> "${kotlin.math.ceil(days).roundToInt()} nap múlva"
+        else -> "${kotlin.math.ceil(days).roundToInt()} nap múlva"
     }
+}
+
+fun LocalDateTime.getTimeLeft(): String {
+    val diff =
+        this.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+    val minutes = kotlin.math.ceil(seconds / 60f).roundToInt()
+    return "$minutes perc"
 }
 
 fun Fragment.setBackButton(view: View) {
@@ -176,5 +198,84 @@ fun Fragment.setButtonNavigation(view: View, destination: NavDirections) {
 fun Fragment.showToastOnClick(view: View, text: String) {
     view.setOnClickListener {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+    }
+}
+
+fun getSubjectState(completed: Boolean, signer: String): SubjectState {
+    return when {
+        completed -> SubjectState.PASS
+        !completed && signer.contains("Elégtelen") -> SubjectState.FAILED
+        !completed && signer.contains("Aláírva") -> SubjectState.SIGNED
+        !completed && signer.contains("Letiltva") -> SubjectState.BANNED
+        !completed && signer.contains("Megtagadva") -> SubjectState.BANNED
+        else -> SubjectState.DEFAULT
+    }
+}
+
+fun String.getGrade(): Int {
+    return when (this) {
+        "Elégtelen" -> 1
+        "Elégséges" -> 2
+        "Közepes" -> 3
+        "Jó" -> 4
+        "Jeles" -> 5
+        else -> 0
+    }
+}
+
+fun Element.getDoubleValue(): Double? {
+    return if (text().isNotBlank()) {
+        val data = text().split(",")
+        ((data[0].toInt() * 100 + data[1].toInt()) / 100f).toDouble()
+    } else {
+        null
+    }
+}
+
+fun Element.getIntValue(): Int? {
+    return if (text().isNotBlank()) {
+        text().trim().toInt()
+    } else {
+        null
+    }
+}
+
+fun View.setSafeOnClickListener(
+    defaultInterval: Int = 1000,
+    onSafeClick: (View) -> Unit
+) {
+    setOnClickListener(object : View.OnClickListener {
+        private var lastTimeClicked: Long = 0
+
+        override fun onClick(v: View) {
+            if (SystemClock.elapsedRealtime() - lastTimeClicked < defaultInterval) {
+                return
+            }
+            lastTimeClicked = SystemClock.elapsedRealtime()
+            onSafeClick(v)
+        }
+    })
+}
+
+fun CalendarEntity.Event.getRemainingTime(): Float {
+    val diff =
+        endTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+    return seconds / 60f
+}
+
+fun CalendarEntity.Event.getTime(): Float {
+    val diff = endTime.toEpochSecond(ZoneOffset.UTC) - startTime.toEpochSecond(ZoneOffset.UTC)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+    return seconds / 60f
+}
+
+fun CalendarEntity.Event.getPercent(): Int {
+    return (100f - (getRemainingTime() / getTime()) * 100f).roundToInt()
+}
+
+fun <T : Any> Flow<T>.observe(viewLifecycleOwner: LifecycleOwner, observe: (T) -> Unit) {
+    asLiveData().observe(viewLifecycleOwner) {
+        observe(it)
     }
 }

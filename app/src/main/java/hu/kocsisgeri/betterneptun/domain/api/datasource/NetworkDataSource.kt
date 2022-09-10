@@ -1,9 +1,12 @@
 package hu.kocsisgeri.betterneptun.domain.api.datasource
 
+import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.domain.api.dto.*
 import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.ui.model.MessageReader
 import hu.kocsisgeri.betterneptun.ui.model.NeptunUser
+import hu.kocsisgeri.betterneptun.ui.model.SemesterModel
 
 interface NetworkDataSource {
     suspend fun initiateLogin(userData: LoginRequestDto) : NetworkResponse<LoginResponseDto, String>
@@ -13,6 +16,10 @@ interface NetworkDataSource {
     suspend fun checkPopUp(popupDto: PopupDto): NetworkResponse<String, String>
     suspend fun getMessages(neptunUser: NeptunUser): NetworkResponse<MessageResponseDto, String>
     suspend fun getTrainings(neptunUser: NeptunUser): NetworkResponse<TrainingResponseDto, String>
-    suspend fun getData(): StudentData
-    suspend fun getCourses() : CourseResponseDto
+    suspend fun getAddedCourses(neptunUser: NeptunUser) : NetworkResponse<AddedSubjectsResponseDto, String>
+    suspend fun getMarkBookData(neptunUser: NeptunUser) : NetworkResponse<MarkBookDataResponseDto, String>
+    suspend fun getData(): ApiResult<StudentData>
+    suspend fun getCourses() : ApiResult<CourseResponseDto>
+    suspend fun getAverages(): List<SemesterModel>
+    suspend fun markMessageAsRead(messageReader: MessageReader): NetworkResponse<NeptunUser, String>
 }

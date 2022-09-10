@@ -35,12 +35,19 @@
 
     <color name="base_fragment_bg">@color/white</color>
     <color name="base_text_color">#202020</color>
+    <color name="base_text_selected_color">#80202020</color>
     <color name="base_button_bg">#1A294D</color>
     <color name="text_input_box_color">#B3202020</color>
     <color name="card_bg">#ECECEC</color>
+    <color name="card_bg_60f">#CCFFFFFF</color>
     <color name="message_bg">#ECECEC</color>
     <color name="new_message_stroke_color">@color/base_button_bg</color>
     <color name="radio_button_color">#275CDB</color>
+    <color name="radio_button_color_bg">#80275CDB</color>
+    <color name="fab_ripple">#6B6B6B</color>
+
+    <color name="chart_alpha_color">#4D131313</color>
+    <color name="chart_color">#333333</color>
 
     <color name="mtrl_textinput_default_box_stroke_color">@color/mainTextColor</color>
 

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "408799943582",
+    "project_id": "oe-neptun",
+    "storage_bucket": "oe-neptun.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:408799943582:android:aaab5942a0d134a492548f",
+        "android_client_info": {
+          "package_name": "hu.kocsisgeri.betterneptun"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "408799943582-9q8eh3uohv793g0uorbq236u4it84sc6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlONCqIn-mMEnR_RSGr8UFiGqJEOBJisM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "408799943582-9q8eh3uohv793g0uorbq236u4it84sc6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

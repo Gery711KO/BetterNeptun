@@ -1,2 +1,2 @@
-rootProject.name = "BitraptorsTest"
+rootProject.name = "BetterNeptun"
 include(":app")

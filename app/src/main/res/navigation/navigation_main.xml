@@ -15,6 +15,77 @@
         app:popExitAnim="@anim/slide_out_left"
         app:popUpToInclusive="true" />
 
+    <action
+        android:id="@+id/toMessages"
+        app:destination="@id/messagesFragment"
+        app:enterAnim="@anim/slide_in_left"
+        app:exitAnim="@anim/dissapear"
+        app:popEnterAnim="@anim/appear"
+        app:popExitAnim="@anim/slide_out_left"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="false" />
+
+    <action
+        android:id="@+id/toCalendar"
+        app:destination="@id/timetableFragment"
+        app:enterAnim="@anim/slide_in_right"
+        app:exitAnim="@anim/dissapear"
+        app:popEnterAnim="@anim/appear"
+        app:popExitAnim="@anim/slide_out_right"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="false" />
+
+    <action
+        android:id="@+id/toSettings"
+        app:destination="@id/settingsFragment"
+        app:enterAnim="@anim/slide_in_right"
+        app:exitAnim="@anim/dissapear"
+        app:popEnterAnim="@anim/appear"
+        app:popExitAnim="@anim/slide_out_right"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="false" />
+
+    <action
+        android:id="@+id/toMessageDetail"
+        app:destination="@id/messageDetail"
+        app:enterAnim="@anim/slide_in_right"
+        app:exitAnim="@anim/dissapear"
+        app:popEnterAnim="@anim/appear"
+        app:popExitAnim="@anim/slide_out_right"
+        app:popUpTo="@id/messagesFragment"
+        app:popUpToInclusive="false" />
+
+    <action
+        android:id="@+id/toCourseDetail"
+        app:destination="@id/courseDetail"
+        app:enterAnim="@anim/slide_in_right"
+        app:exitAnim="@anim/dissapear"
+        app:popEnterAnim="@anim/appear"
+        app:popExitAnim="@anim/slide_out_right"
+        app:popUpTo="@id/timetableFragment"
+        app:popUpToInclusive="false" />
+
+
+    <action
+        android:id="@+id/toSubjects"
+        app:destination="@id/subjectsFragment"
+        app:enterAnim="@anim/slide_in_left"
+        app:exitAnim="@anim/dissapear"
+        app:popEnterAnim="@anim/appear"
+        app:popExitAnim="@anim/slide_out_left"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="false" />
+
+    <action
+        android:id="@+id/toSemesters"
+        app:destination="@id/semestersFragment"
+        app:enterAnim="@anim/slide_in_left"
+        app:exitAnim="@anim/dissapear"
+        app:popEnterAnim="@anim/appear"
+        app:popExitAnim="@anim/slide_out_left"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="false" />
+
     <fragment
         android:id="@+id/loginFragment"
         android:name="hu.kocsisgeri.betterneptun.ui.login.LoginFragment"
@@ -37,36 +108,6 @@
         android:name="hu.kocsisgeri.betterneptun.ui.home.HomeFragment"
         tools:layout="@layout/fragment_home">
 
-        <action
-            android:id="@+id/toMessages"
-            app:destination="@id/messagesFragment"
-            app:enterAnim="@anim/slide_in_left"
-            app:exitAnim="@anim/dissapear"
-            app:popEnterAnim="@anim/appear"
-            app:popExitAnim="@anim/slide_out_left"
-            app:popUpTo="@id/homeFragment"
-            app:popUpToInclusive="false" />
-
-        <action
-            android:id="@+id/toCalendar"
-            app:destination="@id/timetableFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/dissapear"
-            app:popEnterAnim="@anim/appear"
-            app:popExitAnim="@anim/slide_out_right"
-            app:popUpTo="@id/homeFragment"
-            app:popUpToInclusive="false" />
-
-        <action
-            android:id="@+id/toSettings"
-            app:destination="@id/settingsFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/dissapear"
-            app:popEnterAnim="@anim/appear"
-            app:popExitAnim="@anim/slide_out_right"
-            app:popUpTo="@id/homeFragment"
-            app:popUpToInclusive="false" />
-
         <argument
             android:name="currentUser"
             android:defaultValue="@null"
@@ -78,26 +119,14 @@
     <fragment
         android:id="@+id/messagesFragment"
         android:name="hu.kocsisgeri.betterneptun.ui.messages.MessagesFragment"
-        tools:layout="@layout/fragment_messages">
-
-        <action
-            android:id="@+id/toMessageDetail"
-            app:destination="@id/messageDetail"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/dissapear"
-            app:popEnterAnim="@anim/appear"
-            app:popExitAnim="@anim/slide_out_right"
-            app:popUpTo="@id/messagesFragment"
-            app:popUpToInclusive="false" />
-
-    </fragment>
+        tools:layout="@layout/fragment_messages"/>
 
     <fragment
         android:id="@+id/timetableFragment"
         android:name="hu.kocsisgeri.betterneptun.ui.timetable.TimetableFragment"
         tools:layout="@layout/fragment_timetable" />
 
-    <fragment
+    <dialog
         android:id="@+id/messageDetail"
         android:name="hu.kocsisgeri.betterneptun.ui.messages.detail_dialog.MessageDetailFragment"
         tools:layout="@layout/fragment_message_detail">
@@ -108,12 +137,34 @@
             app:argType="hu.kocsisgeri.betterneptun.ui.model.MessageModel"
             app:nullable="true" />
 
-    </fragment>
+    </dialog>
+
+    <dialog
+        android:id="@+id/courseDetail"
+        android:name="hu.kocsisgeri.betterneptun.ui.timetable.dialog.CourseDetailFragment"
+        tools:layout="@layout/fragment_course_detail">
+
+        <argument
+            android:name="model"
+            android:defaultValue="@null"
+            app:argType="hu.kocsisgeri.betterneptun.ui.model.CourseModel"
+            app:nullable="true" />
+
+    </dialog>
 
     <fragment
         android:id="@+id/settingsFragment"
         android:name="hu.kocsisgeri.betterneptun.ui.settings.SettingsFragment"
         tools:layout="@layout/fragment_settings"/>
 
+    <fragment
+        android:id="@+id/subjectsFragment"
+        android:name="hu.kocsisgeri.betterneptun.ui.subjects.SubjectsFragment"
+        tools:layout="@layout/fragment_subjects"/>
+
+    <fragment
+        android:id="@+id/semestersFragment"
+        android:name="hu.kocsisgeri.betterneptun.ui.semesters.SemestersFragment"
+        tools:layout="@layout/fragment_semesters"/>
 
 </navigation>

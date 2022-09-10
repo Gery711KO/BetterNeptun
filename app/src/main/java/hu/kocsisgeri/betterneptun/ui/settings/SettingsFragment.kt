@@ -1,15 +1,17 @@
 package hu.kocsisgeri.betterneptun.ui.settings
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import hu.kocsisgeri.betterneptun.BuildConfig
 import hu.kocsisgeri.betterneptun.R
+import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
 import hu.kocsisgeri.betterneptun.databinding.FragmentSettingsBinding
 import hu.kocsisgeri.betterneptun.utils.ThemeMode
 import hu.kocsisgeri.betterneptun.utils.getCurrentTheme
@@ -37,9 +39,26 @@ class SettingsFragment : Fragment() {
         setThemeSelection()
         handleThemeSelect()
         setExitButton()
+        setStartTimes()
+        setVersionData()
     }
 
-    fun setExitButton() {
+    @SuppressLint("SetTextI18n")
+    private fun setVersionData() {
+        binding.versionValue.text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+    }
+
+    private fun setStartTimes() {
+        HomeState.firstClassTime.asLiveData().observe(viewLifecycleOwner) {
+            binding.firstClassTime.text = it
+        }
+
+        HomeState.lastClassTime.asLiveData().observe(viewLifecycleOwner) {
+            binding.lastClassTime.text = it
+        }
+    }
+
+    private fun setExitButton() {
         binding.logoutCard.setOnClickListener {
             viewModel.logout()
             findNavController().navigate(SettingsFragmentDirections.toLogin())

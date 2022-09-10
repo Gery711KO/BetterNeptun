@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.timetable.model
 
 import android.graphics.Color
+import android.graphics.RectF
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.StrikethroughSpan
@@ -9,22 +10,35 @@ import com.alamkanak.weekview.WeekViewEntity
 import com.alamkanak.weekview.jsr310.WeekViewPagingAdapterJsr310
 import com.alamkanak.weekview.jsr310.setEndTime
 import com.alamkanak.weekview.jsr310.setStartTime
+import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.ui.adapter.ListItem
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import timber.log.Timber
+import java.io.Serializable
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
+import kotlin.coroutines.CoroutineContext
 
 sealed class CalendarEntity {
 
     data class Event(
         val id: Long,
         val title: CharSequence,
+        val courseCode: String,
+        val subjectCode : String,
+        val teacher: String,
         val startTime: LocalDateTime,
         val endTime: LocalDateTime,
         val location: CharSequence,
         val color: Int,
         val isAllDay: Boolean,
         val isCanceled: Boolean
-    ) : CalendarEntity()
+    ) : CalendarEntity(), Serializable, ListItem
 
     data class BlockedTimeSlot(
         val id: Long,
@@ -91,15 +105,23 @@ fun CalendarEntity.BlockedTimeSlot.toWeekViewEntity(): WeekViewEntity {
 }
 
 class FragmentWeekViewAdapter(
-    private val loadMoreHandler: () -> Unit
-) : WeekViewPagingAdapterJsr310<CalendarEntity>() {
+    private val clickHandler: MutableSharedFlow<CalendarEntity.Event>
+) : WeekViewPagingAdapterJsr310<CalendarEntity>(), KoinComponent, CoroutineScope {
+
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
+    private val neptunRepository : NeptunRepository by inject()
 
     override fun onCreateEntity(item: CalendarEntity): WeekViewEntity = item.toWeekViewEntity()
 
     override fun onLoadMore(
         startDate: LocalDate,
         endDate: LocalDate
-    ) = loadMoreHandler()
+    ) = Unit
+
+    override fun onEventClick(data: CalendarEntity, bounds: RectF) {
+        super.onEventClick(data, bounds)
+        clickHandler.tryEmit(data as CalendarEntity.Event)
+    }
 }
 
 fun yearMonthsBetween(startDate: LocalDate, endDate: LocalDate): List<YearMonth> {
