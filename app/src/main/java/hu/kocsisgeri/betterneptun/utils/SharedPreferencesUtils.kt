@@ -7,6 +7,9 @@ const val PREF_CURRENT_USER = "CURRENT_SAVED_USER"
 const val PREF_STAY_LOGGED_ID = "STAY_LOGGED_IN"
 const val PREF_SAVED_THEME = "SAVED_THEME"
 
+const val PREF_FIRST_CLASS_TIME = "FIRST_CLASS_TIME"
+const val PREF_LAST_CLASS_TIME = "LAST_CLASS_TIME"
+
 inline fun <reified T> SharedPreferences.get(key: String, defaultValue: T): T = when (T::class) {
     Boolean::class -> this.getBoolean(key, defaultValue as Boolean) as T
     Float::class -> this.getFloat(key, defaultValue as Float) as T

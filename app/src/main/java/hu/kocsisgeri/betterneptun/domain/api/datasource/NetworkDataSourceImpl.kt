@@ -65,7 +65,7 @@ class NetworkDataSourceImpl(
         StudentData(
             name = dataText?.get(0)?.trim(),
             neptun = dataText?.get(1)?.trim(),
-            unreadMessages = CourseRepo.unreadMessages.first().toString()
+            unreadMessages = "${CourseRepo.unreadMessages.first()}"
         )
     }
 

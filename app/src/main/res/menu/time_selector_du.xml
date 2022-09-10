@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/option_12"
+        android:title="12:00" />
+    <item android:id="@+id/option_13"
+        android:title="13:00" />
+    <item android:id="@+id/option_14"
+        android:title="14:00" />
+    <item android:id="@+id/option_15"
+        android:title="15:00" />
+    <item android:id="@+id/option_16"
+        android:title="16:00" />
+    <item android:id="@+id/option_17"
+        android:title="17:00" />
+    <item android:id="@+id/option_18"
+        android:title="18:00" />
+    <item android:id="@+id/option_19"
+        android:title="19:00" />
+    <item android:id="@+id/option_20"
+        android:title="20:00" />
+    <item android:id="@+id/option_21"
+        android:title="21:00" />
+    <item android:id="@+id/option_22"
+        android:title="22:00" />
+    <item android:id="@+id/option_23"
+        android:title="23:00" />
+</menu>

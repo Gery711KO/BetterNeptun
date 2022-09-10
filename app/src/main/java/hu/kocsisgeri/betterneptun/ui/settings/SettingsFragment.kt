@@ -1,27 +1,35 @@
 package hu.kocsisgeri.betterneptun.ui.settings
 
 import android.os.Bundle
+import android.view.*
+import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.RadioButton
+import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import hu.kocsisgeri.betterneptun.R
+import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
 import hu.kocsisgeri.betterneptun.databinding.FragmentSettingsBinding
 import hu.kocsisgeri.betterneptun.utils.ThemeMode
 import hu.kocsisgeri.betterneptun.utils.getCurrentTheme
 import hu.kocsisgeri.betterneptun.utils.setBackButton
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SettingsFragment : Fragment() {
 
     private val viewModel: SettingsViewModel by viewModel()
     private lateinit var binding: FragmentSettingsBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,9 +45,21 @@ class SettingsFragment : Fragment() {
         setThemeSelection()
         handleThemeSelect()
         setExitButton()
+        setTimeSelectionButtons()
+        setStartTimes()
     }
 
-    fun setExitButton() {
+    private fun setStartTimes() {
+        CourseRepo.firstClassTime.asLiveData().observe(viewLifecycleOwner) {
+            binding.firstClassTime.text = it
+        }
+
+        CourseRepo.lastClassTime.asLiveData().observe(viewLifecycleOwner) {
+            binding.lastClassTime.text = it
+        }
+    }
+
+    private fun setExitButton() {
         binding.logoutCard.setOnClickListener {
             viewModel.logout()
             findNavController().navigate(SettingsFragmentDirections.toLogin())
@@ -105,5 +125,39 @@ class SettingsFragment : Fragment() {
     private fun RadioButton.unselect() {
         isChecked = false
         alpha = 0.5f
+    }
+
+    private fun setTimeSelectionButtons() {
+        binding.firstClass.setOnClickListener {
+            showFirst(binding.firstClassTime, R.menu.time_selector_de)
+        }
+
+        binding.lastClass.setOnClickListener {
+            showLast(binding.lastClassTime, R.menu.time_selector_du)
+        }
+    }
+
+    private fun showFirst(v: View, @MenuRes menuRes: Int) {
+        val popup = PopupMenu(requireContext(), v)
+        popup.menuInflater.inflate(menuRes, popup.menu)
+
+        popup.setOnMenuItemClickListener { menuItem: MenuItem ->
+            binding.firstClassTime.text = menuItem.title
+            CourseRepo.firstClassTime.tryEmit(menuItem.title.toString())
+            false
+        }
+        popup.show()
+    }
+
+    private fun showLast(v: View, @MenuRes menuRes: Int) {
+        val popup = PopupMenu(requireContext(), v)
+        popup.menuInflater.inflate(menuRes, popup.menu)
+
+        popup.setOnMenuItemClickListener { menuItem: MenuItem ->
+            binding.lastClassTime.text = menuItem.title
+            CourseRepo.lastClassTime.tryEmit(menuItem.title.toString())
+            false
+        }
+        popup.show()
     }
 }

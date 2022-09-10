@@ -225,7 +225,7 @@
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/next_course_start"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/armata"
                         android:paddingHorizontal="12dp"
@@ -235,7 +235,7 @@
                         android:textStyle="bold"
                         app:layout_constraintBottom_toTopOf="@id/next_course_end"
                         app:layout_constraintEnd_toStartOf="@id/line"
-                        app:layout_constraintStart_toEndOf="@id/next_course_title"
+                        app:layout_constraintStart_toEndOf="@id/next_course_date"
                         app:layout_constraintTop_toTopOf="@id/line"
                         app:layout_constraintVertical_chainStyle="spread_inside"
                         tools:text="8:00" />

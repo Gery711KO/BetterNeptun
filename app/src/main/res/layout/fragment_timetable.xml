@@ -49,6 +49,8 @@
         app:headerBackgroundColor="@color/card_bg"
         app:headerPadding="12dp"
         app:hourHeight="60dp"
+        app:minHour="7"
+        app:maxHour="23"
         app:nowLineColor="@color/base_text_color"
         app:nowLineDotColor="@color/base_text_color"
         app:nowLineDotRadius="4dp"
