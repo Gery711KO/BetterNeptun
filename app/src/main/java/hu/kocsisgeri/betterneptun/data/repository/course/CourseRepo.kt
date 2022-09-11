@@ -1,6 +1,5 @@
 package hu.kocsisgeri.betterneptun.data.repository.course
 
-import android.graphics.Color
 import androidx.lifecycle.MutableLiveData
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.*
@@ -66,8 +65,12 @@ object CourseRepo : CoroutineScope, KoinComponent {
     val unreadMessages = MutableStateFlow(0)
     val firstClassTime = MutableStateFlow<String?>(null)
     val lastClassTime = MutableStateFlow<String?>(null)
+    val isTimelineAutomatic = MutableStateFlow<Boolean?>(null)
 
     fun fetchCalendarTimes() {
+        dataManager.sharedPreferences.get(PREF_IS_TIMELINE_AUTOMATIC, true).let {
+            isTimelineAutomatic.tryEmit(it)
+        }
         dataManager.sharedPreferences.get(PREF_FIRST_CLASS_TIME, "8:00").let {
             firstClassTime.tryEmit(it)
         }
@@ -89,6 +92,13 @@ object CourseRepo : CoroutineScope, KoinComponent {
             it?.let {
                 val save = dataManager.getDefault(PREF_STAY_LOGGED_ID, false)
                 if (save) dataManager.sharedPreferences.put(PREF_LAST_CLASS_TIME, it)
+            }
+        }.launchIn(this)
+
+        isTimelineAutomatic.onEach {
+            it?.let {
+                val save = dataManager.getDefault(PREF_STAY_LOGGED_ID, false)
+                if (save) dataManager.sharedPreferences.put(PREF_IS_TIMELINE_AUTOMATIC, it)
             }
         }.launchIn(this)
     }

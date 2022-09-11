@@ -171,13 +171,29 @@
                     android:paddingHorizontal="24dp"
                     android:paddingVertical="16dp">
 
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/automatic_timeframe"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/first_class"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:textColor="@color/base_text_color"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        app:trackTint="@color/radio_button_color_bg"
+                        app:thumbTint="@color/radio_button_color"
+                        android:fontFamily="@font/armata"
+                        android:text="Automatikus idősáv"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+
                     <LinearLayout
                         android:id="@+id/first_class"
                         android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/automatic_timeframe"
                         app:layout_constraintBottom_toTopOf="@id/last_class"
                         app:layout_constraintEnd_toEndOf="parent">
 

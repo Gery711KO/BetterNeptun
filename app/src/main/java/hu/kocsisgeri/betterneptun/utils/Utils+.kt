@@ -157,13 +157,13 @@ fun LocalDateTime.getCourseDateString(): String {
     val hours = TimeUnit.MILLISECONDS.toHours(diff * 1000)
     val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
     val minutes = kotlin.math.ceil(seconds / 60f).roundToInt()
-    val days = kotlin.math.ceil(hours / 24f).roundToInt()
+    val days = hours / 24f
     return when {
         minutes < 60 -> "$minutes perc múlva"
         hours <= hour -> "$hours óra múlva"
         days < 1 -> "Holnap"
-        days >= 1 -> "$days nap múlva"
-        else -> "$days nap múlva"
+        days > 1 -> "${kotlin.math.ceil(days).roundToInt()} nap múlva"
+        else -> "${kotlin.math.ceil(days).roundToInt()} nap múlva"
     }
 }
 

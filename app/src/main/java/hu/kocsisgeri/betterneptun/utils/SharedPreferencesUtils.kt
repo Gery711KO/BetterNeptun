@@ -9,6 +9,7 @@ const val PREF_SAVED_THEME = "SAVED_THEME"
 
 const val PREF_FIRST_CLASS_TIME = "FIRST_CLASS_TIME"
 const val PREF_LAST_CLASS_TIME = "LAST_CLASS_TIME"
+const val PREF_IS_TIMELINE_AUTOMATIC = "IS_TIMELINE_AUTOMATIC"
 
 inline fun <reified T> SharedPreferences.get(key: String, defaultValue: T): T = when (T::class) {
     Boolean::class -> this.getBoolean(key, defaultValue as Boolean) as T

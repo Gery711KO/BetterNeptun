@@ -21,15 +21,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import timber.log.Timber
 
 class SettingsFragment : Fragment() {
 
     private val viewModel: SettingsViewModel by viewModel()
     private lateinit var binding: FragmentSettingsBinding
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,15 +44,36 @@ class SettingsFragment : Fragment() {
         setExitButton()
         setTimeSelectionButtons()
         setStartTimes()
+        handleSwitch()
     }
 
     private fun setStartTimes() {
-        CourseRepo.firstClassTime.asLiveData().observe(viewLifecycleOwner) {
-            binding.firstClassTime.text = it
-        }
+        CourseRepo.isTimelineAutomatic.asLiveData().observe(viewLifecycleOwner) { auto ->
+            if (auto != null) {
+                binding.automaticTimeframe.isChecked = auto
+            }
 
-        CourseRepo.lastClassTime.asLiveData().observe(viewLifecycleOwner) {
-            binding.lastClassTime.text = it
+            CourseRepo.firstClassTime.asLiveData().observe(viewLifecycleOwner) {
+                binding.firstClassTime.text = it
+            }
+
+            CourseRepo.lastClassTime.asLiveData().observe(viewLifecycleOwner) {
+                binding.lastClassTime.text = it
+            }
+
+            if (auto == true) {
+                CourseRepo.courses.value.map {
+                    it.startTime.hour
+                }.min().let {
+                    CourseRepo.firstClassTime.tryEmit("$it:00")
+                }
+
+                CourseRepo.courses.value.map {
+                    it.endTime.hour
+                }.max().let {
+                    CourseRepo.lastClassTime.tryEmit("${it + 1}:00")
+                }
+            }
         }
     }
 
@@ -134,6 +152,26 @@ class SettingsFragment : Fragment() {
 
         binding.lastClass.setOnClickListener {
             showLast(binding.lastClassTime, R.menu.time_selector_du)
+        }
+    }
+
+    private fun handleSwitch() {
+        setCalendarCardState(!binding.automaticTimeframe.isChecked)
+
+        binding.automaticTimeframe.setOnCheckedChangeListener { _, enabled ->
+            CourseRepo.isTimelineAutomatic.tryEmit(enabled)
+            setCalendarCardState(!enabled)
+        }
+    }
+
+    private fun setCalendarCardState(enabled: Boolean) {
+        binding.firstClass.apply {
+            isClickable = enabled
+            alpha = if (enabled) 1f else 0.3f
+        }
+        binding.lastClass.apply {
+            isClickable = enabled
+            alpha = if (enabled) 1f else 0.3f
         }
     }
 
