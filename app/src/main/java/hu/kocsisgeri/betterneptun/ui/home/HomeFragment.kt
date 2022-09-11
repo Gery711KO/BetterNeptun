@@ -105,8 +105,8 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun CalendarEntity.Event.getTimeDiff(otherdate: LocalDateTime): Float {
-        val diff = endTime.toEpochSecond(ZoneOffset.UTC) - otherdate.toEpochSecond(ZoneOffset.UTC)
+    private fun CalendarEntity.Event.getTimeDiff(otherDate: LocalDateTime): Float {
+        val diff = endTime.toEpochSecond(ZoneOffset.UTC) - otherDate.toEpochSecond(ZoneOffset.UTC)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
         return ceil(seconds / 60f)
     }
@@ -122,4 +122,8 @@ class HomeFragment : Fragment() {
         showToastOnClick(binding.scheduleButtonCard, "Fejlesztés alatt!!")
     }
 
+    override fun onResume() {
+        super.onResume()
+        CourseRepo.fetchNew.tryEmit(Unit)
+    }
 }
