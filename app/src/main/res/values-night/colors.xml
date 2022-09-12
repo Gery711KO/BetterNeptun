@@ -4,6 +4,7 @@
     <color name="base_text_color">@color/white</color>
     <color name="text_input_box_color">#B3FFFFFF</color>
     <color name="card_bg">#131313</color>
+    <color name="card_bg_60f">#CC131313</color>
     <color name="message_bg">#1A1A1A</color>
     <color name="radio_button_color">#244799</color>
     <color name="radio_button_color_bg">#80244799</color>

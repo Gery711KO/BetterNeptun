@@ -2,6 +2,7 @@ package hu.kocsisgeri.betterneptun.utils.data_manager
 
 import android.content.SharedPreferences
 import com.squareup.moshi.Moshi
+import hu.kocsisgeri.betterneptun.data.dao.ColorDao
 import hu.kocsisgeri.betterneptun.data.dao.MessageDao
 import hu.kocsisgeri.betterneptun.utils.delete
 import hu.kocsisgeri.betterneptun.utils.get
@@ -14,7 +15,8 @@ import kotlin.coroutines.CoroutineContext
 class DataManager(
     val moshi: Moshi,
     val sharedPreferences: SharedPreferences,
-    val dao: MessageDao,
+    val messages: MessageDao,
+    val colors: ColorDao,
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 ): CoroutineScope {
     companion object {
@@ -46,7 +48,7 @@ class DataManager(
     fun purgeData() {
         sharedPreferences.edit().clear().apply()
         launch {
-            dao.deleteAll()
+            messages.deleteAll()
         }
     }
 }

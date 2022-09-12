@@ -1,8 +1,6 @@
 package hu.kocsisgeri.betterneptun.data.repository.neptun
 
 import android.graphics.Color
-import android.os.Build
-import androidx.annotation.RequiresApi
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.data.dao.Message
 import hu.kocsisgeri.betterneptun.data.dao.MessageDao
@@ -19,21 +17,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
-import kotlin.math.max
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 class NeptunRepositoryImpl(
     override val coroutineContext: CoroutineContext = Dispatchers.IO,
     private val networkDataSource: NetworkDataSource,
-    private val dao: MessageDao,
     private val dataManager: DataManager,
 ) : NeptunRepository, CoroutineScope {
 
@@ -46,7 +41,7 @@ class NeptunRepositoryImpl(
         val save = dataManager.getDefault(PREF_STAY_LOGGED_ID, false)
 
         launch {
-            dao.getData().let { cache ->
+            dataManager.messages.getData().let { cache ->
                 val list = mutableListOf<MessageDto>()
                 val maxId = cache.maxByOrNull { it.id }?.id ?: 0
                 var counter = 1f
@@ -168,16 +163,24 @@ class NeptunRepositoryImpl(
             }
             mapped.filter { event ->
                 !event.isAllDay
-            }.let {
-                it.let { event ->
-                    CourseRepo.courses.tryEmit(event)
-                    events.tryEmit(event)
-                }
+            }.let { event ->
+                dataManager.colors.insertAll(event.map {
+                    hu.kocsisgeri.betterneptun.data.dao.Color(
+                        Random.nextInt(0, 9999999),
+                        it.title.toString(),
+                        it.color
+                    )
+                })
+                CourseRepo.courses.tryEmit(event)
+                events.tryEmit(event)
             }
         }
     }
 
-    private fun getRandomColor(title: String?, colorMap: MutableMap<String?, Int>): Int {
+    private suspend fun getRandomColor(title: String?, colorMap: MutableMap<String?, Int>): Int {
+        val colors = dataManager.colors.getData()
+        val current = colors.firstOrNull { it.title == title }
+
         val random = IntRange(0, 255)
 
         val baseColor = Color.BLACK;
@@ -190,11 +193,21 @@ class NeptunRepositoryImpl(
         val green = (baseGreen + random.random()) / 2;
         val blue = (baseBlue + random.random()) / 2;
 
-        return if (colorMap.containsKey(title)) {
-            colorMap[title]!!
+        return if (colors.isEmpty()) {
+            return if (colorMap.containsKey(title)) {
+                colorMap[title]!!
+            } else {
+                colorMap[title] = Color.rgb(red, green, blue)
+                colorMap[title]!!
+            }
         } else {
-            colorMap[title] = Color.rgb(red, green, blue)
-            colorMap[title]!!
+            if (current != null) {
+                colorMap[title] = current.colorInt
+                colorMap[title]!!
+            } else {
+                colorMap[title] = Color.rgb(red,green,blue)
+                colorMap[title]!!
+            }
         }
     }
 
@@ -213,6 +226,30 @@ class NeptunRepositoryImpl(
         }
     }
 
+    override fun setEventColor(event: CalendarEntity.Event?, color: Int) {
+        launch {
+            setEventColorAsync(event, color)?.let {
+                events.tryEmit(it)
+                CourseRepo.courses.tryEmit(it)
+            }
+        }
+    }
+
+    private suspend fun setEventColorAsync(event: CalendarEntity.Event?, color: Int) = withContext(Dispatchers.IO) {
+        CourseRepo.courses.firstOrNull()?.let { list ->
+            dataManager.colors.insertAll(
+                dataManager.colors.getData().map { colorEntity ->
+                    if (colorEntity.title == event?.title) colorEntity.copy(colorInt = color)
+                    else colorEntity
+                }
+            )
+            list.map {
+                if (it.title == event?.title) it.copy(color = color)
+                else it
+            }
+        }
+    }
+
     private suspend fun getRandomizedColoredEvents() : List<CalendarEntity.Event>? = withContext(Dispatchers.IO) {
         CourseRepo.courses.firstOrNull()?.let {  list ->
             val colorMap = mutableMapOf<String?, Int>()
@@ -227,7 +264,7 @@ class NeptunRepositoryImpl(
 
     private suspend fun List<MessageDto>.saveMessages(save: Boolean) {
         if (save) {
-            dao.insertAll(
+            dataManager.messages.insertAll(
                 map { dto ->
                     Message(
                         id = dto.Id,

@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.timetable.model
 
 import android.graphics.Color
+import android.graphics.RectF
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.StrikethroughSpan
@@ -9,9 +10,17 @@ import com.alamkanak.weekview.WeekViewEntity
 import com.alamkanak.weekview.jsr310.WeekViewPagingAdapterJsr310
 import com.alamkanak.weekview.jsr310.setEndTime
 import com.alamkanak.weekview.jsr310.setStartTime
+import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import timber.log.Timber
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
+import kotlin.coroutines.CoroutineContext
 
 sealed class CalendarEntity {
 
@@ -91,8 +100,12 @@ fun CalendarEntity.BlockedTimeSlot.toWeekViewEntity(): WeekViewEntity {
 }
 
 class FragmentWeekViewAdapter(
-    private val loadMoreHandler: () -> Unit
-) : WeekViewPagingAdapterJsr310<CalendarEntity>() {
+    private val loadMoreHandler: () -> Unit,
+    val clickHandler: MutableSharedFlow<CalendarEntity.Event>
+) : WeekViewPagingAdapterJsr310<CalendarEntity>(), KoinComponent, CoroutineScope {
+
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
+    private val neptunRepository : NeptunRepository by inject()
 
     override fun onCreateEntity(item: CalendarEntity): WeekViewEntity = item.toWeekViewEntity()
 
@@ -100,6 +113,11 @@ class FragmentWeekViewAdapter(
         startDate: LocalDate,
         endDate: LocalDate
     ) = loadMoreHandler()
+
+    override fun onEventClick(data: CalendarEntity, bounds: RectF) {
+        super.onEventClick(data, bounds)
+        clickHandler.tryEmit(data as CalendarEntity.Event)
+    }
 }
 
 fun yearMonthsBetween(startDate: LocalDate, endDate: LocalDate): List<YearMonth> {

@@ -7,6 +7,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import hu.kocsisgeri.betterneptun.data.dao.AppDatabase
+import hu.kocsisgeri.betterneptun.data.dao.ColorDao
 import hu.kocsisgeri.betterneptun.data.dao.MessageDao
 import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepositoryImpl
@@ -96,16 +97,20 @@ val dataModule = module {
             .build()
     }
 
-    fun provideDao(dataBase: AppDatabase): MessageDao {
-        return dataBase.messageDao()
+    fun provideDao(database: AppDatabase): MessageDao {
+        return database.savedMessages()
+    }
+
+    fun provideColors(database: AppDatabase) : ColorDao {
+        return database.savedCourseColors()
     }
 
     single { provideDataBase(application = get()) }
-    single { provideDao(dataBase = get()) }
+    single { provideDao(database = get()) }
+    single { provideColors(database = get()) }
     single<NeptunRepository> {
         NeptunRepositoryImpl(
             networkDataSource =  get(),
-            dao = get(),
             dataManager = get()
         )
     }

@@ -13,7 +13,7 @@ import org.koin.dsl.module
 val appModule = module {
     viewModel { SplashViewModel() }
 
-    single { DataManager(get(), get(), get()) }
+    single { DataManager(get(), get(), get(), get()) }
 
     viewModel { LoginViewModel(networkDataSource = get(), get()) }
     viewModel { HomeViewModel(get()) }

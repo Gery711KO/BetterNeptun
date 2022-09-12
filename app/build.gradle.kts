@@ -114,6 +114,7 @@ dependencies {
     implementation("com.github.thellmund.Android-Week-View:core:5.2.4")
     implementation("com.github.thellmund.Android-Week-View:jsr310:5.2.4")
     implementation("io.noties.markwon:core:4.6.2")
+    implementation("com.github.madrapps:pikolo:2.0.2")
 
 
     addDependency(Libraries.material)

@@ -108,6 +108,19 @@
 
     </dialog>
 
+    <dialog
+        android:id="@+id/courseDetail"
+        android:name="hu.kocsisgeri.betterneptun.ui.timetable.dialog.CourseDetailFragment"
+        tools:layout="@layout/fragment_course_detail">
+
+        <argument
+            android:name="course"
+            android:defaultValue="@null"
+            app:argType="hu.kocsisgeri.betterneptun.ui.model.CourseModel"
+            app:nullable="true" />
+
+    </dialog>
+
     <fragment
         android:id="@+id/settingsFragment"
         android:name="hu.kocsisgeri.betterneptun.ui.settings.SettingsFragment"
