@@ -48,7 +48,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp">
+                android:paddingTop="8dp"
+                android:paddingBottom="4dp">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/color_label"
@@ -75,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp">
+                android:paddingVertical="2dp">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/class_name_label"
@@ -109,7 +110,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp">
+                android:paddingVertical="2dp">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/course_code_label"
@@ -143,7 +144,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp">
+                android:paddingVertical="2dp">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/subject_code_label"
@@ -177,7 +178,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp">
+                android:paddingVertical="2dp">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/room_label"
@@ -211,7 +212,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp">
+                android:paddingVertical="2dp">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/teacher_label"
@@ -245,7 +246,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp">
+                android:paddingVertical="2dp">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/time_label"
@@ -292,7 +293,7 @@
                     android:id="@+id/color_picker"
                     app:indicator_radius="16dp"
                     android:layout_width="wrap_content"
-                    android:layout_height="300dp"
+                    android:layout_height="280dp"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"

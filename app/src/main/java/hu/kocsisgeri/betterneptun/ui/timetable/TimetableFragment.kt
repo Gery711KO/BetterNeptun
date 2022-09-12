@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -66,6 +67,9 @@ class TimetableFragment : Fragment() {
     }
 
     fun refreshTable() {
-        adapter.refresh()
+        viewModel.eventList.value?.let {
+            adapter.submitList(it)
+            adapter.refresh()
+        }
     }
 }
