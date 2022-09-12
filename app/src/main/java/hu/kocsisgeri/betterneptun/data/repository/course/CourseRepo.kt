@@ -22,22 +22,10 @@ object CourseRepo : CoroutineScope, KoinComponent {
     val nextCourse = MutableLiveData<CalendarEntity.Event>()
     val currentCourse = MutableLiveData<CalendarEntity.Event>()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val getCurrent = fetchNew.onStart { emit(Unit) }.flatMapLatest {
         courses.map { list ->
-            list/*.toMutableList().apply {
-                add(
-                    CalendarEntity.Event(
-                        687857665437,
-                        "Teszt esemeny valami jo hosszu targy nevvel",
-                        LocalDateTime.of(2022, 9, 11, 1, 35),
-                        LocalDateTime.of(2022, 9, 11, 1, 45),
-                        "Itthon",
-                        Color.RED,
-                        isAllDay = false,
-                        isCanceled = false
-                    )
-                )
-            }*/.sortedBy { it.startTime }.firstOrNull {
+            list.sortedBy { it.startTime }.firstOrNull {
                 it.startTime.isBefore(LocalDateTime.now()) && it.endTime.isAfter(LocalDateTime.now())
             }.let {
                 Timer.currentEvent = it
@@ -47,6 +35,7 @@ object CourseRepo : CoroutineScope, KoinComponent {
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val startTimer = fetchNew.onStart { emit(Unit) }.flatMapLatest {
         courses.map { list ->
             list.sortedBy { it.startTime }.firstOrNull {
@@ -118,6 +107,7 @@ object Timer : CoroutineScope {
                 if (enabled) {
                     CourseRepo.nextCourse.postValue(nextEvent)
                     CourseRepo.fetchNew.tryEmit(Unit)
+                    this@launch.cancel()
                     nextLooper(enabled)
                 }
             }
@@ -131,6 +121,7 @@ object Timer : CoroutineScope {
                 if (enabled) {
                     CourseRepo.currentCourse.postValue(nextEvent)
                     CourseRepo.fetchNew.tryEmit(Unit)
+                    this@launch.cancel()
                     currentLooper(enabled)
                 }
             }
