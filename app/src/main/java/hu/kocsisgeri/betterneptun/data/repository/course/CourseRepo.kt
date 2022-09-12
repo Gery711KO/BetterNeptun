@@ -107,8 +107,9 @@ object Timer : CoroutineScope {
                 if (enabled) {
                     CourseRepo.nextCourse.postValue(nextEvent)
                     CourseRepo.fetchNew.tryEmit(Unit)
-                    this@launch.cancel()
                     nextLooper(enabled)
+                    this@launch.cancel()
+                    this.cancel()
                 }
             }
         }
@@ -121,8 +122,9 @@ object Timer : CoroutineScope {
                 if (enabled) {
                     CourseRepo.currentCourse.postValue(nextEvent)
                     CourseRepo.fetchNew.tryEmit(Unit)
-                    this@launch.cancel()
                     currentLooper(enabled)
+                    this@launch.cancel()
+                    this.cancel()
                 }
             }
         }

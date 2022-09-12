@@ -19,6 +19,7 @@ import hu.kocsisgeri.betterneptun.utils.getTimeLeft
 import hu.kocsisgeri.betterneptun.utils.setButtonNavigation
 import hu.kocsisgeri.betterneptun.utils.showToastOnClick
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
@@ -86,13 +87,13 @@ class HomeFragment : Fragment() {
         }
 
         CourseRepo.currentCourse.distinctUntilChanged().observe(viewLifecycleOwner) {
-            binding.lineProgress.max = CourseRepo.currentCourse.value?.getTime() ?: 100
+            binding.lineProgress.max = CourseRepo.currentCourse.value?.getTime()?.ceil() ?: 100
         }
 
         CourseRepo.currentCourse.observe(viewLifecycleOwner) {
             binding.currentCourseInfoCard.isVisible = it != null
             it?.let {
-                binding.lineProgress.progress = it.getTime() / it.getRemainingTime()
+                binding.lineProgress.progress = it.getPercent()
                 binding.currentCourseLabel.text = "Éppen tart"
                 binding.lineProgress.setIndicatorColor(it.color)
                 binding.currentCourseLocation.text = it.location.trim()
@@ -102,16 +103,24 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun CalendarEntity.Event.getRemainingTime() : Int {
+    private fun CalendarEntity.Event.getRemainingTime() : Float {
         val diff = endTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-        return ceil(seconds / 60f).roundToInt()
+        return seconds / 60f
     }
 
-    private fun CalendarEntity.Event.getTime() : Int {
+    private fun CalendarEntity.Event.getTime() : Float {
         val diff = endTime.toEpochSecond(ZoneOffset.UTC) - startTime.toEpochSecond(ZoneOffset.UTC)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-        return ceil(seconds / 60f).roundToInt()
+        return seconds / 60f
+    }
+
+    private fun CalendarEntity.Event.getPercent(): Int {
+        return (getTime() - ((getRemainingTime() / getTime()) * 100)).roundToInt()
+    }
+
+    private fun Float.ceil() : Int {
+        return ceil(this).roundToInt()
     }
 
     private fun setButtons() {
