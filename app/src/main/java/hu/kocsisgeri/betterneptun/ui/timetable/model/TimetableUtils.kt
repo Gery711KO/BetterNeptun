@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import timber.log.Timber
+import java.io.Serializable
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
@@ -27,13 +28,16 @@ sealed class CalendarEntity {
     data class Event(
         val id: Long,
         val title: CharSequence,
+        val courseCode: String,
+        val subjectCode : String,
+        val teacher: String,
         val startTime: LocalDateTime,
         val endTime: LocalDateTime,
         val location: CharSequence,
         val color: Int,
         val isAllDay: Boolean,
         val isCanceled: Boolean
-    ) : CalendarEntity()
+    ) : CalendarEntity(), Serializable
 
     data class BlockedTimeSlot(
         val id: Long,

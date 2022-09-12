@@ -3,7 +3,6 @@ package hu.kocsisgeri.betterneptun.data.repository.neptun
 import android.graphics.Color
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.data.dao.Message
-import hu.kocsisgeri.betterneptun.data.dao.MessageDao
 import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
 import hu.kocsisgeri.betterneptun.domain.api.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.domain.api.dto.MessageDto
@@ -130,11 +129,13 @@ class NeptunRepositoryImpl(
         launch {
             val response = networkDataSource.getCourses()
             val colorMap = mutableMapOf<String?, Int>()
-            val mapped = response.events.map {
+            response.events.filter { event ->
+                event.allday != 1
+            }.map {
                 CalendarEntity.Event(
                     it.id?.toLong() ?: 1111111,
                     title = it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
-                    it.startdate?.split("(")?.get(1)?.split(")")?.get(0)?.toLong()
+                    startTime = it.startdate?.split("(")?.get(1)?.split(")")?.get(0)?.toLong()
                         ?.let { longTime ->
                             LocalDateTime.ofEpochSecond(
                                 longTime / 1000,
@@ -143,7 +144,7 @@ class NeptunRepositoryImpl(
                             )
                         }
                         ?: LocalDateTime.now(),
-                    it.enddate?.split("(")?.get(1)?.split(")")?.get(0)?.toLong()
+                    endTime = it.enddate?.split("(")?.get(1)?.split(")")?.get(0)?.toLong()
                         ?.let { longTime ->
                             LocalDateTime.ofEpochSecond(
                                 longTime / 1000,
@@ -152,17 +153,17 @@ class NeptunRepositoryImpl(
                             )
                         }
                         ?: LocalDateTime.now(),
-                    it.location.toString(),
-                    getRandomColor(
+                    location = it.location.toString(),
+                    color = getRandomColor(
                         it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
                         colorMap
                     ),
                     isAllDay = it.allday != 0,
-                    false
+                    isCanceled = false,
+                    subjectCode = it.title?.split("(")?.get(1)?.split(")")?.get(0)?: "ERROR",
+                    courseCode = it.title?.split(" - ")?.get(1)?.split(" ")?.get(0)?: "ERROR",
+                    teacher = it.title?.split("(")?.get(2)?.split(")")?.get(0)?: "ERROR"
                 )
-            }
-            mapped.filter { event ->
-                !event.isAllDay
             }.let { event ->
                 dataManager.colors.insertAll(event.map {
                     hu.kocsisgeri.betterneptun.data.dao.Color(

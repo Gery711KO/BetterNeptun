@@ -17,7 +17,7 @@ class TimetableViewModel(
 
     val clickHandler = MutableSharedFlow<CalendarEntity.Event>(1, 100)
     val currentSelected = MutableStateFlow<CalendarEntity.Event?>(null)
-    val clicked = MutableSharedFlow<Int>(1,100)
+    val clicked = MutableSharedFlow<CalendarEntity.Event>(1,100)
 
     fun addEvents() {
         viewModelScope.launch(Dispatchers.Main) {
@@ -48,7 +48,7 @@ class TimetableViewModel(
     init {
         clickHandler.onEach {
             currentSelected.tryEmit(it)
-            clicked.tryEmit(it.color)
+            clicked.tryEmit(it)
         }.launchIn(viewModelScope)
     }
 }

@@ -86,16 +86,13 @@ class HomeFragment : Fragment() {
         }
 
         CourseRepo.currentCourse.distinctUntilChanged().observe(viewLifecycleOwner) {
-            binding.lineProgress.max = CourseRepo.currentCourse.value?.let {
-                it.getTimeDiff(it.startTime).roundToInt()
-            }?: 100
+            binding.lineProgress.max = CourseRepo.currentCourse.value?.getTime() ?: 100
         }
 
         CourseRepo.currentCourse.observe(viewLifecycleOwner) {
             binding.currentCourseInfoCard.isVisible = it != null
             it?.let {
-                binding.lineProgress.progress =
-                    (it.getTimeDiff(it.startTime) / it.getTimeDiff(LocalDateTime.now())).roundToInt()
+                binding.lineProgress.progress = it.getTime() / it.getRemainingTime()
                 binding.currentCourseLabel.text = "Éppen tart"
                 binding.lineProgress.setIndicatorColor(it.color)
                 binding.currentCourseLocation.text = it.location.trim()
@@ -105,10 +102,16 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun CalendarEntity.Event.getTimeDiff(otherDate: LocalDateTime): Float {
-        val diff = endTime.toEpochSecond(ZoneOffset.UTC) - otherDate.toEpochSecond(ZoneOffset.UTC)
+    private fun CalendarEntity.Event.getRemainingTime() : Int {
+        val diff = endTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-        return ceil(seconds / 60f)
+        return ceil(seconds / 60f).roundToInt()
+    }
+
+    private fun CalendarEntity.Event.getTime() : Int {
+        val diff = endTime.toEpochSecond(ZoneOffset.UTC) - startTime.toEpochSecond(ZoneOffset.UTC)
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+        return ceil(seconds / 60f).roundToInt()
     }
 
     private fun setButtons() {

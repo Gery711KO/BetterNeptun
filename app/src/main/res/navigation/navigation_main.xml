@@ -55,6 +55,16 @@
         app:popUpTo="@id/messagesFragment"
         app:popUpToInclusive="false" />
 
+    <action
+        android:id="@+id/toCourseDetail"
+        app:destination="@id/courseDetail"
+        app:enterAnim="@anim/slide_in_right"
+        app:exitAnim="@anim/dissapear"
+        app:popEnterAnim="@anim/appear"
+        app:popExitAnim="@anim/slide_out_right"
+        app:popUpTo="@id/timetableFragment"
+        app:popUpToInclusive="false" />
+
     <fragment
         android:id="@+id/loginFragment"
         android:name="hu.kocsisgeri.betterneptun.ui.login.LoginFragment"
@@ -114,7 +124,7 @@
         tools:layout="@layout/fragment_course_detail">
 
         <argument
-            android:name="course"
+            android:name="model"
             android:defaultValue="@null"
             app:argType="hu.kocsisgeri.betterneptun.ui.model.CourseModel"
             app:nullable="true" />
