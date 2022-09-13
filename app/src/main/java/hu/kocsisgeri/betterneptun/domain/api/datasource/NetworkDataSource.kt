@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.domain.api.datasource
 
+import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.domain.api.dto.*
 import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
@@ -13,6 +14,6 @@ interface NetworkDataSource {
     suspend fun checkPopUp(popupDto: PopupDto): NetworkResponse<String, String>
     suspend fun getMessages(neptunUser: NeptunUser): NetworkResponse<MessageResponseDto, String>
     suspend fun getTrainings(neptunUser: NeptunUser): NetworkResponse<TrainingResponseDto, String>
-    suspend fun getData(): StudentData
-    suspend fun getCourses() : CourseResponseDto
+    suspend fun getData(): ApiResult<StudentData>
+    suspend fun getCourses() : ApiResult<CourseResponseDto>
 }

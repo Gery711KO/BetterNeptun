@@ -37,6 +37,20 @@
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/base_text_color" />
 
+    <ImageView
+        android:id="@+id/mode_button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:elevation="11dp"
+        android:paddingVertical="10dp"
+        android:paddingStart="6dp"
+        android:paddingEnd="14dp"
+        android:src="@drawable/ic_week_view"
+        app:layout_constraintBottom_toBottomOf="@id/calendar_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/base_text_color" />
+
     <com.alamkanak.weekview.WeekView
         android:id="@+id/weekView"
         android:layout_width="match_parent"

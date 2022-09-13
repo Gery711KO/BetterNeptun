@@ -49,6 +49,7 @@ class DataManager(
         sharedPreferences.edit().clear().apply()
         launch {
             messages.deleteAll()
+            colors.deleteAll()
         }
     }
 }

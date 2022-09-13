@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.timetable
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.os.Bundle
@@ -8,10 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.asFlow
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.*
 import androidx.navigation.fragment.findNavController
 import com.madrapps.pikolo.listeners.SimpleColorSelectionListener
 import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
@@ -44,6 +42,7 @@ class TimetableFragment : Fragment() {
         initTable()
         setBackButton(binding.backButton)
         observeEventCLicks()
+        setModeButton()
     }
 
     private fun initTable() {
@@ -58,6 +57,21 @@ class TimetableFragment : Fragment() {
             adapter.submitList(it)
             adapter.refresh()
         }
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private fun setModeButton() {
+        binding.modeButton.setOnClickListener {
+            when (viewModel.viewMode.value) {
+                ViewMode.WEEK -> viewModel.viewMode.tryEmit(ViewMode.DAY)
+                ViewMode.DAY -> viewModel.viewMode.tryEmit(ViewMode.WEEK)
+            }
+        }
+
+        viewModel.viewMode.asLiveData().observe(viewLifecycleOwner, Observer {
+            binding.weekView.numberOfVisibleDays = viewModel.viewMode.value.days
+            binding.modeButton.setImageDrawable(requireContext().getDrawable(viewModel.viewMode.value.icon))
+        })
     }
 
     private fun observeEventCLicks() {

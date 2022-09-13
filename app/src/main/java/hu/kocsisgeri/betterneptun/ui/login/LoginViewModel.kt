@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.api.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
@@ -52,10 +53,16 @@ class LoginViewModel(
                     is NetworkResponse.Success -> {
                         if (!it.data.isSuccess()) isFailed.tryEmit(it.data.getError())
                         else {
-                            sharedPreferences.put(PREF_STAY_LOGGED_ID, stayLoggedIn.value)
-                            dataManager.putData(PREF_CURRENT_USER, neptunUser.value)
-                            neptunRepository.currentUser.tryEmit(neptunUser.value)
-                            isSucceeded.tryEmit(networkDataSource.getData())
+                            when (val result = networkDataSource.getData()) {
+                                is ApiResult.Error -> isFailed.tryEmit(result.error)
+                                is ApiResult.Progress -> {}
+                                is ApiResult.Success -> {
+                                    sharedPreferences.put(PREF_STAY_LOGGED_ID, stayLoggedIn.value)
+                                    dataManager.putData(PREF_CURRENT_USER, neptunUser.value)
+                                    neptunRepository.currentUser.tryEmit(neptunUser.value)
+                                    isSucceeded.tryEmit(result.data)
+                                }
+                            }
                         }
                     }
                     is NetworkResponse.Failure<*> -> {

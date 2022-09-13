@@ -129,51 +129,57 @@ class NeptunRepositoryImpl(
         launch {
             val response = networkDataSource.getCourses()
             val colorMap = mutableMapOf<String?, Int>()
-            response.events.filter { event ->
-                event.allday != 1
-            }.map {
-                CalendarEntity.Event(
-                    it.id?.toLong() ?: 1111111,
-                    title = it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
-                    startTime = it.startdate?.split("(")?.get(1)?.split(")")?.get(0)?.toLong()
-                        ?.let { longTime ->
-                            LocalDateTime.ofEpochSecond(
-                                longTime / 1000,
-                                0,
-                                ZoneOffset.UTC
+            when (response) {
+                is ApiResult.Error -> {/* do something about errors */}
+                is ApiResult.Progress -> {/* don't need to do anything here */}
+                is ApiResult.Success -> {
+                    response.data.events.filter { event ->
+                        event.allday != 1
+                    }.map {
+                        CalendarEntity.Event(
+                            it.id?.toLong() ?: 1111111,
+                            title = it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
+                            startTime = it.startdate?.split("(")?.get(1)?.split(")")?.get(0)?.toLong()
+                                ?.let { longTime ->
+                                    LocalDateTime.ofEpochSecond(
+                                        longTime / 1000,
+                                        0,
+                                        ZoneOffset.UTC
+                                    )
+                                }
+                                ?: LocalDateTime.now(),
+                            endTime = it.enddate?.split("(")?.get(1)?.split(")")?.get(0)?.toLong()
+                                ?.let { longTime ->
+                                    LocalDateTime.ofEpochSecond(
+                                        longTime / 1000,
+                                        0,
+                                        ZoneOffset.UTC
+                                    )
+                                }
+                                ?: LocalDateTime.now(),
+                            location = it.location.toString(),
+                            color = getRandomColor(
+                                it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
+                                colorMap
+                            ),
+                            isAllDay = it.allday != 0,
+                            isCanceled = false,
+                            subjectCode = it.title?.split("(")?.get(1)?.split(")")?.get(0)?: "ERROR",
+                            courseCode = it.title?.split(" - ")?.get(1)?.split(" ")?.get(0)?: "ERROR",
+                            teacher = it.title?.split("(")?.get(2)?.split(")")?.get(0)?: "ERROR"
+                        )
+                    }.let { event ->
+                        dataManager.colors.insertAll(event.map {
+                            hu.kocsisgeri.betterneptun.data.dao.Color(
+                                Random.nextInt(0, 9999999),
+                                it.title.toString(),
+                                it.color
                             )
-                        }
-                        ?: LocalDateTime.now(),
-                    endTime = it.enddate?.split("(")?.get(1)?.split(")")?.get(0)?.toLong()
-                        ?.let { longTime ->
-                            LocalDateTime.ofEpochSecond(
-                                longTime / 1000,
-                                0,
-                                ZoneOffset.UTC
-                            )
-                        }
-                        ?: LocalDateTime.now(),
-                    location = it.location.toString(),
-                    color = getRandomColor(
-                        it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
-                        colorMap
-                    ),
-                    isAllDay = it.allday != 0,
-                    isCanceled = false,
-                    subjectCode = it.title?.split("(")?.get(1)?.split(")")?.get(0)?: "ERROR",
-                    courseCode = it.title?.split(" - ")?.get(1)?.split(" ")?.get(0)?: "ERROR",
-                    teacher = it.title?.split("(")?.get(2)?.split(")")?.get(0)?: "ERROR"
-                )
-            }.let { event ->
-                dataManager.colors.insertAll(event.map {
-                    hu.kocsisgeri.betterneptun.data.dao.Color(
-                        Random.nextInt(0, 9999999),
-                        it.title.toString(),
-                        it.color
-                    )
-                })
-                CourseRepo.courses.tryEmit(event)
-                events.tryEmit(event)
+                        })
+                        CourseRepo.courses.tryEmit(event)
+                        events.tryEmit(event)
+                    }
+                }
             }
         }
     }

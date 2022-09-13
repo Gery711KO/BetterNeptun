@@ -42,16 +42,11 @@ class SettingsFragment : Fragment() {
         setThemeSelection()
         handleThemeSelect()
         setExitButton()
-        setTimeSelectionButtons()
         setStartTimes()
-        handleSwitch()
     }
 
     private fun setStartTimes() {
         CourseRepo.isTimelineAutomatic.asLiveData().observe(viewLifecycleOwner) { auto ->
-            if (auto != null) {
-                binding.automaticTimeframe.isChecked = auto
-            }
 
             CourseRepo.firstClassTime.asLiveData().observe(viewLifecycleOwner) {
                 binding.firstClassTime.text = it
@@ -143,59 +138,5 @@ class SettingsFragment : Fragment() {
     private fun RadioButton.unselect() {
         isChecked = false
         alpha = 0.5f
-    }
-
-    private fun setTimeSelectionButtons() {
-        binding.firstClass.setOnClickListener {
-            showFirst(binding.firstClassTime, R.menu.time_selector_de)
-        }
-
-        binding.lastClass.setOnClickListener {
-            showLast(binding.lastClassTime, R.menu.time_selector_du)
-        }
-    }
-
-    private fun handleSwitch() {
-        setCalendarCardState(!binding.automaticTimeframe.isChecked)
-
-        binding.automaticTimeframe.setOnCheckedChangeListener { _, enabled ->
-            CourseRepo.isTimelineAutomatic.tryEmit(enabled)
-            setCalendarCardState(!enabled)
-        }
-    }
-
-    private fun setCalendarCardState(enabled: Boolean) {
-        binding.firstClass.apply {
-            isClickable = enabled
-            alpha = if (enabled) 1f else 0.3f
-        }
-        binding.lastClass.apply {
-            isClickable = enabled
-            alpha = if (enabled) 1f else 0.3f
-        }
-    }
-
-    private fun showFirst(v: View, @MenuRes menuRes: Int) {
-        val popup = PopupMenu(requireContext(), v)
-        popup.menuInflater.inflate(menuRes, popup.menu)
-
-        popup.setOnMenuItemClickListener { menuItem: MenuItem ->
-            binding.firstClassTime.text = menuItem.title
-            CourseRepo.firstClassTime.tryEmit(menuItem.title.toString())
-            false
-        }
-        popup.show()
-    }
-
-    private fun showLast(v: View, @MenuRes menuRes: Int) {
-        val popup = PopupMenu(requireContext(), v)
-        popup.menuInflater.inflate(menuRes, popup.menu)
-
-        popup.setOnMenuItemClickListener { menuItem: MenuItem ->
-            binding.lastClassTime.text = menuItem.title
-            CourseRepo.lastClassTime.tryEmit(menuItem.title.toString())
-            false
-        }
-        popup.show()
     }
 }

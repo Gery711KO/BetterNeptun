@@ -6,27 +6,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.text.capitalize
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.madrapps.pikolo.listeners.SimpleColorSelectionListener
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.databinding.FragmentCourseDetailBinding
-import hu.kocsisgeri.betterneptun.ui.home.HomeFragment
-import hu.kocsisgeri.betterneptun.ui.main.MainActivity
 import hu.kocsisgeri.betterneptun.ui.messages.detail_dialog.setStatusAndNavbarTransparency
-import hu.kocsisgeri.betterneptun.ui.model.CourseModel
 import hu.kocsisgeri.betterneptun.ui.timetable.TimetableFragment
-import hu.kocsisgeri.betterneptun.ui.timetable.TimetableFragmentDirections
 import hu.kocsisgeri.betterneptun.ui.timetable.TimetableViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import timber.log.Timber
 import java.time.format.TextStyle
 import java.util.*
-import org.koin.androidx.viewmodel.ext.android.viewModel
+
 
 class CourseDetailFragment : DialogFragment() {
 
@@ -55,21 +51,33 @@ class CourseDetailFragment : DialogFragment() {
         openAnimation()
         setColorChooser()
         observeEventCLicks()
+        setBackgroundClick()
+    }
+
+    private fun setBackgroundClick() {
+        binding.content.isClickable = true
+        binding.background.setOnClickListener {
+            closeAnimation()
+        }
     }
 
     @SuppressLint("SetTextI18n")
     private fun setData() {
         args.model?.let {
+            val day =
+                it.event.startTime.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
+            val startMin = it.event.startTime.minute.let { min -> if (min < 10) "0$min" else min }
+            val endMin = it.event.endTime.minute.let { min -> if (min < 10) "0$min" else min }
+
             viewModel.currentSelected.tryEmit(it.event)
             binding.courseCode.text = it.event.courseCode
             binding.subjectCode.text = it.event.subjectCode
-            binding.className.text = it.event.title
+            binding.className.text = it.event.title.trim()
             binding.teacher.text = it.event.teacher
             binding.color.background.setTint(it.event.color)
             binding.room.text = it.event.location
-            binding.time.text = "${it.event.startTime.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())}\n" +
-                    "${it.event.startTime.hour}:${it.event.startTime.minute} - " +
-                    "${it.event.endTime.hour}:${it.event.endTime.minute}"
+            binding.time.text = "${it.event.startTime.hour}:${startMin} - ${it.event.endTime.hour}:${endMin}" +
+                    " (${day.replaceFirstChar { char -> char.uppercase() }})"
         }
     }
 
@@ -82,9 +90,9 @@ class CourseDetailFragment : DialogFragment() {
     }
 
     private fun openAnimation() {
-        binding.cardRoot.scaleX = 0.2f
-        binding.cardRoot.scaleY = 0.2f
-        binding.cardRoot.animate().scaleX(1f).scaleY(1f).apply {
+        binding.animationRoot.scaleY = 0f
+        binding.animationRoot.scaleX = 0f
+        binding.animationRoot.animate().scaleX(1f).scaleY(1f).apply {
             duration = 200
         }.start()
     }
@@ -96,7 +104,7 @@ class CourseDetailFragment : DialogFragment() {
     }
 
     private fun closeAnimation() {
-        binding.cardRoot.animate().scaleX(0.0f).scaleY(0.0f).apply {
+        binding.animationRoot.animate().scaleX(0f).scaleY(0f).apply {
             duration = 200
         }.withEndAction { findNavController().popBackStack() }.start()
     }
@@ -105,6 +113,9 @@ class CourseDetailFragment : DialogFragment() {
         binding.currentColorButton.apply {
             setOnClickListener {
                 viewModel.changeColor(viewModel.currentSelected.value, colorData.value)
+                viewModel.currentSelected.tryEmit(
+                    viewModel.currentSelected.value?.copy(color = colorData.value)
+                )
                 binding.color.background.setTint(colorData.value)
                 closeColorPicker()
             }
@@ -112,13 +123,14 @@ class CourseDetailFragment : DialogFragment() {
         binding.colorPicker.setColorSelectionListener(object : SimpleColorSelectionListener() {
             override fun onColorSelected(color: Int) {
                 colorData.tryEmit(color)
+                binding.color.background.setTint(color)
                 binding.currentColorButton.background.setTint(color)
             }
         })
     }
 
     private fun observeEventCLicks() {
-        binding.colorRow.setOnClickListener {
+        binding.color.setOnClickListener {
             viewModel.currentSelected.value?.let { event ->
                 openColorPicker(event.color)
             }
@@ -127,8 +139,10 @@ class CourseDetailFragment : DialogFragment() {
 
     private fun openColorPicker(color: Int) {
         if (!binding.colorPickerCard.isVisible) {
+            binding.color.text = "Mégsem"
             colorPickerAnimation(true)
         } else {
+            binding.color.text = "Átállít"
             colorPickerAnimation(false)
         }
         colorData.tryEmit(color)
@@ -137,18 +151,19 @@ class CourseDetailFragment : DialogFragment() {
     }
 
     private fun closeColorPicker() {
+        binding.color.text = "Átállít"
         colorPickerAnimation(false)
     }
 
     private fun colorPickerAnimation(open: Boolean) {
         if (open) {
-            binding.colorPickerCard.scaleX = 00f
-            binding.colorPickerCard.scaleY = 00f
+            binding.colorPickerCard.scaleX = 0f
+            binding.colorPickerCard.scaleY = 0f
             binding.colorPickerCard.animate().scaleX(1f).scaleY(1f).apply {
                 duration = 200
             }.withStartAction { binding.colorPickerCard.isVisible = true }.start()
         } else {
-            binding.colorPickerCard.animate().scaleX(00f).scaleY(00f).apply {
+            binding.colorPickerCard.animate().scaleX(0f).scaleY(0f).apply {
                 duration = 200
             }.withEndAction {
                 getCalendarRef()?.refreshTable()
@@ -157,8 +172,8 @@ class CourseDetailFragment : DialogFragment() {
         }
     }
 
-    private fun getCalendarRef() : TimetableFragment? {
-        return  (parentFragmentManager.fragments.firstOrNull {
+    private fun getCalendarRef(): TimetableFragment? {
+        return (parentFragmentManager.fragments.firstOrNull {
             it is TimetableFragment
         }?.let { it as TimetableFragment })
     }

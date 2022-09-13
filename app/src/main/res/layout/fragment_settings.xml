@@ -171,29 +171,14 @@
                     android:paddingHorizontal="24dp"
                     android:paddingVertical="16dp">
 
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/automatic_timeframe"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toTopOf="@id/first_class"
-                        app:layout_constraintStart_toStartOf="parent"
-                        android:textColor="@color/base_text_color"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        app:trackTint="@color/radio_button_color_bg"
-                        app:thumbTint="@color/radio_button_color"
-                        android:fontFamily="@font/armata"
-                        android:text="Automatikus idősáv"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-
                     <LinearLayout
                         android:id="@+id/first_class"
                         android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:alpha="0.5"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/automatic_timeframe"
+                        app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toTopOf="@id/last_class"
                         app:layout_constraintEnd_toEndOf="parent">
 
@@ -204,9 +189,9 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/armata"
                             android:text="Legkorábbi óra"
-                            android:paddingVertical="16dp"
+                            android:paddingVertical="12dp"
                             android:textColor="@color/base_text_color"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
@@ -216,9 +201,9 @@
                             android:fontFamily="@font/armata"
                             android:text="8:00"
                             android:paddingHorizontal="8dp"
-                            android:paddingVertical="16dp"
+                            android:paddingVertical="12dp"
                             android:textColor="@color/radio_button_color"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                     </LinearLayout>
@@ -228,6 +213,7 @@
                         android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:alpha="0.5"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/first_class"
@@ -240,9 +226,9 @@
                             android:layout_weight="1"
                             android:fontFamily="@font/armata"
                             android:text="Legkésőbbi óra"
-                            android:paddingVertical="16dp"
+                            android:paddingVertical="12dp"
                             android:textColor="@color/base_text_color"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                         <com.google.android.material.textview.MaterialTextView
@@ -252,9 +238,9 @@
                             android:fontFamily="@font/armata"
                             android:text="22:00"
                             android:paddingHorizontal="8dp"
-                            android:paddingVertical="16dp"
+                            android:paddingVertical="12dp"
                             android:textColor="@color/radio_button_color"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                     </LinearLayout>

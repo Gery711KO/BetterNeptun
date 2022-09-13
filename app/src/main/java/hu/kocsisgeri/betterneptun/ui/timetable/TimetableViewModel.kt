@@ -1,14 +1,19 @@
 package hu.kocsisgeri.betterneptun.ui.timetable
 
+import androidx.annotation.DrawableRes
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import timber.log.Timber
+
+enum class ViewMode(val days: Int, @DrawableRes val icon : Int) {
+    WEEK(5, R.drawable.ic_week_view), DAY(1, R.drawable.ic_day_view)
+}
 
 class TimetableViewModel(
     private val neptunRepository: NeptunRepository
@@ -18,6 +23,7 @@ class TimetableViewModel(
     val clickHandler = MutableSharedFlow<CalendarEntity.Event>(1, 100)
     val currentSelected = MutableStateFlow<CalendarEntity.Event?>(null)
     val clicked = MutableSharedFlow<CalendarEntity.Event>(1,100)
+    val viewMode = MutableStateFlow(ViewMode.WEEK)
 
     fun addEvents() {
         viewModelScope.launch(Dispatchers.Main) {

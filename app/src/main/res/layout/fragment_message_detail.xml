@@ -46,17 +46,17 @@
                 android:id="@+id/content_root"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingTop="8dp"
                 android:orientation="vertical">
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_root"
                     style="@style/Widget.Material3.CardView.Elevated"
+                    app:cardUseCompatPadding="true"
+                    app:cardElevation="4dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="8dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp">
+                    android:layout_marginTop="8dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/content"
@@ -199,6 +199,8 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/detail_root"
                     style="@style/Widget.Material3.CardView.Elevated"
+                    app:cardUseCompatPadding="true"
+                    app:cardElevation="4dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginHorizontal="8dp"

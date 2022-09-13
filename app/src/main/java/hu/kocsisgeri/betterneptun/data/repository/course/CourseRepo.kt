@@ -54,7 +54,7 @@ object CourseRepo : CoroutineScope, KoinComponent {
     val unreadMessages = MutableStateFlow(0)
     val firstClassTime = MutableStateFlow<String?>(null)
     val lastClassTime = MutableStateFlow<String?>(null)
-    val isTimelineAutomatic = MutableStateFlow<Boolean?>(null)
+    val isTimelineAutomatic = MutableStateFlow<Boolean?>(true)
 
     fun fetchCalendarTimes() {
         dataManager.sharedPreferences.get(PREF_IS_TIMELINE_AUTOMATIC, true).let {
