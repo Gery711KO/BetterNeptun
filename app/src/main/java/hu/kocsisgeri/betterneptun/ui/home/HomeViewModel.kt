@@ -27,7 +27,7 @@ class HomeViewModel(
             }.launchIn(this)
 
             CourseRepo.getCurrent.onEach {
-                Timer.currentLooper(it != null)
+                Timer.currentLooper(it.isNotEmpty())
             }.launchIn(this)
 
             if (!isLoggedIn.value) neptunRepository.fetchCalendarData()
