@@ -49,3 +49,5 @@
 #### The calendar is quite simple in a way, because it looks almost like any other calendar app, but it only shows your courses exams, and any other event that you add yourself. The calendar itself is customizable, you can add custom events, and customize the colors of the course or exam events.
 
 ![2022-09-14_13 10 12](https://user-images.githubusercontent.com/96139474/190138923-1147d38e-bb19-40d9-89da-75a8928e2531.jpg)
+
+teszt
