@@ -8,25 +8,18 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.distinctUntilChanged
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
+import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
 import hu.kocsisgeri.betterneptun.databinding.FragmentHomeBinding
 import hu.kocsisgeri.betterneptun.ui.adapter.DiffListAdapter
 import hu.kocsisgeri.betterneptun.ui.adapter.cell.cellCurrentCourseDelegate
-import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.getCourseDateString
-import hu.kocsisgeri.betterneptun.utils.getTimeLeft
 import hu.kocsisgeri.betterneptun.utils.setButtonNavigation
 import hu.kocsisgeri.betterneptun.utils.showToastOnClick
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
-import kotlin.math.ceil
-import kotlin.math.roundToInt
 
 class HomeFragment : Fragment() {
 
@@ -80,27 +73,41 @@ class HomeFragment : Fragment() {
             viewModel.fetchMessages()
         }
 
+        binding.courseLoading.isVisible = true
+        binding.nextCourseInfoCard.isVisible = true
+        binding.nextCourseRoot.alpha = 0f
+
         CourseRepo.nextCourse.observe(viewLifecycleOwner) {
-            binding.nextCourseInfoCard.isVisible = it != null
-            it?.let {
-                binding.courseLoading.isVisible = false
-                binding.nextCourseLabel.text = "Következő óra"
-                binding.nextCourseTitle.text = it.title.trimStart()
-                binding.nextCourseLocation.text = it.location.trim()
-                binding.nextCourseDate.text = it.startTime.getCourseDateString()
-                binding.nextCourseStart.text =
-                    "${it.startTime.hour}:${
-                        if (it.startTime.minute < 10) {
-                            "0" + it.startTime.minute
-                        } else it.startTime.minute
-                    }"
-                binding.nextCourseEnd.text =
-                    "${it.endTime.hour}:${
-                        if (it.endTime.minute < 10) {
-                            "0" + it.endTime.minute
-                        } else it.endTime.minute
-                    }"
-                binding.line.background.setTint(it.color)
+            when (it) {
+                is ApiResult.Error -> {
+                    binding.nextCourseInfoCard.isVisible = false
+                    binding.courseLoading.isVisible = false
+                }
+                is ApiResult.Progress -> {
+                    binding.courseLoading.isVisible = true
+                }
+                is ApiResult.Success -> {
+                    binding.nextCourseRoot.alpha = 1f
+                    binding.nextCourseInfoCard.isVisible = true
+                    binding.courseLoading.isVisible = false
+                    binding.nextCourseLabel.text = "Következő óra"
+                    binding.nextCourseTitle.text = it.data.title.trimStart()
+                    binding.nextCourseLocation.text = it.data.location.trim()
+                    binding.nextCourseDate.text = it.data.startTime.getCourseDateString()
+                    binding.nextCourseStart.text =
+                        "${it.data.startTime.hour}:${
+                            if (it.data.startTime.minute < 10) {
+                                "0" + it.data.startTime.minute
+                            } else it.data.startTime.minute
+                        }"
+                    binding.nextCourseEnd.text =
+                        "${it.data.endTime.hour}:${
+                            if (it.data.endTime.minute < 10) {
+                                "0" + it.data.endTime.minute
+                            } else it.data.endTime.minute
+                        }"
+                    binding.line.background.setTint(it.data.color)
+                }
             }
         }
 

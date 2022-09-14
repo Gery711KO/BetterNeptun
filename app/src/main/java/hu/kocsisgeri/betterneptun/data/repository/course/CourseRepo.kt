@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.data.repository.course
 
 import androidx.lifecycle.MutableLiveData
+import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.*
 import hu.kocsisgeri.betterneptun.utils.data_manager.DataManager
@@ -19,7 +20,7 @@ object CourseRepo : CoroutineScope, KoinComponent {
 
     val fetchNew = MutableSharedFlow<Unit>(1,100)
     val courses: MutableStateFlow<List<CalendarEntity.Event>> = MutableStateFlow(listOf())
-    val nextCourse = MutableLiveData<CalendarEntity.Event>()
+    val nextCourse = MutableLiveData<ApiResult<CalendarEntity.Event>>(ApiResult.Progress(10))
     val currentCourses = MutableLiveData<List<CalendarEntity.Event>>()
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -37,16 +38,27 @@ object CourseRepo : CoroutineScope, KoinComponent {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val startTimer = fetchNew.onStart { emit(Unit) }.flatMapLatest {
+
         courses.map { list ->
-            list.sortedBy { it.startTime }.firstOrNull {
-                it.startTime.isAfter(LocalDateTime.now())
-            }.let { event ->
-                nextCourse.postValue(event)
-                Timer.nextEvent = event
-                event?.startTime
-                    ?.toEpochSecond(ZoneOffset.UTC)
-                    ?.minus(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
-                    ?.let { it < 3600000 }
+            if (list.isNotEmpty()) {
+                list.sortedBy { it.startTime }.firstOrNull {
+                    it.startTime.isAfter(LocalDateTime.now())
+                }.let { event ->
+                    if (event != null) {
+                        nextCourse.postValue(ApiResult.Success(event))
+                        Timer.nextEvent = event
+                        event.startTime
+                            .toEpochSecond(ZoneOffset.UTC)
+                            .minus(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
+                            .let { it < 3600000 }
+                    } else {
+                        nextCourse.postValue(ApiResult.Error("There is no such event"))
+                        false
+                    }
+                }
+            } else {
+                ApiResult.Error("Empty")
+                false
             }
         }
     }
@@ -105,11 +117,13 @@ object Timer : CoroutineScope {
             delay(duration)
             withContext(Dispatchers.Main) {
                 if (enabled) {
-                    CourseRepo.nextCourse.postValue(nextEvent)
-                    CourseRepo.fetchNew.tryEmit(Unit)
-                    nextLooper(enabled)
-                    this@launch.cancel()
-                    this.cancel()
+                    nextEvent?.let {
+                        CourseRepo.nextCourse.postValue(ApiResult.Success(it))
+                        CourseRepo.fetchNew.tryEmit(Unit)
+                        nextLooper(enabled)
+                        this@launch.cancel()
+                        this.cancel()
+                    }
                 }
             }
         }
