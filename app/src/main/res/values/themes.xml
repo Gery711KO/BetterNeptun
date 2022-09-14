@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.BitraptorsTest" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.BetterNeptun" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/base_text_color</item>
         <item name="colorPrimaryVariant">@color/fullDarkColor</item>
@@ -16,7 +16,7 @@
         <item name="bottomSheetDialogTheme">@style/CustomBottomSheetDialog</item>
     </style>
 
-    <style name="Theme.BitraptorsTest.Splash" parent="Theme.BitraptorsTest">
+    <style name="Theme.BetterNeptun.Splash" parent="Theme.BetterNeptun">
         <item name="android:windowBackground">@color/base_fragment_bg</item>
         <item name="android:statusBarColor">@color/base_fragment_bg</item>
         <item name="android:navigationBarColor">@color/base_fragment_bg</item>

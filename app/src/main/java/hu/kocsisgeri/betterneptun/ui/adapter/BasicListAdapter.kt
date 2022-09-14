@@ -2,7 +2,6 @@ package hu.kocsisgeri.betterneptun.ui.adapter
 
 import com.hannesdorfmann.adapterdelegates4.AdapterDelegate
 import com.hannesdorfmann.adapterdelegates4.ListDelegationAdapter
-//import hu.kocsisgeri.bitraptors.ui.model.PersonUI
 import timber.log.Timber
 
 open class BasicListAdapter(

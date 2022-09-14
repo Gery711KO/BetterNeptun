@@ -6,7 +6,7 @@
     android:background="@color/base_fragment_bg">
 
     <ImageView
-        android:id="@+id/img_heartbit_logo"
+        android:id="@+id/app_logo"
         android:layout_width="100dp"
         android:layout_height="100dp"
         app:layout_constraintBottom_toBottomOf="parent"

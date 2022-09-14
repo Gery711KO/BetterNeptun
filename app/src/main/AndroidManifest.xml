@@ -14,7 +14,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BitraptorsTest"
+        android:theme="@style/Theme.BetterNeptun"
         tools:replace="android:theme">
 
         <activity
@@ -22,7 +22,7 @@
             android:exported="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.BitraptorsTest.Splash">
+            android:theme="@style/Theme.BetterNeptun.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
