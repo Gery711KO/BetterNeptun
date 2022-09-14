@@ -248,7 +248,7 @@ class NeptunRepositoryImpl(
                                     senderName = newMessage.Name,
                                     subject = newMessage.Subject,
                                     date = newMessage.SendDate,
-                                    isNew = newMessage.IsNew
+                                    isNew = false
                                 )
                             )
                             fetchMessages()
