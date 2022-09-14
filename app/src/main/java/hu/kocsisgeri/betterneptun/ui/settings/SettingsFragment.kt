@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.settings
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
 import android.widget.PopupMenu
@@ -10,6 +11,8 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.common.api.Releasable
+import hu.kocsisgeri.betterneptun.BuildConfig
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
 import hu.kocsisgeri.betterneptun.databinding.FragmentSettingsBinding
@@ -43,6 +46,12 @@ class SettingsFragment : Fragment() {
         handleThemeSelect()
         setExitButton()
         setStartTimes()
+        setVersionData()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun setVersionData() {
+        binding.versionValue.text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
     }
 
     private fun setStartTimes() {

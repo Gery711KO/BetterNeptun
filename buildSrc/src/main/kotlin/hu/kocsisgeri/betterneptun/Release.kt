@@ -1,12 +1,11 @@
-object Release {
-    // lazy jake wharton versioning
-    private val previousVerionCode = 10001
-    val versionMajor = 1
-    val versionMinor = 0
-    val versionPatch = 0
-    val versionBuild = 0 // bump for dogfood builds, public betas, etc.
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-    val versionCode =
-        previousVerionCode + versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
-    val versionName = "$versionMajor.$versionMinor.$versionPatch"
+object Release {
+    private const val versionMajor = 0
+    private const val versionMinor = 1
+    private const val versionPatch = 0
+
+    val versionCode = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHH")).toInt()
+    const val versionName = "$versionMajor.$versionMinor.$versionPatch"
 }

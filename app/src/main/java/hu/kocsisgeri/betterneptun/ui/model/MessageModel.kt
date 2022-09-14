@@ -11,4 +11,12 @@ data class MessageModel(
     val subject: String,
     val date: Date,
     val isNew : Boolean
-): ListItem, Serializable
+): ListItem, Serializable {
+    override fun getAdapterItemId(): String {
+        return id.toString()
+    }
+
+    override fun getAdapterItemHash(): Int {
+        return id.hashCode() + isNew.hashCode()
+    }
+}

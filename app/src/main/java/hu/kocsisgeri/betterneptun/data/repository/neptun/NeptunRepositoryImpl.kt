@@ -107,8 +107,7 @@ class NeptunRepositoryImpl(
                                                                                 SendDate = mes.date,
                                                                                 IsNew = mes.isNew
                                                                             )
-                                                                        }
-                                                                            .sortedByDescending { message -> message.Id })
+                                                                        }.sortedByDescending { message -> message.Id })
                                                                 )
                                                                 return@launch
                                                             } else {
@@ -242,7 +241,7 @@ class NeptunRepositoryImpl(
                                 messageId
                             )
                         ).check {
-                            /*dataManager.messages.insertOne(
+                            dataManager.messages.insertOne(
                                 Message(
                                     id = newMessage.Id,
                                     detail = newMessage.Detail,
@@ -251,7 +250,7 @@ class NeptunRepositoryImpl(
                                     date = newMessage.SendDate,
                                     isNew = newMessage.IsNew
                                 )
-                            )*/
+                            )
                             fetchMessages()
                         }
                     }
