@@ -5,12 +5,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.navigation.fragment.navArgs
-import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
 import hu.kocsisgeri.betterneptun.databinding.FragmentHomeBinding
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
@@ -19,7 +18,6 @@ import hu.kocsisgeri.betterneptun.utils.getTimeLeft
 import hu.kocsisgeri.betterneptun.utils.setButtonNavigation
 import hu.kocsisgeri.betterneptun.utils.showToastOnClick
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
@@ -29,9 +27,7 @@ import kotlin.math.roundToInt
 class HomeFragment : Fragment() {
 
     private val viewModel: HomeViewModel by viewModel()
-
     private val args by navArgs<HomeFragmentArgs>()
-
     private lateinit var binding: FragmentHomeBinding
 
     override fun onCreateView(
@@ -53,7 +49,9 @@ class HomeFragment : Fragment() {
     private fun setUserData() {
         binding.studentNeptun.text = args.currentUser?.neptun
         binding.studentName.text = args.currentUser?.name
-        binding.studentUnread.text = "${args.currentUser?.unreadMessages} olvasatlan üzenet"
+        CourseRepo.unreadMessages.asLiveData().observe(viewLifecycleOwner) {
+            binding.studentUnread.text = "$it olvasatlan üzenet"
+        }
     }
 
     @SuppressLint("SetTextI18n")

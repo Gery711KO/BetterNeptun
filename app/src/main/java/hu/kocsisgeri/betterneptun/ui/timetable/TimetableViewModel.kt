@@ -33,15 +33,6 @@ class TimetableViewModel(
         }
     }
 
-    fun randomizeColors() {
-        viewModelScope.launch {
-            neptunRepository.randomiseCalendarColors()
-            neptunRepository.events.onEach {
-                eventList.postValue(it)
-            }.launchIn(this)
-        }
-    }
-
     fun changeColor(event: CalendarEntity.Event?, color: Int) {
         viewModelScope.launch {
             neptunRepository.setEventColor(event, color)

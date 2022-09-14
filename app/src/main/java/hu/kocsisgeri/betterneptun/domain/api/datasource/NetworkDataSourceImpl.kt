@@ -8,6 +8,7 @@ import hu.kocsisgeri.betterneptun.domain.api.dto.*
 import hu.kocsisgeri.betterneptun.domain.api.network.CustomCookieJar
 import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.ui.model.MessageReader
 import hu.kocsisgeri.betterneptun.ui.model.NeptunUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,7 +71,6 @@ class NetworkDataSourceImpl(
                 StudentData(
                     name = dataText?.get(0)?.trim(),
                     neptun = dataText?.get(1)?.trim(),
-                    unreadMessages = "${CourseRepo.unreadMessages.first()}"
                 )
             )
         } catch (ex: Exception) {
@@ -96,6 +96,10 @@ class NetworkDataSourceImpl(
         } catch (ex: Exception) {
             ApiResult.Error("Network error")
         }
+    }
+
+    override suspend fun markMessageAsRead(messageReader: MessageReader): NetworkResponse<NeptunUser, String> {
+        return api.markMessageAsRead(messageReader)
     }
 
     companion object {

@@ -13,4 +13,8 @@ class MessagesViewModel(
     val listItems = itemFlow.asLiveData()
 
     fun getCurrentPosition() = (neptunRepository.currentMessagePage - 1) * 10 + 4
+
+    fun readMessage(messageId : Int) {
+        neptunRepository.readMessage(messageId)
+    }
 }

@@ -2,6 +2,7 @@ package hu.kocsisgeri.betterneptun.domain.api
 
 import hu.kocsisgeri.betterneptun.domain.api.dto.*
 import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
+import hu.kocsisgeri.betterneptun.ui.model.MessageReader
 import hu.kocsisgeri.betterneptun.ui.model.NeptunUser
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -15,6 +16,12 @@ interface APIService {
     suspend fun fetchMessages(
         @Body body: NeptunUser
     ): NetworkResponse<MessageResponseDto, String>
+
+    @Headers("Content-Type: application/json")
+    @POST("MobileService.svc/SetReadedMessage")
+    suspend fun markMessageAsRead(
+        @Body body: MessageReader
+    ): NetworkResponse<NeptunUser, String>
 
     @Headers("Content-Type: application/json")
     @GET("Login.aspx")

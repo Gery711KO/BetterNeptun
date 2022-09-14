@@ -66,7 +66,7 @@ class LoginViewModel(
                         }
                     }
                     is NetworkResponse.Failure<*> -> {
-                        isFailed.tryEmit(it.error.toString())
+                        isFailed.tryEmit(it.error.getErrorMessage())
                     }
                 }
             }

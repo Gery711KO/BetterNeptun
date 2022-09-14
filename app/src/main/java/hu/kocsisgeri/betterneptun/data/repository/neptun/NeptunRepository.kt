@@ -17,4 +17,5 @@ interface NeptunRepository {
     fun resetMessagePage()
     fun randomiseCalendarColors()
     fun setEventColor(event: CalendarEntity.Event?, color: Int)
+    fun readMessage(messageId: Int)
 }

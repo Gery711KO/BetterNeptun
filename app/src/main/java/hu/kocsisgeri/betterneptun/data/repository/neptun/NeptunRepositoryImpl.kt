@@ -7,6 +7,8 @@ import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
 import hu.kocsisgeri.betterneptun.domain.api.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.domain.api.dto.MessageDto
 import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
+import hu.kocsisgeri.betterneptun.domain.api.network.check
+import hu.kocsisgeri.betterneptun.ui.model.MessageReader
 import hu.kocsisgeri.betterneptun.ui.model.NeptunUser
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.PREF_STAY_LOGGED_ID
@@ -64,10 +66,11 @@ class NeptunRepositoryImpl(
                                                     response.data.NewMessagesNumber?.let { unread ->
                                                         CourseRepo.unreadMessages.tryEmit(unread)
                                                     }
-                                                    rList.filter { message -> message.Id > maxId }.let { filtered ->
-                                                        list.addAll(filtered)
-                                                        filtered.saveMessages(save)
-                                                    }
+                                                    rList.filter { message -> message.Id > maxId }
+                                                        .let { filtered ->
+                                                            list.addAll(filtered)
+                                                            filtered.saveMessages(save)
+                                                        }
                                                 }
                                             }
                                         }
@@ -90,25 +93,29 @@ class NeptunRepositoryImpl(
                                                     response.data.NewMessagesNumber?.let { unread ->
                                                         CourseRepo.unreadMessages.tryEmit(unread)
                                                     }
-                                                    rList.filter { message -> message.Id > maxId }.let { filtered ->
-                                                        if (filtered.isEmpty()) {
-                                                            messages.emit(ApiResult.Success(cache.map { mes ->
-                                                                MessageDto(
-                                                                    Id = mes.id,
-                                                                    Detail = mes.detail,
-                                                                    Name = mes.senderName,
-                                                                    Subject = mes.subject,
-                                                                    SendDate = mes.date,
-                                                                    IsNew = mes.isNew
+                                                    rList.filter { message -> message.Id > maxId }
+                                                        .let { filtered ->
+                                                            if (filtered.isEmpty()) {
+                                                                messages.emit(
+                                                                    ApiResult.Success(
+                                                                        cache.map { mes ->
+                                                                            MessageDto(
+                                                                                Id = mes.id,
+                                                                                Detail = mes.detail,
+                                                                                Name = mes.senderName,
+                                                                                Subject = mes.subject,
+                                                                                SendDate = mes.date,
+                                                                                IsNew = mes.isNew
+                                                                            )
+                                                                        }
+                                                                            .sortedByDescending { message -> message.Id })
                                                                 )
+                                                                return@launch
+                                                            } else {
+                                                                list.addAll(filtered)
+                                                                filtered.saveMessages(save)
                                                             }
-                                                                .sortedByDescending { message -> message.Id }))
-                                                            return@launch
-                                                        } else {
-                                                            list.addAll(filtered)
-                                                            filtered.saveMessages(save)
                                                         }
-                                                    }
                                                 }
                                             }
                                         }
@@ -130,8 +137,8 @@ class NeptunRepositoryImpl(
             val response = networkDataSource.getCourses()
             val colorMap = mutableMapOf<String?, Int>()
             when (response) {
-                is ApiResult.Error -> {/* do something about errors */}
-                is ApiResult.Progress -> {/* don't need to do anything here */}
+                is ApiResult.Error -> {/* do something about errors */ }
+                is ApiResult.Progress -> {/* don't need to do anything here */ }
                 is ApiResult.Success -> {
                     response.data.events.filter { event ->
                         event.allday != 1
@@ -139,7 +146,8 @@ class NeptunRepositoryImpl(
                         CalendarEntity.Event(
                             it.id?.toLong() ?: 1111111,
                             title = it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
-                            startTime = it.startdate?.split("(")?.get(1)?.split(")")?.get(0)?.toLong()
+                            startTime = it.startdate?.split("(")?.get(1)?.split(")")?.get(0)
+                                ?.toLong()
                                 ?.let { longTime ->
                                     LocalDateTime.ofEpochSecond(
                                         longTime / 1000,
@@ -164,16 +172,17 @@ class NeptunRepositoryImpl(
                             ),
                             isAllDay = it.allday != 0,
                             isCanceled = false,
-                            subjectCode = it.title?.split("(")?.get(1)?.split(")")?.get(0)?: "ERROR",
-                            courseCode = it.title?.split(" - ")?.get(1)?.split(" ")?.get(0)?: "ERROR",
-                            teacher = it.title?.split("(")?.get(2)?.split(")")?.get(0)?: "ERROR"
+                            subjectCode = it.title?.split("(")?.get(1)?.split(")")?.get(0)
+                                ?: "ERROR",
+                            courseCode = it.title?.split(" - ")?.get(1)?.split(" ")?.get(0)
+                                ?: "ERROR",
+                            teacher = it.title?.split("(")?.get(2)?.split(")")?.get(0) ?: "ERROR"
                         )
                     }.let { event ->
                         dataManager.colors.insertAll(event.map {
                             hu.kocsisgeri.betterneptun.data.dao.Color(
-                                Random.nextInt(0, 9999999),
-                                it.title.toString(),
-                                it.color
+                                title = it.title.toString(),
+                                colorInt = it.color
                             )
                         })
                         CourseRepo.courses.tryEmit(event)
@@ -212,13 +221,44 @@ class NeptunRepositoryImpl(
                 colorMap[title] = current.colorInt
                 colorMap[title]!!
             } else {
-                colorMap[title] = Color.rgb(red,green,blue)
+                colorMap[title] = Color.rgb(red, green, blue)
                 colorMap[title]!!
             }
         }
     }
 
-
+    override fun readMessage(messageId: Int) {
+        launch {
+            messages.getSuccess().let { messageList ->
+                val newMessage =
+                    messageList.firstOrNull { message -> message.Id == messageId }
+                if (newMessage?.IsNew == true) {
+                    currentUser.first().let { user ->
+                        networkDataSource.markMessageAsRead(
+                            MessageReader(
+                                user.UserLogin,
+                                user.Password,
+                                user.CurrentPage,
+                                messageId
+                            )
+                        ).check {
+                            dataManager.messages.insertOne(
+                                Message(
+                                    id = newMessage.Id,
+                                    detail = newMessage.Detail,
+                                    senderName = newMessage.Name,
+                                    subject = newMessage.Subject,
+                                    date = newMessage.SendDate,
+                                    isNew = newMessage.IsNew
+                                )
+                            )
+                            fetchMessages()
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     override fun resetMessagePage() {
         currentMessagePage = 0
@@ -242,32 +282,34 @@ class NeptunRepositoryImpl(
         }
     }
 
-    private suspend fun setEventColorAsync(event: CalendarEntity.Event?, color: Int) = withContext(Dispatchers.IO) {
-        CourseRepo.courses.firstOrNull()?.let { list ->
-            dataManager.colors.insertAll(
-                dataManager.colors.getData().map { colorEntity ->
-                    if (colorEntity.title == event?.title) colorEntity.copy(colorInt = color)
-                    else colorEntity
-                }
-            )
-            list.map {
-                if (it.title == event?.title) it.copy(color = color)
-                else it
-            }
-        }
-    }
-
-    private suspend fun getRandomizedColoredEvents() : List<CalendarEntity.Event>? = withContext(Dispatchers.IO) {
-        CourseRepo.courses.firstOrNull()?.let {  list ->
-            val colorMap = mutableMapOf<String?, Int>()
-
-            list.map {
-                it.copy(
-                    color = getRandomColor(it.title.toString(), colorMap)
+    private suspend fun setEventColorAsync(event: CalendarEntity.Event?, color: Int) =
+        withContext(Dispatchers.IO) {
+            CourseRepo.courses.firstOrNull()?.let { list ->
+                dataManager.colors.insertAll(
+                    dataManager.colors.getData().map { colorEntity ->
+                        if (colorEntity.title == event?.title) colorEntity.copy(colorInt = color)
+                        else colorEntity
+                    }
                 )
+                list.map {
+                    if (it.title == event?.title) it.copy(color = color)
+                    else it
+                }
             }
         }
-    }
+
+    private suspend fun getRandomizedColoredEvents(): List<CalendarEntity.Event>? =
+        withContext(Dispatchers.IO) {
+            CourseRepo.courses.firstOrNull()?.let { list ->
+                val colorMap = mutableMapOf<String?, Int>()
+
+                list.map {
+                    it.copy(
+                        color = getRandomColor(it.title.toString(), colorMap)
+                    )
+                }
+            }
+        }
 
     private suspend fun List<MessageDto>.saveMessages(save: Boolean) {
         if (save) {
@@ -283,6 +325,16 @@ class NeptunRepositoryImpl(
                     )
                 }
             )
+        }
+    }
+}
+
+suspend fun MutableStateFlow<ApiResult<List<MessageDto>>>.getSuccess(): List<MessageDto> {
+    return when (val result = this.first()) {
+        is ApiResult.Error -> { listOf<MessageDto>()}
+        is ApiResult.Progress -> { listOf<MessageDto>()}
+        is ApiResult.Success -> {
+            result.data
         }
     }
 }

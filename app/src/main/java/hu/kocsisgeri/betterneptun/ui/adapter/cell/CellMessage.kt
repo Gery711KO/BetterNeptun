@@ -12,13 +12,14 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun cellMessageDelegate(event: MutableSharedFlow<NavigationEvent>) =
+fun cellMessageDelegate(event: MutableSharedFlow<InteractionEvent>) =
     adapterDelegateViewBinding<MessageModel, ListItem, CellMessageBinding>(
         viewBinding = { layoutInflater, parent ->
             CellMessageBinding.inflate(layoutInflater, parent, false)
         },
         block = {
             binding.currentUserInfo.setOnClickListener {
+                event.tryEmit(ReadMessageEvent(item.id))
                 event.tryEmit(NavigationEvent(MessagesFragmentDirections.toMessageDetail(item)))
             }
 
@@ -47,4 +48,7 @@ fun Date.toDateString(): String {
     return SimpleDateFormat(ONLY_DATE_FORMAT).format(this)
 }
 
-data class NavigationEvent(val navDirections: NavDirections)
+
+interface InteractionEvent
+data class NavigationEvent(val navDirections: NavDirections): InteractionEvent
+data class ReadMessageEvent(val messageId: Int) : InteractionEvent

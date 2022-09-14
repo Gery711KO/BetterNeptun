@@ -17,6 +17,7 @@ sealed class NetworkResponse<out T : Any, out U : Any> {
 
 sealed class NetworkErrorResponse<out U : Any> {
     abstract fun logError()
+    abstract fun getErrorMessage(): String
 
     /**
      * Failure response with body
@@ -24,6 +25,10 @@ sealed class NetworkErrorResponse<out U : Any> {
     data class ApiError<U : Any>(val body: U, val code: Int) : NetworkErrorResponse<U>() {
         override fun logError() {
             Timber.e("ApiError - code: $code - $body")
+        }
+
+        override fun getErrorMessage(): String {
+            return "ApiError - code: $code - $body"
         }
     }
 
@@ -34,6 +39,10 @@ sealed class NetworkErrorResponse<out U : Any> {
         override fun logError() {
             Timber.e("NetworkError - ${error.message}", error)
         }
+
+        override fun getErrorMessage(): String {
+            return "NetworkError - ${error.message}"
+        }
     }
 
     /**
@@ -43,6 +52,10 @@ sealed class NetworkErrorResponse<out U : Any> {
         override fun logError() {
             Timber.e("AuthenticationError - code: $code")
         }
+
+        override fun getErrorMessage(): String {
+            return "AuthenticationError - code: $code"
+        }
     }
 
     /**
@@ -51,6 +64,10 @@ sealed class NetworkErrorResponse<out U : Any> {
     data class UnknownError(val error: Throwable? = null) : NetworkErrorResponse<Nothing>() {
         override fun logError() {
             Timber.e("UnknownError - ${error?.message}", error)
+        }
+
+        override fun getErrorMessage(): String {
+            return "UnknownError - ${error?.message}"
         }
     }
 }

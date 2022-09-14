@@ -5,5 +5,4 @@ import java.io.Serializable
 data class StudentData(
     val name: String?,
     val neptun: String?,
-    val unreadMessages: String?,
 ): Serializable

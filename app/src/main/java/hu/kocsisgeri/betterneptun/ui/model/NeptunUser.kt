@@ -17,3 +17,10 @@ data class NeptunUser(
         )
     }
 }
+
+data class MessageReader(
+    val UserLogin: String? = null,
+    val Password: String? = null,
+    val CurrentPage: Int? = 1,
+    val PersonMessageId: Int? = null
+)
