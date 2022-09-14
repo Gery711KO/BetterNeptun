@@ -10,8 +10,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.PagerSnapHelper
 import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
 import hu.kocsisgeri.betterneptun.databinding.FragmentHomeBinding
+import hu.kocsisgeri.betterneptun.ui.adapter.DiffListAdapter
+import hu.kocsisgeri.betterneptun.ui.adapter.cell.cellCurrentCourseDelegate
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.getCourseDateString
 import hu.kocsisgeri.betterneptun.utils.getTimeLeft
@@ -29,6 +33,7 @@ class HomeFragment : Fragment() {
     private val viewModel: HomeViewModel by viewModel()
     private val args by navArgs<HomeFragmentArgs>()
     private lateinit var binding: FragmentHomeBinding
+    private val listAdapter = DiffListAdapter(cellCurrentCourseDelegate())
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,6 +48,7 @@ class HomeFragment : Fragment() {
         setUserData()
         setButtons()
         fetchNewDataOnAppStart()
+        setCurrentCourses()
     }
 
     @SuppressLint("SetTextI18n")
@@ -51,6 +57,20 @@ class HomeFragment : Fragment() {
         binding.studentName.text = args.currentUser?.name
         CourseRepo.unreadMessages.asLiveData().observe(viewLifecycleOwner) {
             binding.studentUnread.text = "$it olvasatlan üzenet"
+        }
+    }
+
+    private fun setCurrentCourses() {
+        val snapHelper = PagerSnapHelper()
+        binding.currentCourseInfoCard.apply {
+            layoutManager =
+                LinearLayoutManager(context).apply { orientation = LinearLayoutManager.HORIZONTAL }
+            adapter = listAdapter
+            snapHelper.attachToRecyclerView(this)
+        }
+
+        viewModel.currentCourses.observe(viewLifecycleOwner) {
+            listAdapter.updateData(it)
         }
     }
 
@@ -84,7 +104,7 @@ class HomeFragment : Fragment() {
             }
         }
 
-        CourseRepo.currentCourse.distinctUntilChanged().observe(viewLifecycleOwner) {
+        /*CourseRepo.currentCourse.distinctUntilChanged().observe(viewLifecycleOwner) {
             binding.lineProgress.max = CourseRepo.currentCourse.value?.getTime()?.ceil() ?: 100
         }
 
@@ -98,10 +118,10 @@ class HomeFragment : Fragment() {
                 binding.currentCourseSubject.text = it.title.trimStart()
                 binding.currentCourseTimeLeft.text = it.endTime.getTimeLeft()
             }
-        }
+        }*/
     }
 
-    private fun CalendarEntity.Event.getRemainingTime() : Float {
+    /*private fun CalendarEntity.Event.getRemainingTime() : Float {
         val diff = endTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
         val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
         return seconds / 60f
@@ -119,7 +139,7 @@ class HomeFragment : Fragment() {
 
     private fun Float.ceil() : Int {
         return ceil(this).roundToInt()
-    }
+    }*/
 
     private fun setButtons() {
         setButtonNavigation(binding.settingsButtonCard, HomeFragmentDirections.toSettings())

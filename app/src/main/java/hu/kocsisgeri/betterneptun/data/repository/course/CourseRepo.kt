@@ -20,16 +20,16 @@ object CourseRepo : CoroutineScope, KoinComponent {
     val fetchNew = MutableSharedFlow<Unit>(1,100)
     val courses: MutableStateFlow<List<CalendarEntity.Event>> = MutableStateFlow(listOf())
     val nextCourse = MutableLiveData<CalendarEntity.Event>()
-    val currentCourse = MutableLiveData<CalendarEntity.Event>()
+    val currentCourses = MutableLiveData<List<CalendarEntity.Event>>()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val getCurrent = fetchNew.onStart { emit(Unit) }.flatMapLatest {
         courses.map { list ->
-            list.sortedBy { it.startTime }.firstOrNull {
+            list.sortedBy { it.startTime }.filter {
                 it.startTime.isBefore(LocalDateTime.now()) && it.endTime.isAfter(LocalDateTime.now())
             }.let {
-                Timer.currentEvent = it
-                currentCourse.postValue(it)
+                Timer.currentEvents = it
+                currentCourses.postValue(it)
                 it
             }
         }
@@ -97,7 +97,7 @@ object Timer : CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     var nextEvent: CalendarEntity.Event? = null
-    var currentEvent: CalendarEntity.Event? = null
+    var currentEvents: List<CalendarEntity.Event>? = null
     var duration: Long = 60000
 
     fun nextLooper(enabled: Boolean) {
@@ -120,7 +120,7 @@ object Timer : CoroutineScope {
             delay(duration)
             withContext(Dispatchers.Main) {
                 if (enabled) {
-                    CourseRepo.currentCourse.postValue(nextEvent)
+                    CourseRepo.currentCourses.postValue(currentEvents)
                     CourseRepo.fetchNew.tryEmit(Unit)
                     currentLooper(enabled)
                     this@launch.cancel()

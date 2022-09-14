@@ -16,6 +16,7 @@ class HomeViewModel(
 ) : ViewModel() {
 
     val isLoggedIn = MutableStateFlow(false)
+    val currentCourses = CourseRepo.currentCourses
 
     fun fetchMessages() {
         viewModelScope.launch(Dispatchers.IO) {

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/current_course_info_card"
+        style="@style/Widget.Material3.CardView.Elevated"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        app:cardUseCompatPadding="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/current_course_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/card_bg"
+            android:paddingHorizontal="24dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/current_course_root"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingVertical="16dp"
+                android:visibility="visible">
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/line_progress"
+                    android:layout_width="0dp"
+                    android:layout_height="6dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="8dp"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:min="0"
+                    android:background="@drawable/horizontal_line"
+                    app:layout_constraintBottom_toBottomOf="@id/current_course_label"
+                    app:layout_constraintEnd_toEndOf="@id/current_course_cell"
+                    app:layout_constraintStart_toEndOf="@id/current_course_label"
+                    app:layout_constraintTop_toTopOf="@id/current_course_label" />
+
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/current_course_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:fontFamily="@font/armata"
+                    android:textColor="@color/base_text_color"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/line_progress"
+                    app:layout_constraintBottom_toTopOf="@id/current_course_subject"
+                    app:layout_constraintVertical_chainStyle="packed"
+                    tools:text="Éppen tart" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/current_course_cell"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="12dp"
+                    app:layout_constraintTop_toTopOf="@id/current_course_subject"
+                    app:layout_constraintBottom_toBottomOf="@id/current_course_subject"
+                    app:layout_constraintStart_toEndOf="@id/current_course_subject"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/current_course_time_left"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.8"
+                        android:drawableStart="@drawable/ic_time"
+                        android:drawablePadding="8dp"
+                        android:fontFamily="@font/armata"
+                        android:gravity="center_vertical"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="2dp"
+                        android:paddingHorizontal="8dp"
+                        android:textAlignment="gravity"
+                        android:textColor="@color/base_text_color"
+                        android:textSize="13sp"
+                        app:layout_constraintStart_toStartOf="@id/current_course_location"
+                        app:layout_constraintTop_toBottomOf="@id/current_course_location"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        tools:text="5 perc" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/current_course_location"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.8"
+                        android:drawableStart="@drawable/ic_location_18px"
+                        android:drawablePadding="8dp"
+                        android:fontFamily="@font/armata"
+                        android:gravity="center_vertical"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="2dp"
+                        android:paddingHorizontal="8dp"
+                        android:textAlignment="gravity"
+                        android:textColor="@color/base_text_color"
+                        android:textSize="13sp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/current_course_time_left"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        tools:text="BA.F.01" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/current_course_subject"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:alpha="0.8"
+                    android:drawableStart="@drawable/ic_course"
+                    android:drawablePadding="8dp"
+                    android:fontFamily="@font/armata"
+                    android:gravity="center_vertical"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="2dp"
+                    android:textAlignment="gravity"
+                    android:textColor="@color/base_text_color"
+                    android:textSize="13sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/current_course_label"
+                    app:layout_constraintEnd_toStartOf="@id/current_course_cell"
+                    tools:text="DevOps az uzleti informatikai szolgaltatasokban" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
