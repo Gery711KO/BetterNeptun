@@ -9,6 +9,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.coroutines.CoroutineContext
@@ -69,37 +70,21 @@ object CourseRepo : CoroutineScope, KoinComponent {
     val isTimelineAutomatic = MutableStateFlow<Boolean?>(true)
 
     fun fetchCalendarTimes() {
-        dataManager.sharedPreferences.get(PREF_IS_TIMELINE_AUTOMATIC, true).let {
-            isTimelineAutomatic.tryEmit(it)
-        }
-        dataManager.sharedPreferences.get(PREF_FIRST_CLASS_TIME, "8:00").let {
-            firstClassTime.tryEmit(it)
-        }
+        courses.onEach { list ->
+            if (list.isNotEmpty()) {
+                list.map { event ->
+                    event.startTime.hour
+                }.min().let {
+                    Timber.d("[DEBUG-firstTime]: $it")
+                    firstClassTime.tryEmit("$it:00")
+                }
 
-        dataManager.sharedPreferences.get(PREF_LAST_CLASS_TIME, "23:00").let {
-            lastClassTime.tryEmit(it)
-        }
-    }
-
-    init {
-        firstClassTime.onEach {
-            it?.let {
-                val save = dataManager.getDefault(PREF_STAY_LOGGED_ID, false)
-                if (save) dataManager.sharedPreferences.put(PREF_FIRST_CLASS_TIME, it)
-            }
-        }.launchIn(this)
-
-        lastClassTime.onEach {
-            it?.let {
-                val save = dataManager.getDefault(PREF_STAY_LOGGED_ID, false)
-                if (save) dataManager.sharedPreferences.put(PREF_LAST_CLASS_TIME, it)
-            }
-        }.launchIn(this)
-
-        isTimelineAutomatic.onEach {
-            it?.let {
-                val save = dataManager.getDefault(PREF_STAY_LOGGED_ID, false)
-                if (save) dataManager.sharedPreferences.put(PREF_IS_TIMELINE_AUTOMATIC, it)
+                list.map { event ->
+                    event.endTime.hour
+                }.max().let {
+                    Timber.d("[DEBUG-lastTime]: $it")
+                    lastClassTime.tryEmit("${it + 1}:00")
+                }
             }
         }.launchIn(this)
     }

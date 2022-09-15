@@ -55,29 +55,12 @@ class SettingsFragment : Fragment() {
     }
 
     private fun setStartTimes() {
-        CourseRepo.isTimelineAutomatic.asLiveData().observe(viewLifecycleOwner) { auto ->
+        CourseRepo.firstClassTime.asLiveData().observe(viewLifecycleOwner) {
+            binding.firstClassTime.text = it
+        }
 
-            CourseRepo.firstClassTime.asLiveData().observe(viewLifecycleOwner) {
-                binding.firstClassTime.text = it
-            }
-
-            CourseRepo.lastClassTime.asLiveData().observe(viewLifecycleOwner) {
-                binding.lastClassTime.text = it
-            }
-
-            if (auto == true) {
-                CourseRepo.courses.value.map {
-                    it.startTime.hour
-                }.min().let {
-                    CourseRepo.firstClassTime.tryEmit("$it:00")
-                }
-
-                CourseRepo.courses.value.map {
-                    it.endTime.hour
-                }.max().let {
-                    CourseRepo.lastClassTime.tryEmit("${it + 1}:00")
-                }
-            }
+        CourseRepo.lastClassTime.asLiveData().observe(viewLifecycleOwner) {
+            binding.lastClassTime.text = it
         }
     }
 

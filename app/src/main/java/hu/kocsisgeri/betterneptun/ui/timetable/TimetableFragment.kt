@@ -46,17 +46,21 @@ class TimetableFragment : Fragment() {
     }
 
     private fun initTable() {
-        adapter =
-            FragmentWeekViewAdapter(loadMoreHandler = viewModel::addEvents, viewModel.clickHandler)
-        binding.weekView.maxHour =
-            CourseRepo.lastClassTime.value?.split(":")?.get(0)?.toInt() ?: 8
-        binding.weekView.minHour =
-            CourseRepo.firstClassTime.value?.split(":")?.get(0)?.toInt() ?: 22
-        binding.weekView.adapter = adapter
-        viewModel.eventList.distinctUntilChanged().observe(viewLifecycleOwner) {
-            adapter.submitList(it)
-            adapter.refresh()
-        }
+        viewModel.times.distinctUntilChanged().observe(viewLifecycleOwner, Observer {
+            binding.weekView.minHour = it.split(":")[0].toInt()
+            binding.weekView.maxHour = it.split(":")[1].toInt()
+            adapter =
+                FragmentWeekViewAdapter(
+                    loadMoreHandler = viewModel::addEvents,
+                    viewModel.clickHandler
+                )
+            binding.weekView.adapter = adapter
+            viewModel.eventList.distinctUntilChanged()
+                .observe(viewLifecycleOwner, Observer { list ->
+                    adapter.submitList(list)
+                    adapter.refresh()
+                })
+        })
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")

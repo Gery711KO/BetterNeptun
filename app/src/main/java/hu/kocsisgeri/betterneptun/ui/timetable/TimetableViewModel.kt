@@ -3,8 +3,10 @@ package hu.kocsisgeri.betterneptun.ui.timetable
 import androidx.annotation.DrawableRes
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.R
+import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
 import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +26,10 @@ class TimetableViewModel(
     val currentSelected = MutableStateFlow<CalendarEntity.Event?>(null)
     val clicked = MutableSharedFlow<CalendarEntity.Event>(1,100)
     val viewMode = MutableStateFlow(ViewMode.WEEK)
+
+    val times = CourseRepo.firstClassTime.combine(CourseRepo.lastClassTime) { first, last ->
+        "${first?.split(":")?.get(0)?.toInt() ?: 8}:${last?.split(":")?.get(0)?.toInt() ?: 22}"
+    }.asLiveData()
 
     fun addEvents() {
         viewModelScope.launch(Dispatchers.Main) {
