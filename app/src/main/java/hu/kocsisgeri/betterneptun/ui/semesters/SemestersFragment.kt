@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.formatter.LargeValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.android.material.tabs.TabLayout
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
@@ -67,6 +68,10 @@ class SemestersFragment : Fragment() {
                     binding.chart.apply {
                         this.data = it.data
                         this.barData.setValueTextColor(context.getColor(R.color.base_text_color))
+                        this.barData.setValueTextSize(10f)
+                        this.barData.setValueFormatter(
+                            LargeValueFormatter()
+                        )
                         animateY(1000)
                     }
                 }
