@@ -49,7 +49,10 @@ class HomeFragment : Fragment() {
         binding.studentNeptun.text = args.currentUser?.neptun
         binding.studentName.text = args.currentUser?.name
         CourseRepo.unreadMessages.asLiveData().observe(viewLifecycleOwner) {
-            binding.studentUnread.text = "$it olvasatlan üzenet"
+            if (it != 0) {
+                binding.studentUnread.isVisible = true
+                binding.studentUnread.text = it.toString()
+            } else binding.studentUnread.isVisible = false
         }
     }
 

@@ -69,13 +69,20 @@
                         android:layout_height="wrap_content"
                         android:alpha="1"
                         android:fontFamily="@font/armata"
-                        android:paddingTop="12dp"
                         android:textColor="@color/base_text_color"
-                        android:textSize="14sp"
+                        android:textSize="15sp"
                         android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/student_neptun"
-                        tools:text="1 olvasatlan uzenet" />
+                        android:paddingVertical="4dp"
+                        android:textAlignment="gravity"
+                        android:gravity="center_vertical"
+                        android:includeFontPadding="true"
+                        android:drawableEnd="@drawable/ic_mail_18px"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="@color/base_text_color"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/student_name"
+                        app:layout_constraintBottom_toBottomOf="@id/student_neptun"
+                        tools:text="1" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
