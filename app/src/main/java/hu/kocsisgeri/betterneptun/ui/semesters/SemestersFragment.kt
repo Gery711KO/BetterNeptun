@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.LimitLine
 import com.github.mikephil.charting.components.LimitLine.LimitLabelPosition
+import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.formatter.DefaultAxisValueFormatter
 import com.github.mikephil.charting.formatter.LargeValueFormatter
 import com.google.android.material.tabs.TabLayout
@@ -45,12 +46,8 @@ class SemestersFragment : Fragment() {
                 binding.barChart.isVisible = tab?.position == 0
                 binding.lineChart.isVisible = tab?.position == 1
                 when (tab?.position) {
-                    0 -> {
-                        binding.barChart.animateY(1000)
-                    }
-                    1 -> {
-                        binding.lineChart.animateY(1000)
-                    }
+                    0 -> { binding.barChart.animateY(1000) }
+                    1 -> { binding.lineChart.animateY(1000) }
                 }
             }
 
@@ -70,7 +67,10 @@ class SemestersFragment : Fragment() {
                 is ApiResult.Success -> {
                     binding.loading.isVisible = false
                     binding.barChart.apply {
-                        this.data = it.data
+                        this.data = BarData(
+                            it.data.first.apply { color = context.getColor(R.color.chart_alpha_color) },
+                            it.data.second.apply { color = context.getColor(R.color.chart_color) }
+                        )
                         this.barData.setValueTextColor(context.getColor(R.color.base_text_color))
                         this.barData.setValueTextSize(10f)
                         this.barData.setValueFormatter(
@@ -140,7 +140,8 @@ class SemestersFragment : Fragment() {
             legend.form = Legend.LegendForm.SQUARE
 
             xAxis.granularity = 1f
-            xAxis.setCenterAxisLabels(true)
+            xAxis.setCenterAxisLabels(false)
+            xAxis.axisMinimum = 0f
             xAxis.textColor = requireContext().getColor(R.color.base_text_color)
 
             val leftAxis = axisLeft
@@ -188,7 +189,8 @@ class SemestersFragment : Fragment() {
             legend.form = Legend.LegendForm.LINE
 
             xAxis.granularity = 1f
-            xAxis.setCenterAxisLabels(true)
+            xAxis.axisMinimum = 1f
+            xAxis.setCenterAxisLabels(false)
             xAxis.textColor = requireContext().getColor(R.color.base_text_color)
 
             val leftAxis = axisLeft

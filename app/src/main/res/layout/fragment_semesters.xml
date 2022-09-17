@@ -23,8 +23,8 @@
         android:id="@+id/semesters_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/card_bg"
         android:elevation="10dp"
+        android:background="@color/card_bg"
         android:fontFamily="@font/armata"
         android:paddingTop="16dp"
         android:paddingBottom="16dp"
@@ -43,12 +43,18 @@
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_layout"
+        android:elevation="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@id/bar_chart"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/semesters_title">
+        app:layout_constraintTop_toBottomOf="@id/semesters_title"
+        app:tabTextColor="@color/base_text_selected_color"
+        app:tabSelectedTextColor="@color/base_text_color"
+        app:tabIndicatorFullWidth="true"
+        app:tabTextAppearance="@style/NavigationTabTextAppearance"
+        app:tabBackground="@color/card_bg">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="match_parent"
