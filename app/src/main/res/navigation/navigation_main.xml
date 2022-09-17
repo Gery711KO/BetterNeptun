@@ -65,6 +65,27 @@
         app:popUpTo="@id/timetableFragment"
         app:popUpToInclusive="false" />
 
+
+    <action
+        android:id="@+id/toSubjects"
+        app:destination="@id/subjectsFragment"
+        app:enterAnim="@anim/slide_in_left"
+        app:exitAnim="@anim/dissapear"
+        app:popEnterAnim="@anim/appear"
+        app:popExitAnim="@anim/slide_out_left"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="false" />
+
+    <action
+        android:id="@+id/toSemesters"
+        app:destination="@id/semestersFragment"
+        app:enterAnim="@anim/slide_in_left"
+        app:exitAnim="@anim/dissapear"
+        app:popEnterAnim="@anim/appear"
+        app:popExitAnim="@anim/slide_out_left"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="false" />
+
     <fragment
         android:id="@+id/loginFragment"
         android:name="hu.kocsisgeri.betterneptun.ui.login.LoginFragment"
@@ -136,5 +157,14 @@
         android:name="hu.kocsisgeri.betterneptun.ui.settings.SettingsFragment"
         tools:layout="@layout/fragment_settings"/>
 
+    <fragment
+        android:id="@+id/subjectsFragment"
+        android:name="hu.kocsisgeri.betterneptun.ui.subjects.SubjectsFragment"
+        tools:layout="@layout/fragment_subjects"/>
+
+    <fragment
+        android:id="@+id/semestersFragment"
+        android:name="hu.kocsisgeri.betterneptun.ui.semesters.SemestersFragment"
+        tools:layout="@layout/fragment_semesters"/>
 
 </navigation>

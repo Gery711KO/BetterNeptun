@@ -18,21 +18,24 @@ class HomeViewModel(
     val isLoggedIn = MutableStateFlow(false)
     val currentCourses = CourseRepo.currentCourses
 
-    fun fetchMessages() {
+    fun fetchData() {
         viewModelScope.launch(Dispatchers.IO) {
             CourseRepo.fetchCalendarTimes()
 
             CourseRepo.startTimer.onEach {
-                Timer.nextLooper(it == true)
+                Timer.nextLooper(it)
             }.launchIn(this)
 
             CourseRepo.getCurrent.onEach {
                 Timer.currentLooper(it.isNotEmpty())
             }.launchIn(this)
 
-            if (!isLoggedIn.value) neptunRepository.fetchCalendarData()
-
-            neptunRepository.fetchMessages()
+            if (!isLoggedIn.value) {
+                neptunRepository.fetchCalendarData()
+                neptunRepository.fetchMarkBookData()
+                neptunRepository.fetchAverages()
+                neptunRepository.fetchMessages()
+            }
             isLoggedIn.tryEmit(true)
         }
     }

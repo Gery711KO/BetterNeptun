@@ -2,6 +2,8 @@ package hu.kocsisgeri.betterneptun.domain.api
 
 import hu.kocsisgeri.betterneptun.domain.api.dto.*
 import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
+import hu.kocsisgeri.betterneptun.ui.model.AddedSubjectRequest
+import hu.kocsisgeri.betterneptun.ui.model.MarkBookRequest
 import hu.kocsisgeri.betterneptun.ui.model.MessageReader
 import hu.kocsisgeri.betterneptun.ui.model.NeptunUser
 import retrofit2.http.Body
@@ -50,4 +52,16 @@ interface APIService {
     suspend fun fetchUserData(
         @Body body: NeptunUser
     ): NetworkResponse<TrainingResponseDto, String>
+
+    @Headers("Content-Type: application/json")
+    @POST("MobileService.svc/GetAddedSubjects")
+    suspend fun fetchAddedSubjects(
+        @Body body: AddedSubjectRequest
+    ): NetworkResponse<AddedSubjectsResponseDto, String>
+
+    @Headers("Content-Type: application/json")
+    @POST("MobileService.svc/GetMarkbookData")
+    suspend fun fetchMarkBookData(
+        @Body body: MarkBookRequest
+    ): NetworkResponse<MarkBookDataResponseDto, String>
 }

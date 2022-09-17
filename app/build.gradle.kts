@@ -116,7 +116,7 @@ dependencies {
     implementation("com.github.thellmund.Android-Week-View:jsr310:5.2.4")
     implementation("io.noties.markwon:core:4.6.2")
     implementation("com.github.madrapps:pikolo:2.0.2")
-
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     addDependency(Libraries.material)
     addDependency(Libraries.timber)

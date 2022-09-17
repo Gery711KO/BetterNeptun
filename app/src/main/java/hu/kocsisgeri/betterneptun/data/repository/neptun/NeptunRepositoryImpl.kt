@@ -8,11 +8,11 @@ import hu.kocsisgeri.betterneptun.domain.api.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.domain.api.dto.MessageDto
 import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
 import hu.kocsisgeri.betterneptun.domain.api.network.check
-import hu.kocsisgeri.betterneptun.ui.model.MessageReader
-import hu.kocsisgeri.betterneptun.ui.model.NeptunUser
+import hu.kocsisgeri.betterneptun.ui.model.*
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.PREF_STAY_LOGGED_ID
 import hu.kocsisgeri.betterneptun.utils.data_manager.DataManager
+import hu.kocsisgeri.betterneptun.utils.getSubjectState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +36,8 @@ class NeptunRepositoryImpl(
     override val events = MutableStateFlow<List<CalendarEntity.Event>>(listOf())
     override val messages = MutableStateFlow<ApiResult<List<MessageDto>>>(ApiResult.Progress(0))
     override val currentUser = MutableStateFlow(NeptunUser())
+    override val markBookData = MutableStateFlow<ApiResult<List<MarkBookDataModel>>>(ApiResult.Progress(0))
+    override val averages = MutableStateFlow<ApiResult<List<SemesterModel>>>(ApiResult.Progress(0))
     override var currentMessagePage = 0
 
     override fun fetchMessages() {
@@ -188,6 +190,58 @@ class NeptunRepositoryImpl(
                         events.tryEmit(event)
                     }
                 }
+            }
+        }
+    }
+
+    override fun fetchMarkBookData() {
+        launch {
+            currentUser.first().let { user ->
+                networkDataSource.getAddedCourses(user).check { subject ->
+                    networkDataSource.getMarkBookData(user).check { mark ->
+                        val data = subject.AddedSubjectsList.map {
+                            MarkBookDataModel(
+                                subjectId = it.SubjectID,
+                                subjectCode = it.SubjectCode,
+                                subjectCredit = it.SubjectCredit,
+                                subjectName = it.SubjectName,
+                                subjectRequirement = it.SubjectRequirement,
+                                subjectType = it.SubjectType,
+                                termId = it.TermId,
+                                completed = false,
+                                signer = "",
+                                values = "",
+                                state = SubjectState.DEFAULT
+                            )
+                        }.map { markData ->
+                            markData.copy(
+                                completed = mark.MarkBookList.firstOrNull {
+                                    it.SubjectName == markData.subjectName
+                                }?.Completed?:false,
+                                signer = mark.MarkBookList.firstOrNull {
+                                    it.SubjectName == markData.subjectName
+                                }?.Signer?: "",
+                                values = mark.MarkBookList.firstOrNull {
+                                    it.SubjectName == markData.subjectName
+                                }?.Values?: ""
+                            )
+                        }.map { markData ->
+                            markData.copy(
+                                state = getSubjectState(markData.completed, markData.signer)
+                            )
+                        }
+                        markBookData.tryEmit(ApiResult.Success(data))
+                    }
+                }
+            }
+        }
+    }
+
+    override fun fetchAverages() {
+        launch {
+            networkDataSource.getAverages().let {
+                if (it.isNotEmpty()) averages.tryEmit(ApiResult.Success(it))
+                else averages.tryEmit(ApiResult.Error("Network error"))
             }
         }
     }

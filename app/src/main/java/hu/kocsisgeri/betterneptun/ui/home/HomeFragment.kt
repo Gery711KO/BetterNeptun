@@ -70,7 +70,7 @@ class HomeFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     private fun fetchNewDataOnAppStart() {
         if (!viewModel.isLoggedIn.value) {
-            viewModel.fetchMessages()
+            viewModel.fetchData()
         }
 
         binding.courseLoading.isVisible = true
@@ -152,10 +152,10 @@ class HomeFragment : Fragment() {
         setButtonNavigation(binding.settingsButtonCard, HomeFragmentDirections.toSettings())
         setButtonNavigation(binding.messageButtonCard, HomeFragmentDirections.toMessages())
         setButtonNavigation(binding.calendarButtonCard, HomeFragmentDirections.toCalendar())
+        setButtonNavigation(binding.coursesButtonCard, HomeFragmentDirections.toSubjects())
+        setButtonNavigation(binding.semestersButtonCard, HomeFragmentDirections.toSemesters())
 
-        showToastOnClick(binding.coursesButtonCard, "Fejlesztés alatt!!")
         showToastOnClick(binding.examsButtonCard, "Fejlesztés alatt!!")
-        showToastOnClick(binding.semestersButtonCard, "Fejlesztés alatt!!")
         showToastOnClick(binding.scheduleButtonCard, "Fejlesztés alatt!!")
     }
 

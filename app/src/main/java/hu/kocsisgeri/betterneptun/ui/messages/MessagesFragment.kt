@@ -50,7 +50,7 @@ class MessagesFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     private fun setList() {
         binding.messageList.apply {
-            layoutManager = NotifyingLinearLayoutManager(context)
+            layoutManager = LinearLayoutManager(context)
             adapter = listAdapter
         }
 
@@ -70,26 +70,6 @@ class MessagesFragment : Fragment() {
                 }
             }
         }
-
-        binding.messageList.setOnScrollChangeListener { _, _, _, _, _ ->
-            if (isLastVisible()) {
-                //viewModel.fetch()
-            }
-        }
-
-        (binding.messageList.layoutManager as NotifyingLinearLayoutManager).mCallback =
-            object : NotifyingLinearLayoutManager.OnLayoutCompleteCallback {
-                override fun onLayoutComplete() {
-                    binding.messageList.scrollToPosition(viewModel.getCurrentPosition())
-                }
-            }
-    }
-
-    private fun isLastVisible(): Boolean {
-        val layoutManager = binding.messageList.layoutManager as LinearLayoutManager
-        val pos = layoutManager.findLastCompletelyVisibleItemPosition()
-        val numItems: Int = listAdapter.itemCount
-        return pos >= numItems - 1
     }
 
     private fun observeNavigation() {
