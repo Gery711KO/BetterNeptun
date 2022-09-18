@@ -50,7 +50,7 @@
                 android:textColor="@color/base_text_color"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/details_root"
                 app:layout_constraintEnd_toStartOf="@id/subject_code"
                 app:layout_constraintStart_toEndOf="@id/state"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -62,30 +62,136 @@
                 android:alpha="0.7"
                 android:fontFamily="@font/armata"
                 android:text="NMXAN2HBNE"
+                android:layout_marginEnd="12dp"
                 android:textAlignment="textEnd"
                 android:textColor="@color/base_text_color"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@id/credits"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/openable"
                 app:layout_constraintStart_toEndOf="@id/subject_name"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/credits"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:alpha="1"
+                android:alpha="0.7"
                 android:ellipsize="end"
                 android:fontFamily="@font/armata"
                 android:maxLines="1"
                 android:text="Kredit:\t\t 7"
                 android:textColor="@color/base_text_color"
+                android:textAlignment="textEnd"
                 android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintBottom_toBottomOf="@id/subject_name"
+                app:layout_constraintEnd_toStartOf="@id/openable"
+                app:layout_constraintStart_toEndOf="@id/subject_name"
                 app:layout_constraintTop_toBottomOf="@id/subject_code" />
+
+            <ImageView
+                android:id="@+id/openable"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="12dp"
+                android:src="@drawable/ic_expand"
+                app:layout_constraintBottom_toBottomOf="@id/subject_name"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/credits"
+                app:layout_constraintTop_toTopOf="@id/subject_name"
+                app:tint="@color/base_text_color" />
+
+
+            <LinearLayout
+                android:id="@+id/details_root"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical"
+                android:layout_marginStart="38dp"
+                android:layout_marginEnd="42dp"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/subject_name"
+                app:layout_constraintStart_toStartOf="@id/subject_name"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="4dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/requirement_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/armata"
+                        android:maxLines="3"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="16dp"
+                        android:alpha="0.7"
+                        android:text="Követelmény:"
+                        android:textColor="@color/base_text_color"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:visibility="visible"/>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/requirement_value"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/armata"
+                        android:maxLines="3"
+                        android:alpha="0.7"
+                        android:text="Evkozi jegy"
+                        android:textAlignment="textEnd"
+                        android:textColor="@color/base_text_color"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:visibility="visible"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="4dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/type_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/armata"
+                        android:maxLines="3"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="16dp"
+                        android:alpha="0.7"
+                        android:text="Tárgytípus:"
+                        android:textColor="@color/base_text_color"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:visibility="visible"/>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/type_value"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/armata"
+                        android:maxLines="3"
+                        android:alpha="0.7"
+                        android:text="Kotelezoen valasztott"
+                        android:textAlignment="textEnd"
+                        android:textColor="@color/base_text_color"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:visibility="visible"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

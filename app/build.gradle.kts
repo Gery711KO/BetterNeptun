@@ -25,8 +25,8 @@ android {
         applicationId = "hu.kocsisgeri.betterneptun"
         minSdk = AndroidSdk.minApi
         targetSdk = AndroidSdk.targetApi
-        versionCode = Release.versionCode
-        versionName = Release.versionName
+        versionCode = hu.kocsisgeri.betterneptun.Release.versionCode
+        versionName = hu.kocsisgeri.betterneptun.Release.versionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

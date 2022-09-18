@@ -62,20 +62,23 @@ class SemestersFragment : Fragment() {
             when (it) {
                 is ApiResult.Error -> {}
                 is ApiResult.Progress -> {
+                    binding.barChart.isVisible = false
                     binding.loading.isVisible = true
                 }
                 is ApiResult.Success -> {
+                    binding.barChart.isVisible = true
                     binding.loading.isVisible = false
                     binding.barChart.apply {
                         this.data = BarData(
                             it.data.first.apply { color = context.getColor(R.color.chart_alpha_color) },
                             it.data.second.apply { color = context.getColor(R.color.chart_color) }
                         )
+                        this.barData.barWidth = 0.7f
                         this.barData.setValueTextColor(context.getColor(R.color.base_text_color))
-                        this.barData.setValueTextSize(10f)
-                        this.barData.setValueFormatter(
-                            LargeValueFormatter()
-                        )
+                        this.barData.setValueTextSize(12f)
+                        this.xAxis.axisMaximum = (it.data.first.entryCount) + 1f
+                        this.xAxis.labelCount = (it.data.first.entryCount) + 1
+                        this.barData.setValueFormatter(LargeValueFormatter())
                         animateY(1000)
                     }
                 }
@@ -93,10 +96,8 @@ class SemestersFragment : Fragment() {
                     binding.lineChart.apply {
                         this.data = it.data
                         this.lineData.setValueTextColor(context.getColor(R.color.base_text_color))
-                        this.lineData.setValueTextSize(10f)
-                        this.lineData.setValueFormatter(
-                            DefaultAxisValueFormatter(2)
-                        )
+                        this.lineData.setValueTextSize(12f)
+                        this.lineData.setValueFormatter(DefaultAxisValueFormatter(2))
                     }
                 }
             }
@@ -105,12 +106,14 @@ class SemestersFragment : Fragment() {
 
     private fun setChartTheme() {
         binding.barChart.apply {
+            isHighlightFullBarEnabled = false
+            isHighlightPerDragEnabled = false
+            isHighlightPerTapEnabled = false
             isDoubleTapToZoomEnabled = false
             description.isEnabled = false
             setPinchZoom(false)
             setDrawBarShadow(false)
             setDrawGridBackground(false)
-
 
             val ll1 = LimitLine(30f, "")
             ll1.lineWidth = 1f
@@ -126,7 +129,6 @@ class SemestersFragment : Fragment() {
 
             // add limit lines
             axisLeft.addLimitLine(ll1);
-
 
             legend.verticalAlignment = Legend.LegendVerticalAlignment.TOP
             legend.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
@@ -156,6 +158,8 @@ class SemestersFragment : Fragment() {
         }
 
         binding.lineChart.apply {
+            isHighlightPerDragEnabled = false
+            isHighlightPerTapEnabled = false
             isDoubleTapToZoomEnabled = false
             description.isEnabled = false
             setPinchZoom(false)

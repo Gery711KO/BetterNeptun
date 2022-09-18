@@ -3,11 +3,12 @@ package hu.kocsisgeri.betterneptun.data.repository.neptun
 import android.graphics.Color
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.data.dao.Message
-import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
+import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
 import hu.kocsisgeri.betterneptun.domain.api.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.domain.api.dto.MessageDto
 import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
 import hu.kocsisgeri.betterneptun.domain.api.network.check
+import hu.kocsisgeri.betterneptun.domain.model.StudentData
 import hu.kocsisgeri.betterneptun.ui.model.*
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.PREF_STAY_LOGGED_ID
@@ -25,7 +26,6 @@ import java.time.ZoneOffset
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 class NeptunRepositoryImpl(
     override val coroutineContext: CoroutineContext = Dispatchers.IO,
@@ -36,6 +36,7 @@ class NeptunRepositoryImpl(
     override val events = MutableStateFlow<List<CalendarEntity.Event>>(listOf())
     override val messages = MutableStateFlow<ApiResult<List<MessageDto>>>(ApiResult.Progress(0))
     override val currentUser = MutableStateFlow(NeptunUser())
+    override val studentData = MutableStateFlow<StudentData?>(null)
     override val markBookData = MutableStateFlow<ApiResult<List<MarkBookDataModel>>>(ApiResult.Progress(0))
     override val averages = MutableStateFlow<ApiResult<List<SemesterModel>>>(ApiResult.Progress(0))
     override var currentMessagePage = 0
@@ -47,6 +48,7 @@ class NeptunRepositoryImpl(
             dataManager.messages.getData().let { cache ->
                 val list = mutableListOf<MessageDto>()
                 val maxId = cache.maxByOrNull { it.id }?.id ?: 0
+                var total = 0
                 var counter = 1f
                 currentUser.first().let { user ->
                     networkDataSource.getMessages(user.copy(CurrentPage = 0)).let { result ->
@@ -55,6 +57,7 @@ class NeptunRepositoryImpl(
                             is NetworkResponse.Success -> result.data.TotalRowCount
                         }
                     }?.let {
+                        total = it
                         val lastPage = ceil((it / 10f).toDouble()).roundToInt()
                         if (cache.isEmpty()) {
                             var idx = lastPage
@@ -66,7 +69,7 @@ class NeptunRepositoryImpl(
                                                 is NetworkResponse.Failure<*> -> {}
                                                 is NetworkResponse.Success -> response.data.MessagesList?.let { rList ->
                                                     response.data.NewMessagesNumber?.let { unread ->
-                                                        CourseRepo.unreadMessages.tryEmit(unread)
+                                                        HomeState.unreadMessages.tryEmit(unread)
                                                     }
                                                     rList.filter { message -> message.Id > maxId }
                                                         .let { filtered ->
@@ -93,11 +96,11 @@ class NeptunRepositoryImpl(
                                                 is NetworkResponse.Failure<*> -> {}
                                                 is NetworkResponse.Success -> response.data.MessagesList?.let { rList ->
                                                     response.data.NewMessagesNumber?.let { unread ->
-                                                        CourseRepo.unreadMessages.tryEmit(unread)
+                                                        HomeState.unreadMessages.tryEmit(unread)
                                                     }
                                                     rList.filter { message -> message.Id > maxId }
                                                         .let { filtered ->
-                                                            if (filtered.isEmpty()) {
+                                                            if (filtered.isEmpty() && cache.size == total) {
                                                                 messages.emit(
                                                                     ApiResult.Success(
                                                                         cache.map { mes ->
@@ -186,7 +189,7 @@ class NeptunRepositoryImpl(
                                 colorInt = it.color
                             )
                         })
-                        CourseRepo.courses.tryEmit(event)
+                        HomeState.courses.tryEmit(event)
                         events.tryEmit(event)
                     }
                 }
@@ -242,6 +245,28 @@ class NeptunRepositoryImpl(
             networkDataSource.getAverages().let {
                 if (it.isNotEmpty()) averages.tryEmit(ApiResult.Success(it))
                 else averages.tryEmit(ApiResult.Error("Network error"))
+            }
+        }
+    }
+
+    override suspend fun login(user: NeptunUser): ApiResult<StudentData> = withContext(Dispatchers.IO) {
+        networkDataSource.initiateLogin(user.loginRequestData()).let { response ->
+            when (response) {
+                is NetworkResponse.Failure<*> -> {
+                    ApiResult.Error(response.error.getErrorMessage())
+                }
+                is NetworkResponse.Success -> {
+                    if (!response.data.isSuccess()) ApiResult.Error(response.data.getError())
+                    else {
+                        networkDataSource.getData().let { result ->
+                            when (result) {
+                                is ApiResult.Error -> ApiResult.Error(result.error)
+                                is ApiResult.Progress -> ApiResult.Progress(1)
+                                is ApiResult.Success -> ApiResult.Success(result.data)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -321,7 +346,7 @@ class NeptunRepositoryImpl(
         launch {
             getRandomizedColoredEvents()?.let {
                 events.tryEmit(it)
-                CourseRepo.courses.tryEmit(it)
+                HomeState.courses.tryEmit(it)
             }
         }
     }
@@ -330,14 +355,14 @@ class NeptunRepositoryImpl(
         launch {
             setEventColorAsync(event, color)?.let {
                 events.tryEmit(it)
-                CourseRepo.courses.tryEmit(it)
+                HomeState.courses.tryEmit(it)
             }
         }
     }
 
     private suspend fun setEventColorAsync(event: CalendarEntity.Event?, color: Int) =
         withContext(Dispatchers.IO) {
-            CourseRepo.courses.firstOrNull()?.let { list ->
+            HomeState.courses.firstOrNull()?.let { list ->
                 dataManager.colors.insertAll(
                     dataManager.colors.getData().map { colorEntity ->
                         if (colorEntity.title == event?.title) colorEntity.copy(colorInt = color)
@@ -353,7 +378,7 @@ class NeptunRepositoryImpl(
 
     private suspend fun getRandomizedColoredEvents(): List<CalendarEntity.Event>? =
         withContext(Dispatchers.IO) {
-            CourseRepo.courses.firstOrNull()?.let { list ->
+            HomeState.courses.firstOrNull()?.let { list ->
                 val colorMap = mutableMapOf<String?, Int>()
 
                 list.map {

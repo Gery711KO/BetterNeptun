@@ -68,9 +68,9 @@ class LoginFragment : Fragment() {
 
         viewModel.isSucceeded.onEach {
             binding.loadingIndicator.isVisible = false
-            Toast.makeText(context, "Successful login!", Toast.LENGTH_LONG).show()
             viewModel.clearLogin()
-            findNavController().navigate(LoginFragmentDirections.toHomeScreen(it))
+            viewModel.setUserData(it)
+            findNavController().navigate(LoginFragmentDirections.toHomeScreen())
         }.launchIn(lifecycleScope)
 
         viewModel.isFailed.onEach {

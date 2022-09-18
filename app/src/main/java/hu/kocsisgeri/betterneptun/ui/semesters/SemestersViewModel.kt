@@ -57,9 +57,17 @@ class SemestersViewModel(
                 }
 
                 val normalSet = LineDataSet(normalAverages, "Átlagok")
-                    .apply {color = Color.parseColor("#007541") }
+                    .apply {
+                        setCircleColor(Color.parseColor("#007541"))
+                        lineWidth = 3f
+                        color = Color.parseColor("#007541")
+                    }
                 val comSet = LineDataSet(comAverages, "Kommultatív átlagok")
-                    .apply { color = Color.parseColor("#99007541") }
+                    .apply {
+                        setCircleColor(Color.parseColor("#096FB3"))
+                        lineWidth = 3f
+                        color = Color.parseColor("#096FB3")
+                    }
                 ApiResult.Success(LineData(normalSet, comSet))
             }
         }

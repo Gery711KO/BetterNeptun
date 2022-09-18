@@ -3,28 +3,22 @@ package hu.kocsisgeri.betterneptun.ui.settings
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
-import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import android.widget.RadioButton
-import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.android.gms.common.api.Releasable
 import hu.kocsisgeri.betterneptun.BuildConfig
 import hu.kocsisgeri.betterneptun.R
-import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
+import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
 import hu.kocsisgeri.betterneptun.databinding.FragmentSettingsBinding
 import hu.kocsisgeri.betterneptun.utils.ThemeMode
 import hu.kocsisgeri.betterneptun.utils.getCurrentTheme
 import hu.kocsisgeri.betterneptun.utils.setBackButton
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import timber.log.Timber
 
 class SettingsFragment : Fragment() {
 
@@ -55,11 +49,11 @@ class SettingsFragment : Fragment() {
     }
 
     private fun setStartTimes() {
-        CourseRepo.firstClassTime.asLiveData().observe(viewLifecycleOwner) {
+        HomeState.firstClassTime.asLiveData().observe(viewLifecycleOwner) {
             binding.firstClassTime.text = it
         }
 
-        CourseRepo.lastClassTime.asLiveData().observe(viewLifecycleOwner) {
+        HomeState.lastClassTime.asLiveData().observe(viewLifecycleOwner) {
             binding.lastClassTime.text = it
         }
     }

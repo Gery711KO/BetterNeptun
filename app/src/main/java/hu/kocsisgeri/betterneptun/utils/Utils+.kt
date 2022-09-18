@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -195,7 +196,7 @@ fun Fragment.showToastOnClick(view: View, text: String) {
     }
 }
 
-fun getSubjectState(completed: Boolean, signer: String) : SubjectState {
+fun getSubjectState(completed: Boolean, signer: String): SubjectState {
     return when {
         completed -> SubjectState.PASS
         !completed && signer.contains("Elégtelen") -> SubjectState.FAILED
@@ -206,7 +207,7 @@ fun getSubjectState(completed: Boolean, signer: String) : SubjectState {
     }
 }
 
-fun String.getGrade() : Int {
+fun String.getGrade(): Int {
     return when (this) {
         "Elégtelen" -> 1
         "Elégséges" -> 2
@@ -217,7 +218,7 @@ fun String.getGrade() : Int {
     }
 }
 
-fun Element.getDoubleValue() : Double? {
+fun Element.getDoubleValue(): Double? {
     return if (text().isNotBlank()) {
         val data = text().split(",")
         ((data[0].toInt() * 100 + data[1].toInt()) / 100f).toDouble()
@@ -232,4 +233,21 @@ fun Element.getIntValue(): Int? {
     } else {
         null
     }
+}
+
+fun View.setSafeOnClickListener(
+    defaultInterval: Int = 1000,
+    onSafeClick: (View) -> Unit
+) {
+    setOnClickListener(object : View.OnClickListener {
+        private var lastTimeClicked: Long = 0
+
+        override fun onClick(v: View) {
+            if (SystemClock.elapsedRealtime() - lastTimeClicked < defaultInterval) {
+                return
+            }
+            lastTimeClicked = SystemClock.elapsedRealtime()
+            onSafeClick(v)
+        }
+    })
 }

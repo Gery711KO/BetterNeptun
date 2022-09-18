@@ -3,21 +3,16 @@ package hu.kocsisgeri.betterneptun.data.repository.course
 import androidx.lifecycle.MutableLiveData
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
-import hu.kocsisgeri.betterneptun.utils.*
-import hu.kocsisgeri.betterneptun.utils.data_manager.DataManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.coroutines.CoroutineContext
 
-object CourseRepo : CoroutineScope, KoinComponent {
+object HomeState : CoroutineScope, KoinComponent {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-
-    private val dataManager: DataManager by inject()
 
     val fetchNew = MutableSharedFlow<Unit>(1,100)
     val courses: MutableStateFlow<List<CalendarEntity.Event>> = MutableStateFlow(listOf())
@@ -67,7 +62,6 @@ object CourseRepo : CoroutineScope, KoinComponent {
     val unreadMessages = MutableStateFlow(0)
     val firstClassTime = MutableStateFlow<String?>(null)
     val lastClassTime = MutableStateFlow<String?>(null)
-    val isTimelineAutomatic = MutableStateFlow<Boolean?>(true)
 
     fun fetchCalendarTimes() {
         courses.onEach { list ->
@@ -103,8 +97,8 @@ object Timer : CoroutineScope {
             withContext(Dispatchers.Main) {
                 if (enabled) {
                     nextEvent?.let {
-                        CourseRepo.nextCourse.postValue(ApiResult.Success(it))
-                        CourseRepo.fetchNew.tryEmit(Unit)
+                        HomeState.nextCourse.postValue(ApiResult.Success(it))
+                        HomeState.fetchNew.tryEmit(Unit)
                         nextLooper(enabled)
                         this@launch.cancel()
                         this.cancel()
@@ -119,8 +113,8 @@ object Timer : CoroutineScope {
             delay(duration)
             withContext(Dispatchers.Main) {
                 if (enabled) {
-                    CourseRepo.currentCourses.postValue(currentEvents)
-                    CourseRepo.fetchNew.tryEmit(Unit)
+                    HomeState.currentCourses.postValue(currentEvents)
+                    HomeState.fetchNew.tryEmit(Unit)
                     currentLooper(enabled)
                     this@launch.cancel()
                     this.cancel()

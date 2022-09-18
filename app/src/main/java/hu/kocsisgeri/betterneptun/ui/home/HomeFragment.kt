@@ -5,26 +5,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
-import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
+import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
 import hu.kocsisgeri.betterneptun.databinding.FragmentHomeBinding
 import hu.kocsisgeri.betterneptun.ui.adapter.DiffListAdapter
 import hu.kocsisgeri.betterneptun.ui.adapter.cell.cellCurrentCourseDelegate
 import hu.kocsisgeri.betterneptun.utils.getCourseDateString
 import hu.kocsisgeri.betterneptun.utils.setButtonNavigation
 import hu.kocsisgeri.betterneptun.utils.showToastOnClick
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class HomeFragment : Fragment() {
 
     private val viewModel: HomeViewModel by viewModel()
-    private val args by navArgs<HomeFragmentArgs>()
     private lateinit var binding: FragmentHomeBinding
     private val listAdapter = DiffListAdapter(cellCurrentCourseDelegate())
 
@@ -42,13 +44,17 @@ class HomeFragment : Fragment() {
         setButtons()
         fetchNewDataOnAppStart()
         setCurrentCourses()
+        setupPullToRefresh()
     }
 
     @SuppressLint("SetTextI18n")
     private fun setUserData() {
-        binding.studentNeptun.text = args.currentUser?.neptun
-        binding.studentName.text = args.currentUser?.name
-        CourseRepo.unreadMessages.asLiveData().observe(viewLifecycleOwner) {
+        viewModel.studentData.observe(viewLifecycleOwner) {
+            binding.studentName.text = it?.name
+            binding.studentNeptun.text = it?.neptun
+        }
+
+        viewModel.unreadMessages.observe(viewLifecycleOwner) {
             if (it != 0) {
                 binding.studentUnread.isVisible = true
                 binding.studentUnread.text = it.toString()
@@ -70,6 +76,23 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun setupPullToRefresh() {
+        binding.swipeRefresh.setOnRefreshListener {
+            viewModel.refreshData()
+        }
+
+        viewModel.refreshProgress.onEach {
+            when (it) {
+                is ApiResult.Error -> {
+                    Toast.makeText(context, it.error, Toast.LENGTH_SHORT).show()
+                    binding.swipeRefresh.isRefreshing = false
+                }
+                is ApiResult.Progress -> binding.swipeRefresh.isRefreshing = true
+                is ApiResult.Success -> binding.swipeRefresh.isRefreshing = false
+            }
+        }.launchIn(lifecycleScope)
+    }
+
     @SuppressLint("SetTextI18n")
     private fun fetchNewDataOnAppStart() {
         if (!viewModel.isLoggedIn.value) {
@@ -80,7 +103,7 @@ class HomeFragment : Fragment() {
         binding.nextCourseInfoCard.isVisible = true
         binding.nextCourseRoot.alpha = 0f
 
-        CourseRepo.nextCourse.observe(viewLifecycleOwner) {
+        HomeState.nextCourse.observe(viewLifecycleOwner) {
             when (it) {
                 is ApiResult.Error -> {
                     binding.nextCourseInfoCard.isVisible = false
@@ -164,6 +187,6 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        CourseRepo.fetchNew.tryEmit(Unit)
+        HomeState.fetchNew.tryEmit(Unit)
     }
 }
