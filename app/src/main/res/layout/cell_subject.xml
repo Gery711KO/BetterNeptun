@@ -70,7 +70,7 @@
                 app:layout_constraintBottom_toTopOf="@id/credits"
                 app:layout_constraintEnd_toStartOf="@id/openable"
                 app:layout_constraintStart_toEndOf="@id/subject_name"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="@id/openable" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/credits"
@@ -84,7 +84,7 @@
                 android:textColor="@color/base_text_color"
                 android:textAlignment="textEnd"
                 android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="@id/subject_name"
+                app:layout_constraintBottom_toBottomOf="@id/openable"
                 app:layout_constraintEnd_toStartOf="@id/openable"
                 app:layout_constraintStart_toEndOf="@id/subject_name"
                 app:layout_constraintTop_toBottomOf="@id/subject_code" />

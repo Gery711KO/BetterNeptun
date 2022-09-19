@@ -32,19 +32,22 @@ fun cellCurrentCourseDelegate() =
 private fun CalendarEntity.Event.getRemainingTime() : Float {
     val diff = endTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
     val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-    return seconds / 60f
+    val asd = seconds / 60f
+    return asd
 }
 
 private fun CalendarEntity.Event.getTime() : Float {
     val diff = endTime.toEpochSecond(ZoneOffset.UTC) - startTime.toEpochSecond(ZoneOffset.UTC)
     val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-    return seconds / 60f
+    val asd = seconds / 60f
+    return asd
 }
 
 private fun CalendarEntity.Event.getPercent(): Int {
-    return (getTime() - ((getRemainingTime() / getTime()) * 100)).roundToInt()
+    return (100f - (getRemainingTime() / getTime()) * 100f).roundToInt()
 }
 
 private fun Float.ceil() : Int {
-    return kotlin.math.ceil(this).roundToInt()
+    val asd = kotlin.math.ceil(this).roundToInt()
+    return asd
 }
