@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
@@ -136,43 +135,7 @@ class HomeFragment : Fragment() {
                 }
             }
         }
-
-        /*CourseRepo.currentCourse.distinctUntilChanged().observe(viewLifecycleOwner) {
-            binding.lineProgress.max = CourseRepo.currentCourse.value?.getTime()?.ceil() ?: 100
-        }
-
-        CourseRepo.currentCourse.observe(viewLifecycleOwner) {
-            binding.currentCourseInfoCard.isVisible = it != null
-            it?.let {
-                binding.lineProgress.progress = it.getPercent()
-                binding.currentCourseLabel.text = "Éppen tart"
-                binding.lineProgress.setIndicatorColor(it.color)
-                binding.currentCourseLocation.text = it.location.trim()
-                binding.currentCourseSubject.text = it.title.trimStart()
-                binding.currentCourseTimeLeft.text = it.endTime.getTimeLeft()
-            }
-        }*/
     }
-
-    /*private fun CalendarEntity.Event.getRemainingTime() : Float {
-        val diff = endTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-        return seconds / 60f
-    }
-
-    private fun CalendarEntity.Event.getTime() : Float {
-        val diff = endTime.toEpochSecond(ZoneOffset.UTC) - startTime.toEpochSecond(ZoneOffset.UTC)
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-        return seconds / 60f
-    }
-
-    private fun CalendarEntity.Event.getPercent(): Int {
-        return (getTime() - ((getRemainingTime() / getTime()) * 100)).roundToInt()
-    }
-
-    private fun Float.ceil() : Int {
-        return ceil(this).roundToInt()
-    }*/
 
     private fun setButtons() {
         setButtonNavigation(binding.settingsButtonCard, HomeFragmentDirections.toSettings())
