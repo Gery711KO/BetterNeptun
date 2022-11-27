@@ -1,25 +1,17 @@
 package hu.kocsisgeri.betterneptun.ui.timetable
 
 import android.annotation.SuppressLint
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.*
 import androidx.navigation.fragment.findNavController
-import com.madrapps.pikolo.listeners.SimpleColorSelectionListener
-import hu.kocsisgeri.betterneptun.data.repository.course.CourseRepo
 import hu.kocsisgeri.betterneptun.databinding.FragmentTimetableBinding
 import hu.kocsisgeri.betterneptun.ui.model.CourseModel
 import hu.kocsisgeri.betterneptun.ui.timetable.model.FragmentWeekViewAdapter
+import hu.kocsisgeri.betterneptun.utils.observe
 import hu.kocsisgeri.betterneptun.utils.setBackButton
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
@@ -39,28 +31,28 @@ class TimetableFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setAdapter()
         initTable()
         setBackButton(binding.backButton)
         observeEventCLicks()
         setModeButton()
     }
 
+    private fun setAdapter() {
+        adapter = FragmentWeekViewAdapter(viewModel.clickHandler)
+        binding.weekView.adapter = adapter
+    }
+
     private fun initTable() {
-        viewModel.times.distinctUntilChanged().observe(viewLifecycleOwner, Observer {
+        viewModel.times.observe(viewLifecycleOwner) {
             binding.weekView.minHour = it.split(":")[0].toInt()
             binding.weekView.maxHour = it.split(":")[1].toInt()
-            adapter =
-                FragmentWeekViewAdapter(
-                    loadMoreHandler = viewModel::addEvents,
-                    viewModel.clickHandler
-                )
-            binding.weekView.adapter = adapter
-            viewModel.eventList.distinctUntilChanged()
-                .observe(viewLifecycleOwner, Observer { list ->
-                    adapter.submitList(list)
-                    adapter.refresh()
-                })
-        })
+        }
+
+        viewModel.timetableEvents.observe(viewLifecycleOwner) { list ->
+            adapter.submitList(list)
+            adapter.refresh()
+        }
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -72,22 +64,19 @@ class TimetableFragment : Fragment() {
             }
         }
 
-        viewModel.viewMode.asLiveData().observe(viewLifecycleOwner, Observer {
+        viewModel.viewMode.observe(viewLifecycleOwner) {
             binding.weekView.numberOfVisibleDays = viewModel.viewMode.value.days
-            binding.modeButton.setImageDrawable(requireContext().getDrawable(viewModel.viewMode.value.icon))
-        })
+            binding.modeButton.setImageDrawable(
+                context?.getDrawable(viewModel.viewMode.value.icon)
+            )
+        }
     }
 
     private fun observeEventCLicks() {
-        viewModel.clicked.onEach {
-            findNavController().navigate(TimetableFragmentDirections.toCourseDetail(CourseModel(it)))
-        }.launchIn(lifecycleScope)
-    }
-
-    fun refreshTable() {
-        viewModel.eventList.value?.let {
-            adapter.submitList(it)
-            adapter.refresh()
+        viewModel.clicked.observe(viewLifecycleOwner) {
+            findNavController().navigate(
+                TimetableFragmentDirections.toCourseDetail(CourseModel(it))
+            )
         }
     }
 }

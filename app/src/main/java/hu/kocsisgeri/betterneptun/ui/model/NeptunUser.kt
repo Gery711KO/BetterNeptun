@@ -24,3 +24,19 @@ data class MessageReader(
     val CurrentPage: Int? = 1,
     val PersonMessageId: Int? = null
 )
+
+data class Filter(
+    val TermID: Int = 0
+)
+
+data class AddedSubjectRequest(
+    val UserLogin: String? = null,
+    val Password: String? = null,
+    val TermId : Int? = null,
+)
+
+data class MarkBookRequest(
+    val UserLogin: String? = null,
+    val Password: String? = null,
+    val filter: Filter = Filter()
+)

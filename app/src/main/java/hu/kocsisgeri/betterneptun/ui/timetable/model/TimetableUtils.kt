@@ -105,8 +105,7 @@ fun CalendarEntity.BlockedTimeSlot.toWeekViewEntity(): WeekViewEntity {
 }
 
 class FragmentWeekViewAdapter(
-    private val loadMoreHandler: () -> Unit,
-    val clickHandler: MutableSharedFlow<CalendarEntity.Event>
+    private val clickHandler: MutableSharedFlow<CalendarEntity.Event>
 ) : WeekViewPagingAdapterJsr310<CalendarEntity>(), KoinComponent, CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Dispatchers.IO
@@ -117,7 +116,7 @@ class FragmentWeekViewAdapter(
     override fun onLoadMore(
         startDate: LocalDate,
         endDate: LocalDate
-    ) = loadMoreHandler()
+    ) = Unit
 
     override fun onEventClick(data: CalendarEntity, bounds: RectF) {
         super.onEventClick(data, bounds)

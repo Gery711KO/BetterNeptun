@@ -11,7 +11,7 @@ interface MessageDao {
     @Query("SELECT * FROM message")
     suspend fun getData(): List<Message>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(list: List<Message>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

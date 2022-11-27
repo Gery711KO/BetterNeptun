@@ -2,9 +2,8 @@ package hu.kocsisgeri.betterneptun.data.repository.course
 
 import androidx.lifecycle.MutableLiveData
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
+import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
-import hu.kocsisgeri.betterneptun.utils.*
-import hu.kocsisgeri.betterneptun.utils.data_manager.DataManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.koin.core.component.KoinComponent
@@ -14,31 +13,30 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.coroutines.CoroutineContext
 
-object CourseRepo : CoroutineScope, KoinComponent {
+object HomeState : CoroutineScope, KoinComponent {
     override val coroutineContext: CoroutineContext = Dispatchers.IO
 
-    private val dataManager: DataManager by inject()
-
-    val fetchNew = MutableSharedFlow<Unit>(1,100)
+    val fetchNewCurrent = MutableSharedFlow<Unit>(1,100)
+    val fetchNewNext = MutableSharedFlow<Unit>(1,100)
     val courses: MutableStateFlow<List<CalendarEntity.Event>> = MutableStateFlow(listOf())
     val nextCourse = MutableLiveData<ApiResult<CalendarEntity.Event>>(ApiResult.Progress(10))
-    val currentCourses = MutableLiveData<List<CalendarEntity.Event>>()
+    val currentCourses = MutableStateFlow<List<CalendarEntity.Event>>(listOf())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val getCurrent = fetchNew.onStart { emit(Unit) }.flatMapLatest {
+    val currentClasses = fetchNewCurrent.onStart { emit(Unit) }.flatMapLatest {
         courses.map { list ->
             list.sortedBy { it.startTime }.filter {
                 it.startTime.isBefore(LocalDateTime.now()) && it.endTime.isAfter(LocalDateTime.now())
             }.let {
                 Timer.currentEvents = it
-                currentCourses.postValue(it)
+                currentCourses.tryEmit(it)
                 it
             }
         }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val startTimer = fetchNew.onStart { emit(Unit) }.flatMapLatest {
+    val nextClass = fetchNewNext.onStart { emit(Unit) }.flatMapLatest {
 
         courses.map { list ->
             if (list.isNotEmpty()) {
@@ -67,7 +65,6 @@ object CourseRepo : CoroutineScope, KoinComponent {
     val unreadMessages = MutableStateFlow(0)
     val firstClassTime = MutableStateFlow<String?>(null)
     val lastClassTime = MutableStateFlow<String?>(null)
-    val isTimelineAutomatic = MutableStateFlow<Boolean?>(true)
 
     fun fetchCalendarTimes() {
         courses.onEach { list ->
@@ -90,40 +87,52 @@ object CourseRepo : CoroutineScope, KoinComponent {
     }
 }
 
-object Timer : CoroutineScope {
+object Timer : CoroutineScope, KoinComponent {
 
     override val coroutineContext: CoroutineContext = Dispatchers.IO
     var nextEvent: CalendarEntity.Event? = null
     var currentEvents: List<CalendarEntity.Event>? = null
-    var duration: Long = 60000
+
+    private const val duration: Long = 10000
+    private const val messageFetchInterval : Long = 360000
+
+    private val repo: NeptunRepository by inject()
 
     fun nextLooper(enabled: Boolean) {
         launch {
+            Timber.d("[DEBUG-next-looper]: looped")
             delay(duration)
             withContext(Dispatchers.Main) {
                 if (enabled) {
                     nextEvent?.let {
-                        CourseRepo.nextCourse.postValue(ApiResult.Success(it))
-                        CourseRepo.fetchNew.tryEmit(Unit)
-                        nextLooper(enabled)
-                        this@launch.cancel()
-                        this.cancel()
+                        HomeState.fetchNewNext.tryEmit(Unit)
                     }
                 }
             }
+            cancel()
         }
     }
 
     fun currentLooper(enabled: Boolean) {
         launch {
+            Timber.d("[DEBUG-current-looper]: looped")
             delay(duration)
             withContext(Dispatchers.Main) {
                 if (enabled) {
-                    CourseRepo.currentCourses.postValue(currentEvents)
-                    CourseRepo.fetchNew.tryEmit(Unit)
-                    currentLooper(enabled)
-                    this@launch.cancel()
-                    this.cancel()
+                    HomeState.fetchNewCurrent.tryEmit(Unit)
+                }
+            }
+            cancel()
+        }
+    }
+
+    fun messageFetchLooper(enabled: Boolean) {
+        launch {
+            delay(duration)
+            withContext(Dispatchers.IO) {
+                if (enabled) {
+                    repo.fetchMessages()
+                    messageFetchLooper(enabled)
                 }
             }
         }

@@ -7,600 +7,619 @@
     android:background="@color/base_fragment_bg"
     tools:context=".ui.home.HomeFragment">
 
-    <androidx.core.widget.NestedScrollView
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:overScrollMode="always">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/scroll_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingVertical="24dp">
+            android:overScrollMode="always">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/current_user_info_card"
-                style="@style/Widget.Material3.CardView.Elevated"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                app:cardUseCompatPadding="true"
-                app:layout_constraintEnd_toStartOf="@id/settings_button_card"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/current_user_info"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/card_bg"
-                    android:paddingHorizontal="24dp"
-                    android:paddingVertical="16dp">
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/student_name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/armata"
-                        android:textColor="@color/base_text_color"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        app:layout_constraintBottom_toTopOf="@id/student_neptun"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:text="Jani Vagyok" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/student_neptun"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.7"
-                        android:fontFamily="@font/armata"
-                        android:textColor="@color/base_text_color"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/student_name"
-                        tools:text="123AS6" />
-
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/student_unread"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="1"
-                        android:fontFamily="@font/armata"
-                        android:paddingTop="12dp"
-                        android:textColor="@color/base_text_color"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/student_neptun"
-                        tools:text="1 olvasatlan uzenet" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/settings_button_card"
-                style="@style/Widget.Material3.CardView.Elevated"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_marginEnd="10dp"
-                android:clickable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                app:cardUseCompatPadding="true"
-                app:layout_constraintBottom_toBottomOf="@id/current_user_info_card"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/current_user_info_card"
-                app:layout_constraintTop_toTopOf="@id/current_user_info_card">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/settings_button_content"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/card_bg"
-                    android:padding="24dp">
-
-                    <ImageView
-                        android:id="@+id/settings_image"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:backgroundTint="@color/base_button_bg"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:srcCompat="@drawable/ic_settings"
-                        app:tint="@color/base_text_color" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/current_course_info_card"
-                android:orientation="horizontal"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:overScrollMode="never"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/current_user_info_card"
-                tools:listitem="@layout/cell_current_course"
-                tools:itemCount="1"/>
+                android:layout_height="match_parent"
+                android:paddingVertical="24dp">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/next_course_info_card"
-                style="@style/Widget.Material3.CardView.Elevated"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10dp"
-                app:cardUseCompatPadding="true"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/current_course_info_card">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/next_course_info"
-                    android:layout_width="match_parent"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/current_user_info_card"
+                    style="@style/Widget.Material3.CardView.Elevated"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:background="@color/card_bg"
-                    android:paddingHorizontal="24dp">
-
-                    <com.google.android.material.progressindicator.CircularProgressIndicator
-                        android:id="@+id/course_loading"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:indeterminate="true"
-                        android:paddingVertical="30dp"
-                        app:indicatorColor="@color/base_text_color"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                    android:layout_marginStart="10dp"
+                    app:cardUseCompatPadding="true"
+                    app:layout_constraintEnd_toStartOf="@id/settings_button_card"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/next_course_root"
+                        android:id="@+id/current_user_info"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:visibility="visible">
+                        android:layout_height="wrap_content"
+                        android:background="@color/card_bg"
+                        android:paddingHorizontal="24dp"
+                        android:paddingVertical="16dp">
 
                         <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/next_course_label"
-                            android:layout_width="0dp"
+                            android:id="@+id/student_name"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="10dp"
                             android:fontFamily="@font/armata"
                             android:textColor="@color/base_text_color"
-                            android:textSize="16sp"
+                            android:textSize="18sp"
                             android:textStyle="bold"
-                            app:layout_constraintBottom_toTopOf="@id/next_course_title"
+                            app:layout_constraintBottom_toTopOf="@id/student_neptun"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintVertical_chainStyle="packed"
-                            tools:text="Következő óra" />
+                            tools:text="Jani Vagyok" />
 
                         <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/next_course_date"
-                            android:layout_width="0dp"
+                            android:id="@+id/student_neptun"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:alpha="0.8"
-                            android:drawableStart="@drawable/ic_event"
-                            android:drawablePadding="8dp"
-                            android:fontFamily="@font/armata"
-                            android:gravity="center_vertical"
-                            android:paddingTop="8dp"
-                            android:paddingBottom="2dp"
-                            android:textAlignment="gravity"
-                            android:textColor="@color/base_text_color"
-                            android:textSize="13sp"
-                            android:textStyle="italic"
-                            app:layout_constraintEnd_toStartOf="@id/next_course_start"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/next_course_label"
-                            tools:text="2022.09.12." />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/next_course_title"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:alpha="0.8"
-                            android:drawableStart="@drawable/ic_course"
-                            android:drawablePadding="8dp"
-                            android:fontFamily="@font/armata"
-                            android:gravity="center_vertical"
-                            android:paddingVertical="2dp"
-                            android:textAlignment="gravity"
-                            android:textColor="@color/base_text_color"
-                            android:textSize="12sp"
-                            android:textStyle="normal"
-                            app:layout_constraintEnd_toStartOf="@id/next_course_end"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/next_course_date"
-                            tools:text="DevOps az uzleti informatikai szolgaltatasokban" />
-
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/next_course_location"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="16dp"
                             android:alpha="0.7"
-                            android:drawableStart="@drawable/ic_location_18px"
+                            android:fontFamily="@font/armata"
+                            android:textColor="@color/base_text_color"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/student_name"
+                            tools:text="123AS6" />
+
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/student_unread"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:alpha="1"
+                            android:drawableEnd="@drawable/ic_mail_18px"
                             android:drawablePadding="8dp"
+                            android:drawableTint="@color/base_text_color"
                             android:fontFamily="@font/armata"
                             android:gravity="center_vertical"
-                            android:paddingVertical="2dp"
+                            android:includeFontPadding="true"
+                            android:paddingVertical="4dp"
                             android:textAlignment="gravity"
                             android:textColor="@color/base_text_color"
-                            android:textSize="12sp"
-                            android:textStyle="normal"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/next_course_title"
-                            app:layout_constraintVertical_chainStyle="packed"
-                            tools:text="BA.F.01" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/next_course_start"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/armata"
-                            android:paddingHorizontal="12dp"
-                            android:textAlignment="textEnd"
-                            android:textColor="@color/base_text_color"
-                            android:textSize="12sp"
+                            android:textSize="15sp"
                             android:textStyle="bold"
-                            app:layout_constraintBottom_toTopOf="@id/next_course_end"
-                            app:layout_constraintEnd_toStartOf="@id/line"
-                            app:layout_constraintStart_toEndOf="@id/next_course_date"
-                            app:layout_constraintTop_toTopOf="@id/line"
-                            app:layout_constraintVertical_chainStyle="spread_inside"
-                            tools:text="8:00" />
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/next_course_end"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/armata"
-                            android:paddingHorizontal="12dp"
-                            android:textAlignment="textEnd"
-                            android:textColor="@color/base_text_color"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            app:layout_constraintBottom_toBottomOf="@id/line"
-                            app:layout_constraintEnd_toStartOf="@id/line"
-                            app:layout_constraintStart_toEndOf="@id/next_course_title"
-                            app:layout_constraintTop_toBottomOf="@id/next_course_start"
-                            tools:text="10:40" />
-
-                        <View
-                            android:id="@+id/line"
-                            android:layout_width="6dp"
-                            android:layout_height="60dp"
-                            android:background="@drawable/rounded_corner"
-                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintBottom_toBottomOf="@id/student_neptun"
                             app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toEndOf="@id/next_course_start"
-                            app:layout_constraintTop_toTopOf="parent" />
+                            app:layout_constraintTop_toTopOf="@id/student_name"
+                            tools:text="1" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
+                </com.google.android.material.card.MaterialCardView>
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/settings_button_card"
+                    style="@style/Widget.Material3.CardView.Elevated"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_marginEnd="10dp"
+                    android:clickable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    app:cardUseCompatPadding="true"
+                    app:layout_constraintBottom_toBottomOf="@id/current_user_info_card"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/current_user_info_card"
+                    app:layout_constraintTop_toTopOf="@id/current_user_info_card">
 
-            </com.google.android.material.card.MaterialCardView>
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/settings_button_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/card_bg"
+                        android:paddingHorizontal="20dp">
 
+                        <ImageView
+                            android:id="@+id/settings_image"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:backgroundTint="@color/base_button_bg"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:srcCompat="@drawable/ic_settings"
+                            app:tint="@color/base_text_color" />
 
-            <TableLayout
-                android:id="@+id/holder"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/next_course_info_card">
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <TableRow android:layout_weight="1">
+                </com.google.android.material.card.MaterialCardView>
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/message_button_card"
-                        style="@style/Widget.Material3.CardView.Elevated"
-                        android:layout_width="wrap_content"
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/current_course_info_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:overScrollMode="never"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/current_user_info_card"
+                    tools:itemCount="1"
+                    tools:listitem="@layout/cell_current_course" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/next_course_info_card"
+                    style="@style/Widget.Material3.CardView.Elevated"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="10dp"
+                    app:cardUseCompatPadding="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/current_course_info_card">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/next_course_info"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:clickable="true"
-                        android:foreground="?android:attr/selectableItemBackground"
-                        app:cardUseCompatPadding="true">
+                        android:background="@color/card_bg"
+                        android:paddingHorizontal="24dp">
+
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            android:id="@+id/course_loading"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:indeterminate="true"
+                            android:paddingVertical="30dp"
+                            app:indicatorColor="@color/base_text_color"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
 
                         <androidx.constraintlayout.widget.ConstraintLayout
-                            android:id="@+id/message_button_content"
+                            android:id="@+id/next_course_root"
                             android:layout_width="match_parent"
-                            android:layout_height="100dp"
-                            android:background="@color/card_bg"
-                            android:padding="16dp">
-
-                            <ImageView
-                                android:id="@+id/settings_icon"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@drawable/ic_mail"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toStartOf="@id/settings_button_text"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:tint="@color/base_text_color" />
+                            android:layout_height="match_parent"
+                            android:visibility="visible">
 
                             <com.google.android.material.textview.MaterialTextView
-                                android:id="@+id/settings_button_text"
+                                android:id="@+id/next_course_label"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="10dp"
+                                android:fontFamily="@font/armata"
+                                android:textColor="@color/base_text_color"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                app:layout_constraintBottom_toTopOf="@id/next_course_title"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_chainStyle="packed"
+                                tools:text="Következő óra" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/next_course_date"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:alpha="0.8"
+                                android:drawableStart="@drawable/ic_event"
+                                android:drawablePadding="8dp"
+                                android:fontFamily="@font/armata"
+                                android:gravity="center_vertical"
+                                android:paddingTop="8dp"
+                                android:paddingBottom="2dp"
+                                android:textAlignment="gravity"
+                                android:textColor="@color/base_text_color"
+                                android:textSize="13sp"
+                                android:textStyle="italic"
+                                app:layout_constraintEnd_toStartOf="@id/next_course_start"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/next_course_label"
+                                tools:text="2022.09.12." />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/next_course_title"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:alpha="0.8"
+                                android:drawableStart="@drawable/ic_course"
+                                android:drawablePadding="8dp"
+                                android:fontFamily="@font/armata"
+                                android:gravity="center_vertical"
+                                android:paddingVertical="2dp"
+                                android:textAlignment="gravity"
+                                android:textColor="@color/base_text_color"
+                                android:textSize="12sp"
+                                android:textStyle="normal"
+                                app:layout_constraintEnd_toStartOf="@id/next_course_end"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/next_course_date"
+                                tools:text="DevOps az uzleti informatikai szolgaltatasokban" />
+
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/next_course_location"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="16dp"
+                                android:alpha="0.7"
+                                android:drawableStart="@drawable/ic_location_18px"
+                                android:drawablePadding="8dp"
+                                android:fontFamily="@font/armata"
+                                android:gravity="center_vertical"
+                                android:paddingVertical="2dp"
+                                android:textAlignment="gravity"
+                                android:textColor="@color/base_text_color"
+                                android:textSize="12sp"
+                                android:textStyle="normal"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/next_course_title"
+                                app:layout_constraintVertical_chainStyle="packed"
+                                tools:text="BA.F.01" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/next_course_start"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/armata"
-                                android:padding="16dp"
-                                android:text="Üzenetek"
+                                android:paddingHorizontal="12dp"
+                                android:textAlignment="textEnd"
                                 android:textColor="@color/base_text_color"
-                                android:textSize="14sp"
+                                android:textSize="12sp"
                                 android:textStyle="bold"
+                                app:layout_constraintBottom_toTopOf="@id/next_course_end"
+                                app:layout_constraintEnd_toStartOf="@id/line"
+                                app:layout_constraintStart_toEndOf="@id/next_course_date"
+                                app:layout_constraintTop_toTopOf="@id/line"
+                                app:layout_constraintVertical_chainStyle="spread_inside"
+                                tools:text="8:00" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/next_course_end"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/armata"
+                                android:paddingHorizontal="12dp"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/base_text_color"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                app:layout_constraintBottom_toBottomOf="@id/line"
+                                app:layout_constraintEnd_toStartOf="@id/line"
+                                app:layout_constraintStart_toEndOf="@id/next_course_title"
+                                app:layout_constraintTop_toBottomOf="@id/next_course_start"
+                                tools:text="10:40" />
+
+                            <View
+                                android:id="@+id/line"
+                                android:layout_width="6dp"
+                                android:layout_height="60dp"
+                                android:background="@drawable/rounded_corner"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toEndOf="@id/settings_icon"
+                                app:layout_constraintStart_toEndOf="@id/next_course_start"
                                 app:layout_constraintTop_toTopOf="parent" />
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    </com.google.android.material.card.MaterialCardView>
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/calendar_button_card"
-                        style="@style/Widget.Material3.CardView.Elevated"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:clickable="true"
-                        android:foreground="?android:attr/selectableItemBackground"
-                        app:cardUseCompatPadding="true">
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
-                        <androidx.constraintlayout.widget.ConstraintLayout
-                            android:id="@+id/calendar_button_content"
-                            android:layout_width="match_parent"
-                            android:layout_height="100dp"
-                            android:background="@color/card_bg"
-                            android:padding="16dp">
+                </com.google.android.material.card.MaterialCardView>
 
-                            <ImageView
-                                android:id="@+id/calendar_icon"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@drawable/ic_calendar"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toStartOf="@id/calendar_button_text"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:tint="@color/base_text_color" />
 
-                            <com.google.android.material.textview.MaterialTextView
-                                android:id="@+id/calendar_button_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/armata"
-                                android:padding="16dp"
-                                android:text="Órarend"
-                                android:textColor="@color/base_text_color"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toEndOf="@id/calendar_icon"
-                                app:layout_constraintTop_toTopOf="parent" />
+                <TableLayout
+                    android:id="@+id/holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="10dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/next_course_info_card">
 
-                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    <TableRow android:layout_weight="1">
 
-                    </com.google.android.material.card.MaterialCardView>
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/message_button_card"
+                            style="@style/Widget.Material3.CardView.Elevated"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:foreground="?android:attr/selectableItemBackground"
+                            app:cardUseCompatPadding="true">
 
-                </TableRow>
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/message_button_content"
+                                android:layout_width="match_parent"
+                                android:layout_height="100dp"
+                                android:background="@color/card_bg"
+                                android:padding="16dp">
 
-                <TableRow android:layout_weight="1">
+                                <ImageView
+                                    android:id="@+id/settings_icon"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:src="@drawable/ic_mail"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toStartOf="@id/settings_button_text"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:tint="@color/base_text_color" />
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/courses_button_card"
-                        style="@style/Widget.Material3.CardView.Elevated"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:clickable="true"
-                        android:foreground="?android:attr/selectableItemBackground"
-                        app:cardUseCompatPadding="true">
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:id="@+id/settings_button_text"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/armata"
+                                    android:padding="16dp"
+                                    android:text="Üzenetek"
+                                    android:textColor="@color/base_text_color"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintStart_toEndOf="@id/settings_icon"
+                                    app:layout_constraintTop_toTopOf="parent" />
 
-                        <androidx.constraintlayout.widget.ConstraintLayout
-                            android:id="@+id/courses_button_content"
-                            android:layout_width="match_parent"
-                            android:layout_height="100dp"
-                            android:background="@color/card_bg"
-                            android:padding="16dp">
+                            </androidx.constraintlayout.widget.ConstraintLayout>
 
-                            <ImageView
-                                android:id="@+id/courses_icon"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@drawable/ic_courses"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toStartOf="@id/courses_button_text"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:tint="@color/base_text_color" />
+                        </com.google.android.material.card.MaterialCardView>
 
-                            <com.google.android.material.textview.MaterialTextView
-                                android:id="@+id/courses_button_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/armata"
-                                android:padding="16dp"
-                                android:text="Kurzusok"
-                                android:textColor="@color/base_text_color"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toEndOf="@id/courses_icon"
-                                app:layout_constraintTop_toTopOf="parent" />
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/calendar_button_card"
+                            style="@style/Widget.Material3.CardView.Elevated"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:foreground="?android:attr/selectableItemBackground"
+                            app:cardUseCompatPadding="true">
 
-                        </androidx.constraintlayout.widget.ConstraintLayout>
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/calendar_button_content"
+                                android:layout_width="match_parent"
+                                android:layout_height="100dp"
+                                android:background="@color/card_bg"
+                                android:padding="16dp">
 
-                    </com.google.android.material.card.MaterialCardView>
+                                <ImageView
+                                    android:id="@+id/calendar_icon"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:src="@drawable/ic_calendar"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toStartOf="@id/calendar_button_text"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:tint="@color/base_text_color" />
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/exams_button_card"
-                        style="@style/Widget.Material3.CardView.Elevated"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:clickable="true"
-                        android:foreground="?android:attr/selectableItemBackground"
-                        app:cardUseCompatPadding="true">
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:id="@+id/calendar_button_text"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/armata"
+                                    android:padding="16dp"
+                                    android:text="Órarend"
+                                    android:textColor="@color/base_text_color"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintStart_toEndOf="@id/calendar_icon"
+                                    app:layout_constraintTop_toTopOf="parent" />
 
-                        <androidx.constraintlayout.widget.ConstraintLayout
-                            android:id="@+id/exams_button_content"
-                            android:layout_width="match_parent"
-                            android:layout_height="100dp"
-                            android:background="@color/card_bg"
-                            android:padding="16dp">
+                            </androidx.constraintlayout.widget.ConstraintLayout>
 
-                            <ImageView
-                                android:id="@+id/exams_icon"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@drawable/ic_exams"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toStartOf="@id/exams_button_text"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:tint="@color/base_text_color" />
+                        </com.google.android.material.card.MaterialCardView>
 
-                            <com.google.android.material.textview.MaterialTextView
-                                android:id="@+id/exams_button_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/armata"
-                                android:padding="16dp"
-                                android:text="Vizsgák"
-                                android:textColor="@color/base_text_color"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toEndOf="@id/exams_icon"
-                                app:layout_constraintTop_toTopOf="parent" />
+                    </TableRow>
 
-                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    <TableRow android:layout_weight="1">
 
-                    </com.google.android.material.card.MaterialCardView>
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/courses_button_card"
+                            style="@style/Widget.Material3.CardView.Elevated"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:foreground="?android:attr/selectableItemBackground"
+                            app:cardUseCompatPadding="true">
 
-                </TableRow>
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/courses_button_content"
+                                android:layout_width="match_parent"
+                                android:layout_height="100dp"
+                                android:background="@color/card_bg"
+                                android:padding="16dp">
 
-                <TableRow android:layout_weight="1">
+                                <ImageView
+                                    android:id="@+id/courses_icon"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:src="@drawable/ic_courses"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toStartOf="@id/courses_button_text"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:tint="@color/base_text_color" />
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/semesters_button_card"
-                        style="@style/Widget.Material3.CardView.Elevated"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:clickable="true"
-                        android:foreground="?android:attr/selectableItemBackground"
-                        app:cardUseCompatPadding="true">
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:id="@+id/courses_button_text"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/armata"
+                                    android:padding="16dp"
+                                    android:text="Kurzusok"
+                                    android:textColor="@color/base_text_color"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintStart_toEndOf="@id/courses_icon"
+                                    app:layout_constraintTop_toTopOf="parent" />
 
-                        <androidx.constraintlayout.widget.ConstraintLayout
-                            android:id="@+id/semesters_button_content"
-                            android:layout_width="match_parent"
-                            android:layout_height="100dp"
-                            android:background="@color/card_bg"
-                            android:padding="16dp">
+                            </androidx.constraintlayout.widget.ConstraintLayout>
 
-                            <ImageView
-                                android:id="@+id/semesters_icon"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@drawable/ic_semesters"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toStartOf="@id/semesters_button_text"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:tint="@color/base_text_color" />
+                        </com.google.android.material.card.MaterialCardView>
 
-                            <com.google.android.material.textview.MaterialTextView
-                                android:id="@+id/semesters_button_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/armata"
-                                android:padding="16dp"
-                                android:text="Félévek"
-                                android:textColor="@color/base_text_color"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toEndOf="@id/semesters_icon"
-                                app:layout_constraintTop_toTopOf="parent" />
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/exams_button_card"
+                            style="@style/Widget.Material3.CardView.Elevated"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:foreground="?android:attr/selectableItemBackground"
+                            app:cardUseCompatPadding="true">
 
-                        </androidx.constraintlayout.widget.ConstraintLayout>
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/exams_button_content"
+                                android:layout_width="match_parent"
+                                android:layout_height="100dp"
+                                android:background="@color/card_bg"
+                                android:padding="16dp">
 
-                    </com.google.android.material.card.MaterialCardView>
+                                <ImageView
+                                    android:id="@+id/exams_icon"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:src="@drawable/ic_exams"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toStartOf="@id/exams_button_text"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:tint="@color/base_text_color" />
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/schedule_button_card"
-                        style="@style/Widget.Material3.CardView.Elevated"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:clickable="true"
-                        android:foreground="?android:attr/selectableItemBackground"
-                        app:cardUseCompatPadding="true">
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:id="@+id/exams_button_text"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/armata"
+                                    android:padding="16dp"
+                                    android:text="Vizsgák"
+                                    android:textColor="@color/base_text_color"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintStart_toEndOf="@id/exams_icon"
+                                    app:layout_constraintTop_toTopOf="parent" />
 
-                        <androidx.constraintlayout.widget.ConstraintLayout
-                            android:id="@+id/schedule_button_content"
-                            android:layout_width="match_parent"
-                            android:layout_height="100dp"
-                            android:background="@color/card_bg"
-                            android:padding="16dp">
+                            </androidx.constraintlayout.widget.ConstraintLayout>
 
-                            <ImageView
-                                android:id="@+id/schedule_icon"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@drawable/ic_schedule"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toStartOf="@id/schedule_button_text"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:tint="@color/base_text_color" />
+                        </com.google.android.material.card.MaterialCardView>
 
-                            <com.google.android.material.textview.MaterialTextView
-                                android:id="@+id/schedule_button_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/armata"
-                                android:padding="16dp"
-                                android:text="Időszakok"
-                                android:textColor="@color/base_text_color"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toEndOf="@id/schedule_icon"
-                                app:layout_constraintTop_toTopOf="parent" />
+                    </TableRow>
 
-                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    <TableRow android:layout_weight="1">
 
-                    </com.google.android.material.card.MaterialCardView>
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/semesters_button_card"
+                            style="@style/Widget.Material3.CardView.Elevated"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:foreground="?android:attr/selectableItemBackground"
+                            app:cardUseCompatPadding="true">
 
-                </TableRow>
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/semesters_button_content"
+                                android:layout_width="match_parent"
+                                android:layout_height="100dp"
+                                android:background="@color/card_bg"
+                                android:padding="16dp">
 
-            </TableLayout>
+                                <ImageView
+                                    android:id="@+id/semesters_icon"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:src="@drawable/ic_semesters"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toStartOf="@id/semesters_button_text"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:tint="@color/base_text_color" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:id="@+id/semesters_button_text"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/armata"
+                                    android:padding="16dp"
+                                    android:text="Félévek"
+                                    android:textColor="@color/base_text_color"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintStart_toEndOf="@id/semesters_icon"
+                                    app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.core.widget.NestedScrollView>
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/schedule_button_card"
+                            style="@style/Widget.Material3.CardView.Elevated"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:foreground="?android:attr/selectableItemBackground"
+                            app:cardUseCompatPadding="true">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/schedule_button_content"
+                                android:layout_width="match_parent"
+                                android:layout_height="100dp"
+                                android:background="@color/card_bg"
+                                android:padding="16dp">
+
+                                <ImageView
+                                    android:id="@+id/schedule_icon"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:src="@drawable/ic_schedule"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toStartOf="@id/schedule_button_text"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:tint="@color/base_text_color" />
+
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:id="@+id/schedule_button_text"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/armata"
+                                    android:padding="16dp"
+                                    android:text="Időszakok"
+                                    android:textColor="@color/base_text_color"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintStart_toEndOf="@id/schedule_icon"
+                                    app:layout_constraintTop_toTopOf="parent" />
+
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </TableRow>
+
+                </TableLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
