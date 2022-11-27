@@ -35,7 +35,6 @@ android {
         targetSdk = AndroidSdk.targetApi
         versionCode = hu.kocsisgeri.betterneptun.Release.versionCode
         versionName = hu.kocsisgeri.betterneptun.Release.versionName
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
