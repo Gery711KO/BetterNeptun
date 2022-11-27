@@ -12,7 +12,7 @@ plugins {
 android {
     signingConfigs {
         getByName("debug") {
-            storeFile = file("/Users/gery711k/Documents/GitHub/BetterNeptun/debug.jks")
+            storeFile = file("/Users/gery711k/Documents/GitHub/BetterNeptun/android-debug.jks")
             storePassword = "android"
             keyAlias = "debug"
             keyPassword = "android"
