@@ -12,12 +12,20 @@ plugins {
 android {
     signingConfigs {
         getByName("debug") {
-            storeFile = file("/Users/gery711k/Documents/GitHub/BetterNeptun/android-debug.jks")
+            storeFile = project.file("../android-debug.jks")
             storePassword = "android"
-            keyAlias = "debug"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+
+        create("release") {
+            storeFile = project.file("../android-debug.jks")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
     }
+
     compileSdk = AndroidSdk.compileApi
     buildToolsVersion = AndroidSdk.buildTools
 
@@ -38,7 +46,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
         getByName("debug") {
             versionNameSuffix = "-debug"
