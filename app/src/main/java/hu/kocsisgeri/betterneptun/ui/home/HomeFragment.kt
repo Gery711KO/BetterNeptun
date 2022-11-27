@@ -8,7 +8,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
@@ -16,6 +18,7 @@ import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
 import hu.kocsisgeri.betterneptun.databinding.FragmentHomeBinding
 import hu.kocsisgeri.betterneptun.ui.adapter.DiffListAdapter
 import hu.kocsisgeri.betterneptun.ui.adapter.cell.cellCurrentCourseDelegate
+import hu.kocsisgeri.betterneptun.ui.main.MainActivity
 import hu.kocsisgeri.betterneptun.utils.getCourseDateString
 import hu.kocsisgeri.betterneptun.utils.setButtonNavigation
 import hu.kocsisgeri.betterneptun.utils.showToastOnClick
@@ -70,9 +73,9 @@ class HomeFragment : Fragment() {
             snapHelper.attachToRecyclerView(this)
         }
 
-        viewModel.currentCourses.observe(viewLifecycleOwner) {
+        viewModel.currentCourses.onEach {
             listAdapter.updateData(it)
-        }
+        }.launchIn(lifecycleScope)
     }
 
     private fun setupPullToRefresh() {
@@ -150,6 +153,7 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        HomeState.fetchNew.tryEmit(Unit)
+        HomeState.fetchNewCurrent.tryEmit(Unit)
+        HomeState.fetchNewNext.tryEmit(Unit)
     }
 }

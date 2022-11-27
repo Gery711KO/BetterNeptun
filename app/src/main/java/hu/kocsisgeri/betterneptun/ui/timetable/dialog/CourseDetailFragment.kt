@@ -23,6 +23,9 @@ import timber.log.Timber
 import java.time.format.TextStyle
 import java.util.*
 
+enum class Animation {
+    OPEN, CLOSE
+}
 
 class CourseDetailFragment : DialogFragment() {
 
@@ -69,7 +72,7 @@ class CourseDetailFragment : DialogFragment() {
             val startMin = it.event.startTime.minute.let { min -> if (min < 10) "0$min" else min }
             val endMin = it.event.endTime.minute.let { min -> if (min < 10) "0$min" else min }
 
-            viewModel.currentSelected.tryEmit(it.event)
+            viewModel.selectEvent(it.event)
             binding.courseCode.text = it.event.courseCode
             binding.subjectCode.text = it.event.subjectCode
             binding.className.text = it.event.title.trim()
@@ -112,9 +115,9 @@ class CourseDetailFragment : DialogFragment() {
     private fun setColorChooser() {
         binding.currentColorButton.apply {
             setOnClickListener {
-                viewModel.changeColor(viewModel.currentSelected.value, colorData.value)
-                viewModel.currentSelected.tryEmit(
-                    viewModel.currentSelected.value?.copy(color = colorData.value)
+                viewModel.changeColor(viewModel.getSelectedEvent(), colorData.value)
+                viewModel.selectEvent(
+                    viewModel.getSelectedEvent()?.copy(color = colorData.value)
                 )
                 binding.color.background.setTint(colorData.value)
                 closeColorPicker()
@@ -131,7 +134,7 @@ class CourseDetailFragment : DialogFragment() {
 
     private fun observeEventCLicks() {
         binding.color.setOnClickListener {
-            viewModel.currentSelected.value?.let { event ->
+            viewModel.getSelectedEvent()?.let { event ->
                 openColorPicker(event.color)
             }
         }
@@ -140,10 +143,10 @@ class CourseDetailFragment : DialogFragment() {
     private fun openColorPicker(color: Int) {
         if (!binding.colorPickerCard.isVisible) {
             binding.color.text = "Mégsem"
-            colorPickerAnimation(true)
+            colorPickerAnimation(Animation.OPEN)
         } else {
             binding.color.text = "Átállít"
-            colorPickerAnimation(false)
+            colorPickerAnimation(Animation.CLOSE)
         }
         colorData.tryEmit(color)
         binding.colorPicker.setColor(color)
@@ -152,29 +155,25 @@ class CourseDetailFragment : DialogFragment() {
 
     private fun closeColorPicker() {
         binding.color.text = "Átállít"
-        colorPickerAnimation(false)
+        colorPickerAnimation(Animation.CLOSE)
     }
 
-    private fun colorPickerAnimation(open: Boolean) {
-        if (open) {
-            binding.colorPickerCard.scaleX = 0f
-            binding.colorPickerCard.scaleY = 0f
-            binding.colorPickerCard.animate().scaleX(1f).scaleY(1f).apply {
-                duration = 200
-            }.withStartAction { binding.colorPickerCard.isVisible = true }.start()
-        } else {
-            binding.colorPickerCard.animate().scaleX(0f).scaleY(0f).apply {
-                duration = 200
-            }.withEndAction {
-                getCalendarRef()?.refreshTable()
-                binding.colorPickerCard.isVisible = false
-            }.start()
+    private fun colorPickerAnimation(animation: Animation) {
+        when (animation) {
+            Animation.OPEN -> {
+                binding.colorPickerCard.scaleX = 0f
+                binding.colorPickerCard.scaleY = 0f
+                binding.colorPickerCard.animate().scaleX(1f).scaleY(1f).apply {
+                    duration = 200
+                }.withStartAction { binding.colorPickerCard.isVisible = true }.start()
+            }
+            Animation.CLOSE -> {
+                binding.colorPickerCard.animate().scaleX(0f).scaleY(0f).apply {
+                    duration = 200
+                }.withEndAction {
+                    binding.colorPickerCard.isVisible = false
+                }.start()
+            }
         }
-    }
-
-    private fun getCalendarRef(): TimetableFragment? {
-        return (parentFragmentManager.fragments.firstOrNull {
-            it is TimetableFragment
-        }?.let { it as TimetableFragment })
     }
 }

@@ -48,7 +48,7 @@ class NeptunRepositoryImpl(
             dataManager.messages.getData().let { cache ->
                 val list = mutableListOf<MessageDto>()
                 val maxId = cache.maxByOrNull { it.id }?.id ?: 0
-                var total = 0
+                var total: Int
                 var counter = 1f
                 currentUser.first().let { user ->
                     networkDataSource.getMessages(user.copy(CurrentPage = 0)).let { result ->
@@ -116,8 +116,8 @@ class NeptunRepositoryImpl(
                                                                 )
                                                                 return@launch
                                                             } else {
-                                                                list.addAll(filtered)
-                                                                filtered.saveMessages(save)
+                                                                list.addAll(rList)
+                                                                rList.saveMessages(save)
                                                             }
                                                         }
                                                 }

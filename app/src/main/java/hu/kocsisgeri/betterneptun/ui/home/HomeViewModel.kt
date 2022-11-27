@@ -25,11 +25,11 @@ class HomeViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             HomeState.fetchCalendarTimes()
 
-            HomeState.startTimer.onEach {
+            HomeState.nextClass.onEach {
                 Timer.nextLooper(it)
             }.launchIn(this)
 
-            HomeState.getCurrent.onEach {
+            HomeState.currentClasses.onEach {
                 Timer.currentLooper(it.isNotEmpty())
             }.launchIn(this)
 

@@ -22,12 +22,17 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
+import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.ui.model.SubjectState
+import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import io.noties.markwon.Markwon
+import kotlinx.coroutines.flow.Flow
 import org.jsoup.nodes.Element
 import java.lang.Math.ceil
 import java.time.LocalDateTime
@@ -250,4 +255,27 @@ fun View.setSafeOnClickListener(
             onSafeClick(v)
         }
     })
+}
+
+fun CalendarEntity.Event.getRemainingTime(): Float {
+    val diff =
+        endTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+    return seconds / 60f
+}
+
+fun CalendarEntity.Event.getTime(): Float {
+    val diff = endTime.toEpochSecond(ZoneOffset.UTC) - startTime.toEpochSecond(ZoneOffset.UTC)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+    return seconds / 60f
+}
+
+fun CalendarEntity.Event.getPercent(): Int {
+    return (100f - (getRemainingTime() / getTime()) * 100f).roundToInt()
+}
+
+fun <T : Any> Flow<T>.observe(viewLifecycleOwner: LifecycleOwner, observe: (T) -> Unit) {
+    asLiveData().observe(viewLifecycleOwner) {
+        observe(it)
+    }
 }
