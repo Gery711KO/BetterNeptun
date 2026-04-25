@@ -1,15 +1,28 @@
 plugins {
-    id("com.android.application")
-    id(BuildPlugins.googleServicesPlugin)
-    id(BuildPlugins.firebaseCrashlyticsPlugin)
-    id(BuildPlugins.kotlinAndroidPlugin)
-    id(BuildPlugins.kotlinAndroidExtensionsPlugin)
-    id(BuildPlugins.kotlinAndroidKaptPlugin)
-    id(BuildPlugins.safeArgsPlugin)
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.navigation.safeargs)
+    alias(libs.plugins.ksp)
 }
 
 android {
+    namespace = "hu.kocsisgeri.betterneptun"
+
+    compileSdk {
+        version = release(libs.versions.compileSdk.get().toInt())
+    }
+
+    defaultConfig {
+        applicationId = "hu.kocsisgeri.betterneptun"
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
+        versionCode = 1
+        versionName = "0.3.4"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
     signingConfigs {
         getByName("debug") {
             storeFile = project.file("../android-debug.jks")
@@ -26,22 +39,10 @@ android {
         }
     }
 
-    compileSdk = AndroidSdk.compileApi
-    buildToolsVersion = AndroidSdk.buildTools
-
-    defaultConfig {
-        applicationId = "hu.kocsisgeri.betterneptun"
-        minSdk = AndroidSdk.minApi
-        targetSdk = AndroidSdk.targetApi
-        versionCode = hu.kocsisgeri.betterneptun.Release.versionCode
-        versionName = hu.kocsisgeri.betterneptun.Release.versionName
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
     buildTypes {
-        getByName("release") {
+        release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -50,7 +51,7 @@ android {
         }
         getByName("debug") {
             versionNameSuffix = "-debug"
-            isDebuggable = true
+            isDebuggable = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -61,83 +62,52 @@ android {
 
     buildFeatures {
         viewBinding = true
-    }
-
-    sourceSets {
-        getByName("main") {
-            setRoot("src/main")
-            java.srcDirs("src/main/kotlin")
-        }
-        getByName("debug") {
-            setRoot("src/debug")
-            java.srcDirs("src/debug/kotlin")
-        }
-        getByName("release") {
-            setRoot("src/release")
-            java.srcDirs("src/release/kotlin")
-        }
+        buildConfig = true
+        compose = true
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-
-    packagingOptions {
-        resources.excludes.addAll(
-            listOf(
-                "META-INF/DEPENDENCIES",
-                "META-INF/LICENSE",
-                "META-INF/LICENSE.txt",
-                "META-INF/license.txt",
-                "META-INF/NOTICE",
-                "META-INF/NOTICE.txt",
-                "META-INF/notice.txt",
-                "META-INF/ASL2.0",
-                "META-INF/AL2.0",
-                "META-INF/LGPL2.1",
-                "META-INF/*.kotlin_module"
-            )
-        )
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 }
 
 dependencies {
-    implementation("androidx.room:room-common:2.4.3")
-    implementation("androidx.legacy:legacy-support-v4:1.0.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
-    implementation("androidx.preference:preference:1.1.1")
-    kapt("androidx.room:room-compiler:2.4.3")
-    implementation("androidx.room:room-ktx:2.4.3")
-    implementation("org.jsoup:jsoup:1.14.3")
-    implementation("androidx.work:work-runtime:2.7.1")
-    implementation("com.android.support:design:29.0.0")
-    implementation("androidx.fragment:fragment-ktx:1.5.2")
-    implementation("androidx.compose.material3:material3:1.0.0-alpha01")
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation("com.github.franmontiel:PersistentCookieJar:v1.0.1")
-    implementation("com.github.thellmund.Android-Week-View:core:5.2.4")
-    implementation("com.github.thellmund.Android-Week-View:jsr310:5.2.4")
-    implementation("io.noties.markwon:core:4.6.2")
-    implementation("com.github.madrapps:pikolo:2.0.2")
-    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation(libs.bundles.androidx.room)
 
-    addDependency(Libraries.material)
-    addDependency(Libraries.timber)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.bundles.compose)
+    implementation(libs.bundles.navigation3)
+    implementation(libs.androidx.fragment.compose)
 
-    firebase()
+    ksp(libs.androidx.room.compiler)
+    
+    implementation(libs.bundles.androidx.lifecycle)
+    implementation(libs.bundles.androidx.navigation)
+    implementation(libs.bundles.koin)
+    implementation(libs.bundles.networking)
+    implementation(libs.bundles.adapterDelegates)
+    ksp(libs.moshi.codegen)
 
-    koin()
-    androidX()
-    navigation()
-    network()
-    adapter()
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.preference)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.legacy.support.v4)
 
-    unitTests()
-    uiTests()
+    implementation(libs.google.material)
+    implementation(libs.timber)
+    implementation(libs.jsoup)
+    implementation(libs.persistentCookieJar)
+    implementation(libs.weekView.core)
+    implementation(libs.weekView.jsr310)
+    implementation(libs.markwon.core)
+    implementation(libs.pikolo)
+    implementation(libs.mpAndroidChart)
+
+    testImplementation(libs.bundles.test)
+    androidTestImplementation(libs.bundles.androidTest)
 }

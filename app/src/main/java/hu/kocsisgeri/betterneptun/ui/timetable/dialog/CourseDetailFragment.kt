@@ -30,7 +30,7 @@ enum class Animation {
 class CourseDetailFragment : DialogFragment() {
 
     private lateinit var binding: FragmentCourseDetailBinding
-    private val args by navArgs<CourseDetailFragmentArgs>()
+//    private val args by navArgs<CourseDetailFragmentArgs>()
 
     private val viewModel: TimetableViewModel by viewModel()
 
@@ -66,22 +66,23 @@ class CourseDetailFragment : DialogFragment() {
 
     @SuppressLint("SetTextI18n")
     private fun setData() {
-        args.model?.let {
-            val day =
-                it.event.startTime.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
-            val startMin = it.event.startTime.minute.let { min -> if (min < 10) "0$min" else min }
-            val endMin = it.event.endTime.minute.let { min -> if (min < 10) "0$min" else min }
-
-            viewModel.selectEvent(it.event)
-            binding.courseCode.text = it.event.courseCode
-            binding.subjectCode.text = it.event.subjectCode
-            binding.className.text = it.event.title.trim()
-            binding.teacher.text = it.event.teacher
-            binding.color.background.setTint(it.event.color)
-            binding.room.text = it.event.location
-            binding.time.text = "${it.event.startTime.hour}:${startMin} - ${it.event.endTime.hour}:${endMin}" +
-                    " (${day.replaceFirstChar { char -> char.uppercase() }})"
-        }
+        // todo
+//        args.model?.let {
+//            val day =
+//                it.event.startTime.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
+//            val startMin = it.event.startTime.minute.let { min -> if (min < 10) "0$min" else min }
+//            val endMin = it.event.endTime.minute.let { min -> if (min < 10) "0$min" else min }
+//
+//            viewModel.selectEvent(it.event)
+//            binding.courseCode.text = it.event.courseCode
+//            binding.subjectCode.text = it.event.subjectCode
+//            binding.className.text = it.event.title.trim()
+//            binding.teacher.text = it.event.teacher
+//            binding.color.background.setTint(it.event.color)
+//            binding.room.text = it.event.location
+//            binding.time.text = "${it.event.startTime.hour}:${startMin} - ${it.event.endTime.hour}:${endMin}" +
+//                    " (${day.replaceFirstChar { char -> char.uppercase() }})"
+//        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

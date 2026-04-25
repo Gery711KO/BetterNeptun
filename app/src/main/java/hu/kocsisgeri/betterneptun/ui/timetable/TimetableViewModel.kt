@@ -6,7 +6,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
-import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import kotlinx.coroutines.flow.*
 

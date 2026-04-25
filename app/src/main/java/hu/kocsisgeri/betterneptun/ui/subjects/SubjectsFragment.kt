@@ -1,7 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.subjects
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.databinding.FragmentSubjectsBinding
+import hu.kocsisgeri.betterneptun.ui.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.adapter.DiffListAdapter
 import hu.kocsisgeri.betterneptun.ui.adapter.cell.InteractionEvent
 import hu.kocsisgeri.betterneptun.ui.adapter.cell.cellSubjectDelegate
@@ -16,7 +16,7 @@ import hu.kocsisgeri.betterneptun.utils.setBackButton
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class SubjectsFragment : Fragment() {
+class SubjectsFragment : ComposeFragment() {
 
     private val viewModel: SubjectsViewModel by viewModel()
     private lateinit var binding: FragmentSubjectsBinding

@@ -8,7 +8,8 @@ open class NetworkException(
     val errorCode: Int
 ) : IOException(cause)
 
-object NoInternetException : NetworkException(null, null, 0)
+class NoInternetException : NetworkException(null, null, 0)
+
 class UnknownException(
     override val cause: Throwable?, errorCode: Int
 ) : NetworkException(cause, null, errorCode)

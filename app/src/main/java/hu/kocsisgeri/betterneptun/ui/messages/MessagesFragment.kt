@@ -6,25 +6,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.databinding.FragmentMessagesBinding
+import hu.kocsisgeri.betterneptun.ui.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.adapter.DiffListAdapter
 import hu.kocsisgeri.betterneptun.ui.adapter.cell.*
-import hu.kocsisgeri.betterneptun.utils.NotifyingLinearLayoutManager
 import hu.kocsisgeri.betterneptun.utils.setBackButton
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import timber.log.Timber
 
 
-class MessagesFragment : Fragment() {
+class MessagesFragment : ComposeFragment() {
 
     private val viewModel: MessagesViewModel by viewModel()
     private lateinit var binding: FragmentMessagesBinding
@@ -57,7 +55,7 @@ class MessagesFragment : Fragment() {
         viewModel.listItems.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is ApiResult.Success -> {
-                    listAdapter.updateData(result.data.map { it.mapToModel() })
+//                    listAdapter.updateData(result.data.map { it.mapToModel() })
                     binding.progressLayout.isVisible = false
                 }
                 is ApiResult.Error -> {
@@ -75,10 +73,7 @@ class MessagesFragment : Fragment() {
     private fun observeNavigation() {
         events.onEach {
             when (it) {
-                is NavigationEvent -> {
-                    if (findNavController().currentDestination?.id == R.id.messagesFragment)
-                        findNavController().navigate(it.navDirections)
-                }
+                is NavigationEvent -> navigator.navigateTo(it.destination)
                 is ReadMessageEvent -> {
                     viewModel.readMessage(it.messageId)
                 }

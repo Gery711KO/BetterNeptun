@@ -8,7 +8,7 @@ import hu.kocsisgeri.betterneptun.ui.settings.SettingsViewModel
 import hu.kocsisgeri.betterneptun.ui.splash.SplashViewModel
 import hu.kocsisgeri.betterneptun.ui.subjects.SubjectsViewModel
 import hu.kocsisgeri.betterneptun.ui.timetable.TimetableViewModel
-import hu.kocsisgeri.betterneptun.utils.data_manager.DataManager
+import hu.kocsisgeri.betterneptun.data.datamanager.DataManager
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
@@ -17,7 +17,7 @@ val appModule = module {
 
     single { DataManager(get(), get(), get(), get()) }
 
-    viewModel { LoginViewModel(networkDataSource = get(), get()) }
+    viewModel { LoginViewModel(get(), get()) }
     viewModel { HomeViewModel(get()) }
     viewModel { MessagesViewModel(get()) }
     viewModel { TimetableViewModel(get()) }

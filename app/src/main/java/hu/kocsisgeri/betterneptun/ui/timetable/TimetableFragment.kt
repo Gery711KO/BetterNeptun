@@ -5,17 +5,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import hu.kocsisgeri.betterneptun.databinding.FragmentTimetableBinding
-import hu.kocsisgeri.betterneptun.ui.model.CourseModel
+import hu.kocsisgeri.betterneptun.ui.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.timetable.model.FragmentWeekViewAdapter
 import hu.kocsisgeri.betterneptun.utils.observe
 import hu.kocsisgeri.betterneptun.utils.setBackButton
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
-class TimetableFragment : Fragment() {
+class TimetableFragment : ComposeFragment() {
 
     private val viewModel: TimetableViewModel by viewModel()
     private lateinit var binding: FragmentTimetableBinding
@@ -74,9 +72,10 @@ class TimetableFragment : Fragment() {
 
     private fun observeEventCLicks() {
         viewModel.clicked.observe(viewLifecycleOwner) {
-            findNavController().navigate(
-                TimetableFragmentDirections.toCourseDetail(CourseModel(it))
-            )
+            // TODO
+//            findNavController().navigate(
+//                TimetableFragmentDirections.toCourseDetail(CourseModel(it))
+//            )
         }
     }
 }

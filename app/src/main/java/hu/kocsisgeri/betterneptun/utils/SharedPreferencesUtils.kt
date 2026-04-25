@@ -2,6 +2,7 @@ package hu.kocsisgeri.betterneptun.utils
 
 import android.content.SharedPreferences
 import timber.log.Timber
+import androidx.core.content.edit
 
 const val PREF_CURRENT_USER = "CURRENT_SAVED_USER"
 const val PREF_STAY_LOGGED_ID = "STAY_LOGGED_IN"
@@ -24,23 +25,22 @@ inline fun <reified T> SharedPreferences.get(key: String, defaultValue: T): T = 
 }
 
 inline fun <reified T> SharedPreferences.put(key: String, value: T) {
-    val editor = this.edit()
-
-    when (T::class) {
-        Boolean::class -> editor.putBoolean(key, value as Boolean)
-        Float::class -> editor.putFloat(key, value as Float)
-        Int::class -> editor.putInt(key, value as Int)
-        Long::class -> editor.putLong(key, value as Long)
-        String::class -> editor.putString(key, value as String)
-        else -> {
-            Timber.w("Can't save value, unsupported type: ${T::class}")
+    this.edit {
+        when (T::class) {
+            Boolean::class -> putBoolean(key, value as Boolean)
+            Float::class -> putFloat(key, value as Float)
+            Int::class -> putInt(key, value as Int)
+            Long::class -> putLong(key, value as Long)
+            String::class -> putString(key, value as String)
+            else -> {
+                Timber.w("Can't save value, unsupported type: ${T::class}")
+            }
         }
     }
-    editor.apply()
 }
 
 fun SharedPreferences.delete(key: String) {
-    val editor = this.edit()
-    editor.remove(key)
-    editor.apply()
+    this.edit {
+        remove(key)
+    }
 }

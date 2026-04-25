@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import hu.kocsisgeri.betterneptun.utils.PREF_SAVED_THEME
 import hu.kocsisgeri.betterneptun.utils.ThemeMode
-import hu.kocsisgeri.betterneptun.utils.data_manager.DataManager
+import hu.kocsisgeri.betterneptun.data.datamanager.DataManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import org.koin.core.component.KoinComponent

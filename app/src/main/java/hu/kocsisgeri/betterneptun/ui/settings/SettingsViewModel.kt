@@ -4,8 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import hu.kocsisgeri.betterneptun.utils.PREF_SAVED_THEME
 import hu.kocsisgeri.betterneptun.utils.ThemeMode
-import hu.kocsisgeri.betterneptun.utils.data_manager.DataManager
-import hu.kocsisgeri.betterneptun.utils.getCurrentTheme
+import hu.kocsisgeri.betterneptun.data.datamanager.DataManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.koin.core.component.KoinComponent

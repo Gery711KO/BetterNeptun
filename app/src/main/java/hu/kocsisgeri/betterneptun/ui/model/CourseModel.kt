@@ -1,8 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.model
 
-import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
-import java.io.Serializable
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
 
-data class CourseModel(
-    val event: CalendarEntity.Event
-) : Serializable
+@Serializable
+data class CourseModel(val courseId: String): NavKey

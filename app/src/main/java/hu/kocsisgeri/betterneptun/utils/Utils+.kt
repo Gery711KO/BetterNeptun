@@ -28,7 +28,9 @@ import androidx.lifecycle.asLiveData
 import androidx.navigation.NavController
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
+import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.R
+import hu.kocsisgeri.betterneptun.ui.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.model.SubjectState
 import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
 import io.noties.markwon.Markwon
@@ -183,15 +185,15 @@ fun LocalDateTime.getTimeLeft(): String {
     return "$minutes perc"
 }
 
-fun Fragment.setBackButton(view: View) {
+fun ComposeFragment.setBackButton(view: View) {
     view.setOnClickListener {
-        findNavController().popBackStack()
+        navigator.navigateBack()
     }
 }
 
-fun Fragment.setButtonNavigation(view: View, destination: NavDirections) {
+fun ComposeFragment.setButtonNavigation(view: View, destination: NavKey) {
     view.setOnClickListener {
-        findNavController().navigate(destination)
+        navigator.navigateTo(destination)
     }
 }
 

@@ -1,70 +1,80 @@
 package hu.kocsisgeri.betterneptun.ui.login
 
-import android.content.SharedPreferences
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
-import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.domain.api.datasource.NetworkDataSource
-import hu.kocsisgeri.betterneptun.domain.api.network.NetworkResponse
-import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.model.NeptunUser
 import hu.kocsisgeri.betterneptun.utils.*
-import hu.kocsisgeri.betterneptun.utils.data_manager.DataManager
-import kotlinx.coroutines.flow.MutableSharedFlow
+import hu.kocsisgeri.betterneptun.data.datamanager.DataManager
+import hu.kocsisgeri.betterneptun.ui.login.model.LoginState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import timber.log.Timber
 
 class LoginViewModel(
-    private val networkDataSource: NetworkDataSource,
     private val neptunRepository: NeptunRepository,
-) : ViewModel(), KoinComponent {
-
-    private val dataManager: DataManager by inject()
-    private val sharedPreferences: SharedPreferences by inject()
+    private val dataManager: DataManager,
+) : ViewModel() {
 
     private val neptunCode = MutableStateFlow<String?>(null)
     private val password = MutableStateFlow<String?>(null)
     private val stayLoggedIn = MutableStateFlow(false)
+    private val forcedState = MutableStateFlow<LoginState?>(null)
 
-    val isButtonEnabled = combine(neptunCode, password) { neptun, pw ->
-        !neptun.isNullOrBlank() && !pw.isNullOrBlank()
-    }
+    val loginState = combine(
+        neptunCode,
+        password,
+        stayLoggedIn,
+        forcedState
+    ) { neptunCode, password, stayLoggedIn, forcedState ->
+        forcedState?: LoginState.Idle(
+            neptunCode = neptunCode.orEmpty(),
+            password = password.orEmpty(),
+            stayLoggedIn = stayLoggedIn,
+            isButtonEnabled = neptunCode.isNullOrEmpty().not() && password.isNullOrEmpty().not()
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        initialValue = null
+    )
 
-    val isSucceeded = MutableSharedFlow<StudentData>(1, 50)
-    val isFailed = MutableSharedFlow<String>(1, 50)
-    val loading = MutableSharedFlow<Boolean>(1, 50)
-    val hideLogin = MutableSharedFlow<Boolean>(1, 50)
 
-
-    private val neptunUser = MutableStateFlow(NeptunUser())
-
-    fun login() {
+    fun login(isSilentLogin: Boolean) {
         viewModelScope.launch {
-            loading.emit(true)
-            neptunUser.emit(NeptunUser(neptunCode.value, password.value))
-            neptunRepository.login(neptunUser.value).let { result ->
+            val user = NeptunUser(neptunCode.value.orEmpty(), password.value.orEmpty())
+
+            forcedState.emit(
+                if (isSilentLogin) {
+                    LoginState.SilentLogin
+                } else {
+                    LoginState.Loading
+                }
+            )
+
+            neptunRepository.login(user).let { result ->
                 when (result) {
-                    is ApiResult.Error -> isFailed.emit(result.error)
-                    is ApiResult.Progress -> loading.emit(true)
+                    is ApiResult.Error -> forcedState.emit(
+                        LoginState.Error(result.error)
+                    )
+                    is ApiResult.Progress -> forcedState.emit(
+                        if (isSilentLogin) LoginState.SilentLogin
+                        else LoginState.Loading
+                    )
                     is ApiResult.Success -> {
-                        sharedPreferences.put(PREF_STAY_LOGGED_ID, stayLoggedIn.value)
-                        dataManager.putData(PREF_CURRENT_USER, neptunUser.value)
-                        neptunRepository.currentUser.emit(neptunUser.value)
-                        isSucceeded.emit(result.data)
+                        dataManager.putData(PREF_STAY_LOGGED_ID, stayLoggedIn.value)
+                        dataManager.putData(PREF_CURRENT_USER, user)
+                        neptunRepository.studentData.tryEmit(result.data)
+                        neptunRepository.currentUser.emit(user)
+                        forcedState.emit(LoginState.Success(result.data))
                     }
                 }
             }
         }
-    }
-
-    fun setUserData(user: StudentData) {
-        neptunRepository.studentData.tryEmit(user)
     }
 
     fun passwordInput(input: String) {
@@ -79,24 +89,20 @@ class LoginViewModel(
         stayLoggedIn.tryEmit(keep)
     }
 
-    fun clearLogin() {
-        neptunCode.tryEmit(null)
-        password.tryEmit(null)
-        stayLoggedIn.tryEmit(false)
-        neptunUser.tryEmit(NeptunUser())
+    fun setIdle() {
+        forcedState.tryEmit(null)
     }
 
     init {
-        sharedPreferences.get(PREF_STAY_LOGGED_ID, false).let {
+        dataManager.getData(PREF_STAY_LOGGED_ID, Boolean::class.java)?.let {
             if (it) {
                 try {
                     dataManager.getData(PREF_CURRENT_USER, NeptunUser::class.java)?.let { user ->
-                        if (user.UserLogin != null) {
-                            hideLogin.tryEmit(true)
+                        if (user.UserLogin.isNotBlank() && user.Password.isNotBlank()) {
+                            forcedState.tryEmit(LoginState.SilentLogin)
                             neptunCode.tryEmit(user.UserLogin)
                             password.tryEmit(user.Password)
-                            stayLoggedIn.tryEmit(it)
-                            login()
+                            login(true)
                         }
                     }
                 } catch (ex: Exception) {

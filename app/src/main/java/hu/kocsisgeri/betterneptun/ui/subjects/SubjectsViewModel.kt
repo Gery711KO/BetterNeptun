@@ -2,7 +2,7 @@ package hu.kocsisgeri.betterneptun.ui.subjects
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 
 class SubjectsViewModel(
     repo: NeptunRepository

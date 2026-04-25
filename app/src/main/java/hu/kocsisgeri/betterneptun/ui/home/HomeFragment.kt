@@ -7,26 +7,29 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
 import hu.kocsisgeri.betterneptun.databinding.FragmentHomeBinding
+import hu.kocsisgeri.betterneptun.ui.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.adapter.DiffListAdapter
 import hu.kocsisgeri.betterneptun.ui.adapter.cell.cellCurrentCourseDelegate
-import hu.kocsisgeri.betterneptun.ui.main.MainActivity
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessagesDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
 import hu.kocsisgeri.betterneptun.utils.getCourseDateString
 import hu.kocsisgeri.betterneptun.utils.setButtonNavigation
 import hu.kocsisgeri.betterneptun.utils.showToastOnClick
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.getValue
 
-class HomeFragment : Fragment() {
+class HomeFragment : ComposeFragment() {
 
     private val viewModel: HomeViewModel by viewModel()
     private lateinit var binding: FragmentHomeBinding
@@ -141,11 +144,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun setButtons() {
-        setButtonNavigation(binding.settingsButtonCard, HomeFragmentDirections.toSettings())
-        setButtonNavigation(binding.messageButtonCard, HomeFragmentDirections.toMessages())
-        setButtonNavigation(binding.calendarButtonCard, HomeFragmentDirections.toCalendar())
-        setButtonNavigation(binding.coursesButtonCard, HomeFragmentDirections.toSubjects())
-        setButtonNavigation(binding.semestersButtonCard, HomeFragmentDirections.toSemesters())
+        setButtonNavigation(binding.settingsButtonCard, SettingsDestination)
+        setButtonNavigation(binding.messageButtonCard, MessagesDestination)
+        setButtonNavigation(binding.calendarButtonCard, TimetableDestination)
+        setButtonNavigation(binding.coursesButtonCard, SubjectsDestination)
+        setButtonNavigation(binding.semestersButtonCard, SemestersDestination)
 
         showToastOnClick(binding.examsButtonCard, "Fejlesztés alatt!!")
         showToastOnClick(binding.scheduleButtonCard, "Fejlesztés alatt!!")

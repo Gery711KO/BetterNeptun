@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
 import hu.kocsisgeri.betterneptun.data.repository.course.Timer
-import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -45,20 +45,20 @@ class HomeViewModel(
 
     fun refreshData() {
         viewModelScope.launch(Dispatchers.IO) {
-            neptunRepository.login(neptunRepository.currentUser.value).let { result ->
-                when (result) {
-                    is ApiResult.Error -> refreshProgress.emit(ApiResult.Error(result.error))
-                    is ApiResult.Progress -> refreshProgress.emit(ApiResult.Progress(1))
-                    is ApiResult.Success -> {
-                        HomeState.fetchCalendarTimes()
-                        neptunRepository.fetchCalendarData()
-                        neptunRepository.fetchMarkBookData()
-                        neptunRepository.fetchAverages()
-                        neptunRepository.fetchMessages()
-                        refreshProgress.emit(ApiResult.Success(Unit))
-                    }
-                }
-            }
+//            neptunRepository.login(neptunRepository.currentUser.value).let { result ->
+//                when (result) {
+//                    is ApiResult.Error -> refreshProgress.emit(ApiResult.Error(result.error))
+//                    is ApiResult.Progress -> refreshProgress.emit(ApiResult.Progress(1))
+//                    is ApiResult.Success -> {
+//                        HomeState.fetchCalendarTimes()
+//                        neptunRepository.fetchCalendarData()
+//                        neptunRepository.fetchMarkBookData()
+//                        neptunRepository.fetchAverages()
+//                        neptunRepository.fetchMessages()
+//                        refreshProgress.emit(ApiResult.Success(Unit))
+//                    }
+//                }
+//            }
         }
     }
 }

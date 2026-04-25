@@ -16,11 +16,12 @@ import com.google.android.material.tabs.TabLayout
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.databinding.FragmentSemestersBinding
+import hu.kocsisgeri.betterneptun.ui.ComposeFragment
 import hu.kocsisgeri.betterneptun.utils.setBackButton
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
-class SemestersFragment : Fragment() {
+class SemestersFragment : ComposeFragment() {
 
     private val viewModel: SemestersViewModel by viewModel()
     private lateinit var binding: FragmentSemestersBinding

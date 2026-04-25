@@ -8,7 +8,7 @@ open class BasicListAdapter(
     vararg adapters: AdapterDelegate<List<ListItem>>
 ) : ListDelegationAdapter<List<ListItem>>(*adapters) {
 
-    val listItems: List<ListItem> get() = items
+    val listItems: List<ListItem> get() = items.orEmpty()
     val itemsCount: Int get() = itemCount
 
     init {

@@ -15,7 +15,7 @@ import hu.kocsisgeri.betterneptun.utils.setTextAndAddClickableLinks
 class MessageDetailFragment : DialogFragment() {
 
     private lateinit var binding: FragmentMessageDetailBinding
-    private val args by navArgs<MessageDetailFragmentArgs>()
+//    private val args by navArgs<MessageDetailFragmentArgs>()
 
     override fun getTheme(): Int = R.style.AppDialogTheme
 
@@ -65,10 +65,10 @@ class MessageDetailFragment : DialogFragment() {
     }
 
     private fun setData() {
-        binding.detail.setTextAndAddClickableLinks(args.message?.detail, requireContext(), findNavController())
-        binding.subject.text = args.message?.subject
-        binding.sender.text = args.message?.name
-        binding.date.text = args.message?.date?.toDateString()
+//        binding.detail.setTextAndAddClickableLinks(args.message?.detail, requireContext(), findNavController())
+//        binding.subject.text = args.message?.subject
+//        binding.sender.text = args.message?.name
+//        binding.date.text = args.message?.date?.toDateString()
     }
 
     private fun setBackgroundClick() {

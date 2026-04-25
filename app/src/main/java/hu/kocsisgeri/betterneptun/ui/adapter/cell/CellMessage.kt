@@ -1,13 +1,13 @@
 package hu.kocsisgeri.betterneptun.ui.adapter.cell
 
 import android.annotation.SuppressLint
-import androidx.navigation.NavDirections
+import androidx.navigation3.runtime.NavKey
 import com.hannesdorfmann.adapterdelegates4.dsl.adapterDelegateViewBinding
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.databinding.CellMessageBinding
 import hu.kocsisgeri.betterneptun.ui.adapter.ListItem
-import hu.kocsisgeri.betterneptun.ui.messages.MessagesFragmentDirections
 import hu.kocsisgeri.betterneptun.ui.model.MessageModel
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.text.SimpleDateFormat
 import java.util.*
@@ -20,7 +20,7 @@ fun cellMessageDelegate(event: MutableSharedFlow<InteractionEvent>) =
         block = {
             binding.currentUserInfo.setOnClickListener {
                 event.tryEmit(ReadMessageEvent(item.id))
-                event.tryEmit(NavigationEvent(MessagesFragmentDirections.toMessageDetail(item)))
+                event.tryEmit(NavigationEvent(MessageDetailDestination(item.name))) // TODO
             }
 
             bind {
@@ -50,5 +50,5 @@ fun Date.toDateString(): String {
 
 
 interface InteractionEvent
-data class NavigationEvent(val navDirections: NavDirections): InteractionEvent
+data class NavigationEvent(val destination: NavKey): InteractionEvent
 data class ReadMessageEvent(val messageId: Int) : InteractionEvent

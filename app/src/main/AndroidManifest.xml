@@ -19,9 +19,6 @@
         android:theme="@style/Theme.BetterNeptun"
         tools:replace="android:theme">
 
-        <service android:name=".service.notification.ExampleService"
-            android:exported="false" />
-
         <activity
             android:name=".ui.splash.SplashActivity"
             android:exported="true"

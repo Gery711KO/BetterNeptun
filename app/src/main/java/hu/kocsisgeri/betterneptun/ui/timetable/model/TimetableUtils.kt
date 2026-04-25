@@ -10,7 +10,7 @@ import com.alamkanak.weekview.WeekViewEntity
 import com.alamkanak.weekview.jsr310.WeekViewPagingAdapterJsr310
 import com.alamkanak.weekview.jsr310.setEndTime
 import com.alamkanak.weekview.jsr310.setStartTime
-import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.adapter.ListItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

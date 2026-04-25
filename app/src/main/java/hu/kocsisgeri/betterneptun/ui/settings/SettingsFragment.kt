@@ -3,16 +3,16 @@ package hu.kocsisgeri.betterneptun.ui.settings
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
-import androidx.fragment.app.Fragment
 import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import hu.kocsisgeri.betterneptun.BuildConfig
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
 import hu.kocsisgeri.betterneptun.databinding.FragmentSettingsBinding
+import hu.kocsisgeri.betterneptun.ui.ComposeFragment
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import hu.kocsisgeri.betterneptun.utils.ThemeMode
 import hu.kocsisgeri.betterneptun.utils.getCurrentTheme
 import hu.kocsisgeri.betterneptun.utils.setBackButton
@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class SettingsFragment : Fragment() {
+class SettingsFragment : ComposeFragment() {
 
     private val viewModel: SettingsViewModel by viewModel()
     private lateinit var binding: FragmentSettingsBinding
@@ -61,7 +61,7 @@ class SettingsFragment : Fragment() {
     private fun setExitButton() {
         binding.logoutCard.setOnClickListener {
             viewModel.logout()
-            findNavController().navigate(SettingsFragmentDirections.toLogin())
+            navigator.navigateTo(LoginDestination)
         }
     }
 
