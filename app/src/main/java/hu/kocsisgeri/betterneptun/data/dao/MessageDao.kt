@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 interface MessageDao {
 
     @Query("SELECT * FROM message")
-    fun getData(): Flow<MessageEntity>
+    fun getData(): Flow<List<MessageEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(list: List<MessageEntity>)

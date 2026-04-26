@@ -27,6 +27,7 @@ import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.ui.screen.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.model.SubjectState
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.flow.Flow
@@ -76,15 +77,14 @@ fun TextView.setHtmlText(
 fun TextView.setTextAndAddClickableLinks(
     markdown: String?,
     context: Context,
-    navController: NavController
+    navigator: Navigator
 ) {
     setHtmlText(markdown)
-    //setMarkdownText(markdown)
     handleUrlClicks { text ->
         when {
             text.contains("http") -> {
-                navController.popBackStack()
                 openUrl(text, context)
+                navigator.navigateBack()
             }
             text.contains("mailto:") || text.contains("@") -> {
                 text.removePrefix("mailto:").trim().sendEmail(context)

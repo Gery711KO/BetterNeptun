@@ -20,7 +20,7 @@ fun cellMessageDelegate(event: MutableSharedFlow<InteractionEvent>) =
         block = {
             binding.currentUserInfo.setOnClickListener {
                 event.tryEmit(ReadMessageEvent(item.id))
-                event.tryEmit(NavigationEvent(MessageDetailDestination(item.name))) // TODO
+                event.tryEmit(NavigationEvent(MessageDetailDestination)) // TODO
             }
 
             bind {
@@ -51,4 +51,4 @@ fun Date.toDateString(): String {
 
 interface InteractionEvent
 data class NavigationEvent(val destination: NavKey): InteractionEvent
-data class ReadMessageEvent(val messageId: Int) : InteractionEvent
+data class ReadMessageEvent(val messageId: String) : InteractionEvent

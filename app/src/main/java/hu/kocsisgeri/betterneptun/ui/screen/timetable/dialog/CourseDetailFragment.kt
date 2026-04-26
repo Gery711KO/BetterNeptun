@@ -12,7 +12,7 @@ import androidx.navigation.fragment.findNavController
 import com.madrapps.pikolo.listeners.SimpleColorSelectionListener
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.databinding.FragmentCourseDetailBinding
-import hu.kocsisgeri.betterneptun.ui.screen.messages.detail_dialog.setStatusAndNavbarTransparency
+import hu.kocsisgeri.betterneptun.ui.screen.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.TimetableViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -21,7 +21,7 @@ enum class Animation {
     OPEN, CLOSE
 }
 
-class CourseDetailFragment : DialogFragment() {
+class CourseDetailFragment : ComposeFragment() {
 
     private lateinit var binding: FragmentCourseDetailBinding
 //    private val args by navArgs<CourseDetailFragmentArgs>()
@@ -30,7 +30,6 @@ class CourseDetailFragment : DialogFragment() {
 
     private val colorData = MutableStateFlow(0)
 
-    override fun getTheme(): Int = R.style.AppDialogTheme
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,20 +41,10 @@ class CourseDetailFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setStatusAndNavbarTransparency()
         closeButton()
         setData()
-        openAnimation()
         setColorChooser()
         observeEventCLicks()
-        setBackgroundClick()
-    }
-
-    private fun setBackgroundClick() {
-        binding.content.isClickable = true
-        binding.background.setOnClickListener {
-            closeAnimation()
-        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -79,32 +68,10 @@ class CourseDetailFragment : DialogFragment() {
 //        }
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return object : Dialog(requireContext(), theme) {
-            override fun onBackPressed() {
-                closeAnimation()
-            }
-        }
-    }
-
-    private fun openAnimation() {
-        binding.animationRoot.scaleY = 0f
-        binding.animationRoot.scaleX = 0f
-        binding.animationRoot.animate().scaleX(1f).scaleY(1f).apply {
-            duration = 200
-        }.start()
-    }
-
     private fun closeButton() {
         binding.closeButton.setOnClickListener {
-            closeAnimation()
+            navigator.navigateBack()
         }
-    }
-
-    private fun closeAnimation() {
-        binding.animationRoot.animate().scaleX(0f).scaleY(0f).apply {
-            duration = 200
-        }.withEndAction { findNavController().popBackStack() }.start()
     }
 
     private fun setColorChooser() {

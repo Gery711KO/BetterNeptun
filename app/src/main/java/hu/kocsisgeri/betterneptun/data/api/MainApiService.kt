@@ -1,11 +1,13 @@
 package hu.kocsisgeri.betterneptun.data.api
 
 import hu.kocsisgeri.betterneptun.data.model.ApiResponseDto
+import hu.kocsisgeri.betterneptun.data.model.MessageDetailsDto
 import hu.kocsisgeri.betterneptun.data.model.MessageListDto
 import hu.kocsisgeri.betterneptun.data.model.UnreadMessagesCountDto
 import hu.kocsisgeri.betterneptun.data.model.UserInfoDto
 import retrofit2.http.GET
 import retrofit2.http.Headers
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface MainApiService {
@@ -25,4 +27,11 @@ interface MainApiService {
         @Query("lastRow") lastRow: Int,
         @Query("filterType") filterType: Int = 0
     ): ApiResponseDto<MessageListDto>
+
+    @Headers("Content-Type: application/json")
+    @GET("Messages/{msgId}/Posts")
+    suspend fun getMessageDetails(
+        @Path("msgId") msgId: String,
+        @Query("messageId") messageId: String,
+    ): ApiResponseDto<MessageDetailsDto>
 }

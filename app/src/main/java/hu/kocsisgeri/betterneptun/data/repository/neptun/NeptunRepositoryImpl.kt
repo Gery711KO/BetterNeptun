@@ -3,6 +3,8 @@ package hu.kocsisgeri.betterneptun.data.repository.neptun
 import android.graphics.Color
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
+import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
+import hu.kocsisgeri.betterneptun.data.mapper.toMessageEntity
 import hu.kocsisgeri.betterneptun.data.model.ReceivedMessageDto
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
@@ -10,11 +12,10 @@ import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.model.MarkBookDataModel
 import hu.kocsisgeri.betterneptun.ui.model.SemesterModel
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
-import hu.kocsisgeri.betterneptun.utils.PREF_STAY_LOGGED_ID
-import hu.kocsisgeri.betterneptun.utils.get
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 internal class NeptunRepositoryImpl(
@@ -24,8 +25,9 @@ internal class NeptunRepositoryImpl(
 ) : NeptunRepository {
 
     override val events = MutableStateFlow<List<CalendarEntity.Event>>(listOf())
-    override val messages =
-        MutableStateFlow<ApiResult<List<ReceivedMessageDto>>>(ApiResult.Progress(0))
+    override val messages = localDataSource.appDatabase.messages.getData().map { list ->
+        list.map { it.toMessageDomain() }
+    }
     override val studentData = MutableStateFlow<StudentData?>(null)
     override val markBookData =
         MutableStateFlow<ApiResult<List<MarkBookDataModel>>>(ApiResult.Progress(0))
@@ -35,9 +37,18 @@ internal class NeptunRepositoryImpl(
     override val unreadMessagesCount: MutableStateFlow<Int?> = MutableStateFlow(null)
 
     override suspend fun fetchMessages() {
-        val save = localDataSource.cache.get(PREF_STAY_LOGGED_ID, false)
-
-        // TODO
+        withContext(ioDispatcher) {
+            networkDataSource.getReceivedMessages(
+                firstRow = 0,
+                lastRow = 20
+            ).let {
+                localDataSource.appDatabase.messages.insertAll(
+                    it.data.receivedMessages.map { message ->
+                        message.toMessageEntity()
+                    }
+                )
+            }
+        }
     }
 
     override suspend fun fetchUnreadMessages() {
@@ -201,35 +212,8 @@ internal class NeptunRepositoryImpl(
         }
     }
 
-    override suspend fun readMessage(messageId: Int) {
-//            messages.getSuccess().let { messageList ->
-//                val newMessage =
-//                    messageList.firstOrNull { message -> message.Id == messageId }
-//                if (newMessage?.IsNew == true) {
-//                    currentUser.first().let { user ->
-//                        networkDataSource.markMessageAsRead(
-//                            MessageReader(
-//                                user.UserLogin,
-//                                user.Password,
-//                                user.CurrentPage,
-//                                messageId
-//                            )
-//                        ).check {
-//                            dataManager.messages.insertOne(
-//                                Message(
-//                                    id = newMessage.Id,
-//                                    detail = newMessage.Detail,
-//                                    senderName = newMessage.Name,
-//                                    subject = newMessage.Subject,
-//                                    date = newMessage.SendDate,
-//                                    isNew = false
-//                                )
-//                            )
-//                            fetchMessages()
-//                        }
-//                    }
-//                }
-    }
+    override suspend fun getMessageDetail(messageId: String) =
+        networkDataSource.getMessageDetails(messageId).data.toMessageDomain()
 
     override suspend fun randomiseCalendarColors() {
 //        withContext(ioDispatcher) {

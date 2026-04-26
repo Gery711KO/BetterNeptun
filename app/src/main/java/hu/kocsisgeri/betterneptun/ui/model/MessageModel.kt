@@ -5,7 +5,7 @@ import java.io.Serializable
 import java.util.*
 
 data class MessageModel(
-    val id: Int,
+    val id: String,
     val detail: String,
     val name: String,
     val subject: String,
@@ -13,7 +13,7 @@ data class MessageModel(
     val isNew : Boolean
 ): ListItem, Serializable {
     override fun getAdapterItemId(): String {
-        return id.toString()
+        return id
     }
 
     override fun getAdapterItemHash(): Int {

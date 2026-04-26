@@ -11,12 +11,14 @@ import hu.kocsisgeri.betterneptun.ui.screen.messages.MessagesFragment
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessagesDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
 import hu.kocsisgeri.betterneptun.ui.screen.home.HomeScreen
+import hu.kocsisgeri.betterneptun.ui.screen.messages.detail_dialog.MessageDetailFragment
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.SemestersFragment
 import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsFragment
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsFragment
@@ -47,6 +49,10 @@ val navigationModule = module {
 
         navigation<MessagesDestination> {
             ComposeFragment<MessagesFragment>()
+        }
+
+        navigation<MessageDetailDestination> {
+            ComposeFragment<MessageDetailFragment>()
         }
 
         navigation<SemestersDestination> {

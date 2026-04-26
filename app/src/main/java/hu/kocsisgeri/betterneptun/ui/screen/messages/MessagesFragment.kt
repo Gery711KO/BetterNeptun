@@ -8,21 +8,25 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.databinding.FragmentMessagesBinding
-import hu.kocsisgeri.betterneptun.ui.screen.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.adapter.DiffListAdapter
-import hu.kocsisgeri.betterneptun.ui.adapter.cell.*
+import hu.kocsisgeri.betterneptun.ui.adapter.cell.InteractionEvent
+import hu.kocsisgeri.betterneptun.ui.adapter.cell.NavigationEvent
+import hu.kocsisgeri.betterneptun.ui.adapter.cell.ReadMessageEvent
+import hu.kocsisgeri.betterneptun.ui.adapter.cell.cellMessageDelegate
+import hu.kocsisgeri.betterneptun.ui.model.MessageModel
+import hu.kocsisgeri.betterneptun.ui.screen.ComposeFragment
 import hu.kocsisgeri.betterneptun.utils.setBackButton
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.koin.androidx.viewmodel.ext.android.viewModel
-
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
+import java.util.Date
 
 class MessagesFragment : ComposeFragment() {
 
-    private val viewModel: MessagesViewModel by viewModel()
+    private val viewModel: MessagesViewModel by activityViewModel()
+
     private lateinit var binding: FragmentMessagesBinding
     private val events = MutableSharedFlow<InteractionEvent>(1, 50)
 
@@ -51,20 +55,20 @@ class MessagesFragment : ComposeFragment() {
         }
 
         viewModel.listItems.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is ApiResult.Success -> {
-//                    listAdapter.updateData(result.data.map { it.mapToModel() })
-                    binding.progressLayout.isVisible = false
+            listAdapter.updateData(
+                result.map {
+                    MessageModel(
+                        id = it.id,
+                        name = it.name,
+                        subject = it.subject,
+                        isNew = it.isNew,
+                        detail = "",
+                        date = Date(),
+                    )
                 }
-                is ApiResult.Error -> {
-                    // do something with error
-                }
-                is ApiResult.Progress -> {
-                    binding.progressLayout.isVisible = true
-                    binding.progress.progress = result.percentage
-                    binding.progressLabel.text = "Üzenetek betöltése (${result.percentage}%)"
-                }
-            }
+            )
+
+            binding.progressLayout.isVisible = false
         }
     }
 

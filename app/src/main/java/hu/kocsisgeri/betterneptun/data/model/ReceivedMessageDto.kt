@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ReceivedMessageDto(
     val messageId: String,
-    val senderUserId: String,
+    val senderUserId: String?,
     val isCurrentUserMessageCreator: Boolean,
     val senderName: String,
     val isSystemMessage: Boolean,

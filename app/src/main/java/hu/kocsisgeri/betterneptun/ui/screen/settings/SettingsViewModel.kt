@@ -7,6 +7,7 @@ import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.utils.PREF_SAVED_THEME
 import hu.kocsisgeri.betterneptun.utils.ThemeMode
 import hu.kocsisgeri.betterneptun.utils.get
+import hu.kocsisgeri.betterneptun.utils.put
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -27,7 +28,7 @@ class SettingsViewModel(
     }
 
     fun saveTheme(theme: ThemeMode) {
-        localDataSource.cache.get(PREF_SAVED_THEME, theme)
+        localDataSource.cache.put(PREF_SAVED_THEME, theme)
     }
 
     fun logout(onLogout: () -> Unit) {

@@ -9,13 +9,15 @@ internal class NetworkDataSourceImpl(
     private val ioDispatcher: CoroutineDispatcher,
 ) : NetworkDataSource {
 
-    override suspend fun getUserInfo() = withContext(ioDispatcher) {
-        api.getUserInfo()
-    }
+    override suspend fun getUserInfo() =
+        withContext(ioDispatcher) {
+            api.getUserInfo()
+        }
 
-    override suspend fun getUnreadMessageCount() = withContext(ioDispatcher) {
-        api.getUnreadMessagesCount()
-    }
+    override suspend fun getUnreadMessageCount() =
+        withContext(ioDispatcher) {
+            api.getUnreadMessagesCount()
+        }
 
     override suspend fun getReceivedMessages(
         firstRow: Int,
@@ -26,4 +28,9 @@ internal class NetworkDataSourceImpl(
             lastRow = lastRow
         )
     }
+
+    override suspend fun getMessageDetails(messageId: String) =
+        withContext(ioDispatcher) {
+            api.getMessageDetails(messageId, messageId)
+        }
 }

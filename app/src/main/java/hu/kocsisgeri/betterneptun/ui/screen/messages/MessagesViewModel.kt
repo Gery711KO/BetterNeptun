@@ -3,7 +3,9 @@ package hu.kocsisgeri.betterneptun.ui.screen.messages
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 class MessagesViewModel(
@@ -13,11 +15,22 @@ class MessagesViewModel(
     private val itemFlow = neptunRepository.messages
     val listItems = itemFlow.asLiveData()
 
-    fun getCurrentPosition() = (neptunRepository.currentMessagePage - 1) * 10 + 4
+    private val _messageDetail = MutableStateFlow<MessageDetail?>(null)
+    val messageDetail = _messageDetail.asLiveData()
 
-    fun readMessage(messageId : Int) {
+    init {
         viewModelScope.launch {
-            neptunRepository.readMessage(messageId)
+            neptunRepository.fetchMessages()
         }
+    }
+
+    fun readMessage(messageId : String) {
+        viewModelScope.launch {
+            _messageDetail.value = neptunRepository.getMessageDetail(messageId)
+        }
+    }
+
+    fun clearMessageDetail() {
+        _messageDetail.value = null
     }
 }
