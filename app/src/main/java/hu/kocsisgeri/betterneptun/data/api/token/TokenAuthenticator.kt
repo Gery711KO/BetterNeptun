@@ -18,6 +18,7 @@ class TokenAuthenticator(
 ): Authenticator {
 
     private val mutex = Mutex()
+
     private val Response.responseCount: Int
         get() {
             var result = 1
