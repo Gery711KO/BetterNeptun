@@ -1,42 +1,31 @@
 package hu.kocsisgeri.betterneptun.data.repository.neptun
 
 import android.graphics.Color
-import hu.kocsisgeri.betterneptun.data.dao.ApiResult
-import hu.kocsisgeri.betterneptun.data.dao.MessageEntity
-import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
+import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
-import hu.kocsisgeri.betterneptun.data.model.MessageDto
-import hu.kocsisgeri.betterneptun.data.api.network.NetworkResponse
-import hu.kocsisgeri.betterneptun.data.api.token.TokenService
+import hu.kocsisgeri.betterneptun.data.model.ReceivedMessageDto
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.ui.model.*
+import hu.kocsisgeri.betterneptun.ui.model.MarkBookDataModel
+import hu.kocsisgeri.betterneptun.ui.model.SemesterModel
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.PREF_STAY_LOGGED_ID
-import hu.kocsisgeri.betterneptun.data.datamanager.DataManager
-import hu.kocsisgeri.betterneptun.data.model.AuthenticationRequestDto
-import hu.kocsisgeri.betterneptun.data.model.ReceivedMessageDto
-import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import hu.kocsisgeri.betterneptun.utils.get
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
 
-class NeptunRepositoryImpl(
+internal class NeptunRepositoryImpl(
     private val networkDataSource: NetworkDataSource,
-    private val tokenService: TokenService,
-    private val dataManager: DataManager,
-    private val navigator: Navigator,
-) : NeptunRepository, CoroutineScope {
-
-    override val coroutineContext: CoroutineContext = Dispatchers.IO
+    private val localDataSource: LocalDataSource,
+    private val ioDispatcher: CoroutineDispatcher,
+) : NeptunRepository {
 
     override val events = MutableStateFlow<List<CalendarEntity.Event>>(listOf())
-    override val messages = MutableStateFlow<ApiResult<List<ReceivedMessageDto>>>(ApiResult.Progress(0))
+    override val messages =
+        MutableStateFlow<ApiResult<List<ReceivedMessageDto>>>(ApiResult.Progress(0))
     override val studentData = MutableStateFlow<StudentData?>(null)
     override val markBookData =
         MutableStateFlow<ApiResult<List<MarkBookDataModel>>>(ApiResult.Progress(0))
@@ -45,38 +34,21 @@ class NeptunRepositoryImpl(
 
     override val unreadMessagesCount: MutableStateFlow<Int?> = MutableStateFlow(null)
 
-    override fun fetchMessages() {
-        val save = dataManager.getDefault(PREF_STAY_LOGGED_ID, false)
+    override suspend fun fetchMessages() {
+        val save = localDataSource.cache.get(PREF_STAY_LOGGED_ID, false)
 
-        launch {
-//            networkDataSource.getReceivedMessages(
-//
-//            )
+        // TODO
+    }
+
+    override suspend fun fetchUnreadMessages() {
+        withContext(ioDispatcher){
+            networkDataSource.getUnreadMessageCount().let {
+                unreadMessagesCount.value = it.data.count
+            }
         }
     }
 
-    override fun fetchUnreadMessages() {
-        launch {
-            tokenService.executeApiRequestWithToken(
-                onForceLogOut = {
-                    navigator.navigateToInclusive(LoginDestination)
-                },
-                onExecuteApiRequest = {
-                    networkDataSource.getUnreadMessageCount(it).let {
-                        when (it) {
-                            is NetworkResponse.Failure<*> -> {
-                                // Nothing
-                            }
-                            is NetworkResponse.Success -> unreadMessagesCount.value = it.data.data.count
-                        }
-                    }
-                }
-            )
-        }
-    }
-
-    override fun fetchCalendarData() {
-        launch {
+    override suspend fun fetchCalendarData() {
 //            val response = networkDataSource.getCourses()
 //            val colorMap = mutableMapOf<String?, Int>()
 //            when (response) {
@@ -133,11 +105,9 @@ class NeptunRepositoryImpl(
 //                    }
 //                }
 //            }
-        }
     }
 
-    override fun fetchMarkBookData() {
-        launch {
+    override suspend fun fetchMarkBookData() {
 //            currentUser.first().let { user ->
 //                networkDataSource.getAddedCourses(user).check { subject ->
 //                    networkDataSource.getMarkBookData(user).check { mark ->
@@ -176,52 +146,29 @@ class NeptunRepositoryImpl(
 //                    }
 //                }
 //            }
-        }
     }
 
-    override fun fetchAverages() {
-        launch {
+    override suspend fun fetchAverages() {
 //            networkDataSource.getAverages().let {
 //                if (it.isNotEmpty()) averages.tryEmit(ApiResult.Success(it))
 //                else averages.tryEmit(ApiResult.Error("Network error"))
 //            }
-        }
     }
 
     override suspend fun login(neptunCode: String, password: String): ApiResult<StudentData> =
-        withContext(Dispatchers.IO) {
-            networkDataSource.initiateLogin(
-                AuthenticationRequestDto(
-                    userName = neptunCode,
-                    password = password
+        withContext(ioDispatcher) {
+            networkDataSource.getUserInfo().let { result ->
+                ApiResult.Success(
+                    StudentData(
+                        name = result.data.name,
+                        neptun = result.data.neptunCode
+                    )
                 )
-            ).let { response ->
-                when (response) {
-                    is NetworkResponse.Failure<*> -> {
-                        ApiResult.Error(response.error.getErrorMessage())
-                    }
-
-                    is NetworkResponse.Success -> {
-                        networkDataSource.getUserInfo(response.data.data.accessToken).let { result ->
-                            when (result) {
-                                is NetworkResponse.Failure<*> -> ApiResult.Error(
-                                    error = result.error.getErrorMessage()
-                                )
-                                is NetworkResponse.Success -> ApiResult.Success(
-                                    StudentData(
-                                        name = result.data.data.name,
-                                        neptun = result.data.data.neptunCode
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
             }
         }
 
     private suspend fun getRandomColor(title: String?, colorMap: MutableMap<String?, Int>): Int {
-        val colors = dataManager.colors.getData().firstOrNull()
+        val colors = localDataSource.appDatabase.colors.getData().firstOrNull()
         val current = colors?.firstOrNull { it.title == title }
 
         val random = IntRange(0, 255)
@@ -254,8 +201,7 @@ class NeptunRepositoryImpl(
         }
     }
 
-    override fun readMessage(messageId: Int) {
-        launch {
+    override suspend fun readMessage(messageId: Int) {
 //            messages.getSuccess().let { messageList ->
 //                val newMessage =
 //                    messageList.firstOrNull { message -> message.Id == messageId }
@@ -283,7 +229,24 @@ class NeptunRepositoryImpl(
 //                        }
 //                    }
 //                }
-        }
+    }
+
+    override suspend fun randomiseCalendarColors() {
+//        withContext(ioDispatcher) {
+//            getRandomizedColoredEvents()?.let {
+//                events.tryEmit(it)
+//                CourseRepository.courses.tryEmit(it)
+//            }
+//        }
+    }
+
+    override suspend fun setEventColor(event: CalendarEntity.Event?, color: Int) {
+//        withContext(ioDispatcher) {
+//            setEventColorAsync(event, color)?.let {
+//                events.tryEmit(it)
+//                CourseRepository.courses.tryEmit(it)
+//            }
+//        }
     }
 
     override fun setStudentData(studentData: StudentData?) {
@@ -292,69 +255,5 @@ class NeptunRepositoryImpl(
 
     override fun resetMessagePage() {
         currentMessagePage = 0
-    }
-
-    override fun randomiseCalendarColors() {
-        launch {
-            getRandomizedColoredEvents()?.let {
-                events.tryEmit(it)
-                HomeState.courses.tryEmit(it)
-            }
-        }
-    }
-
-    override fun setEventColor(event: CalendarEntity.Event?, color: Int) {
-        launch {
-            setEventColorAsync(event, color)?.let {
-                events.tryEmit(it)
-                HomeState.courses.tryEmit(it)
-            }
-        }
-    }
-
-    private suspend fun setEventColorAsync(event: CalendarEntity.Event?, color: Int) =
-        withContext(Dispatchers.IO) {
-            HomeState.courses.firstOrNull()?.let { list ->
-                dataManager.colors.insertAll(
-                    dataManager.colors.getData().firstOrNull()?.map { colorEntity ->
-                        if (colorEntity.title == event?.title) colorEntity.copy(colorInt = color)
-                        else colorEntity
-                    }?: emptyList()
-                )
-                list.map {
-                    if (it.title == event?.title) it.copy(color = color)
-                    else it
-                }
-            }
-        }
-
-    private suspend fun getRandomizedColoredEvents(): List<CalendarEntity.Event>? =
-        withContext(Dispatchers.IO) {
-            HomeState.courses.firstOrNull()?.let { list ->
-                val colorMap = mutableMapOf<String?, Int>()
-
-                list.map {
-                    it.copy(
-                        color = getRandomColor(it.title.toString(), colorMap)
-                    )
-                }
-            }
-        }
-
-    private suspend fun List<MessageDto>.saveMessages(save: Boolean) {
-        if (save) {
-            dataManager.messages.insertAll(
-                map { dto ->
-                    MessageEntity(
-                        id = dto.Id,
-                        subject = dto.Subject,
-                        detail = dto.Detail,
-                        senderName = dto.Name,
-                        date = dto.SendDate,
-                        isNew = dto.IsNew
-                    )
-                }
-            )
-        }
     }
 }

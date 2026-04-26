@@ -4,17 +4,16 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.utils.PREF_SAVED_THEME
 import hu.kocsisgeri.betterneptun.utils.ThemeMode
-import hu.kocsisgeri.betterneptun.data.datamanager.DataManager
+import hu.kocsisgeri.betterneptun.utils.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-class SplashViewModel : ViewModel(), KoinComponent {
-
-    private val dataManager : DataManager by inject()
+class SplashViewModel(
+    localDataSource: LocalDataSource
+) : ViewModel() {
 
     /**
      *  wait for initialization during splash screen
@@ -25,7 +24,7 @@ class SplashViewModel : ViewModel(), KoinComponent {
     }.asLiveData(Dispatchers.IO)
 
     init {
-        dataManager.getDefault(PREF_SAVED_THEME, ThemeMode.AUTO).let {
+        localDataSource.cache.get(PREF_SAVED_THEME, ThemeMode.AUTO).let {
             AppCompatDelegate.setDefaultNightMode(it.mode)
         }
     }

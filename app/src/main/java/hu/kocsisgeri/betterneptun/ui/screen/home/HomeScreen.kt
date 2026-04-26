@@ -6,12 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalGridApi
-import androidx.compose.foundation.layout.Fr
 import androidx.compose.foundation.layout.Grid
 import androidx.compose.foundation.layout.GridTrackSize
-import androidx.compose.foundation.layout.GridTrackSpec
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -49,15 +46,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -66,8 +60,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.R
-import hu.kocsisgeri.betterneptun.data.dao.ApiResult
-import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessagesDestination
@@ -75,8 +68,8 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
-import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.utils.getCourseDateString
 import hu.kocsisgeri.betterneptun.utils.getPercent
 import hu.kocsisgeri.betterneptun.utils.getTimeLeft
@@ -90,21 +83,16 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
     navigator: Navigator = koinInject()
 ) {
-    val studentData by viewModel.studentData.observeAsState()
-    val unreadMessages by viewModel.unreadMessages.observeAsState(0)
-    val currentCourses by viewModel.currentCourses.collectAsStateWithLifecycle()
-    val nextCourseState by HomeState.nextCourse.observeAsState()
-    val refreshProgress by viewModel.refreshProgress.collectAsState(initial = null)
+    val studentData by viewModel.studentData.collectAsStateWithLifecycle()
+    val unreadMessages by viewModel.unreadMessages.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        if (!viewModel.isLoggedIn.value) {
-            viewModel.fetchData()
-        }
-    }
+    val currentCourses by viewModel.currentCourses.collectAsStateWithLifecycle()
+    val nextCourseState by viewModel.nextCourse.collectAsStateWithLifecycle()
+    val refreshProgress by viewModel.refreshProgress.collectAsState(initial = null)
 
     HomeContent(
         studentData = studentData,
-        unreadMessages = unreadMessages,
+        unreadMessages = unreadMessages?: 0,
         currentCourses = currentCourses,
         nextCourseState = nextCourseState,
         refreshProgress = refreshProgress,
@@ -154,80 +142,13 @@ private fun HomeContent(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Current Courses
-                if (currentCourses.isNotEmpty()) {
-                    LazyRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        items(currentCourses) { course ->
-                            CurrentCourseItem(
-                                course = course,
-                                modifier = Modifier.fillParentMaxWidth()
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
+                CurrentlyOngoingCourses(currentCourses)
 
-                // Next Course
                 NextCourseCard(nextCourseState)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Navigation Buttons Grid
-                Grid(
-                    modifier = Modifier.fillMaxWidth(),
-                    config = {
-                        columns(
-                            GridTrackSize.Percentage(0.5f),
-                            GridTrackSize.Percentage(0.5f),
-                        )
-                        rows(
-                            GridTrackSize.MaxContent,
-                        )
-
-                        gap(8.dp)
-                    }
-                ) {
-                    NavButton(
-                        modifier = Modifier.gridItem(row = 1, column =  1),
-                        icon = painterResource(id = R.drawable.ic_mail),
-                        text = "Üzenetek",
-                        onClick = { onNavigate(MessagesDestination) }
-                    )
-                    NavButton(
-                        modifier = Modifier.gridItem(row = 1, column =  2),
-                        icon = painterResource(id = R.drawable.ic_calendar),
-                        text = "Órarend",
-                        onClick = { onNavigate(TimetableDestination) }
-                    )
-
-                    NavButton(
-                        modifier = Modifier.gridItem(row = 2, column =  1),
-                        icon = painterResource(id = R.drawable.ic_courses),
-                        text = "Kurzusok",
-                        onClick = { onNavigate(SubjectsDestination) }
-                    )
-                    NavButton(
-                        modifier = Modifier.gridItem(row = 2, column =  2),
-                        icon = painterResource(id = R.drawable.ic_exams),
-                        text = "Vizsgák",
-                        onClick = { /* TODO */ }
-                    )
-                    NavButton(
-                        modifier = Modifier.gridItem(row = 3, column =  1),
-                        icon = painterResource(id = R.drawable.ic_semesters),
-                        text = "Félévek",
-                        onClick = { onNavigate(SemestersDestination) }
-                    )
-                    NavButton(
-                        modifier = Modifier.gridItem(row = 3, column =  2),
-                        icon = painterResource(id = R.drawable.ic_schedule),
-                        text = "Időszakok",
-                        onClick = { /* TODO */ }
-                    )
-                }
+                NavigationGrid(onNavigate)
             }
 
             PullRefreshIndicator(
@@ -236,6 +157,81 @@ private fun HomeContent(
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalGridApi::class)
+private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
+    Grid(
+        modifier = Modifier.fillMaxWidth(),
+        config = {
+            columns(
+                GridTrackSize.Percentage(0.5f),
+                GridTrackSize.Percentage(0.5f),
+            )
+            rows(
+                GridTrackSize.MaxContent,
+            )
+
+            gap(8.dp)
+        }
+    ) {
+        NavButton(
+            modifier = Modifier.gridItem(row = 1, column = 1),
+            icon = painterResource(id = R.drawable.ic_mail),
+            text = "Üzenetek",
+            onClick = { onNavigate(MessagesDestination) }
+        )
+        NavButton(
+            modifier = Modifier.gridItem(row = 1, column = 2),
+            icon = painterResource(id = R.drawable.ic_calendar),
+            text = "Órarend",
+            onClick = { onNavigate(TimetableDestination) }
+        )
+
+        NavButton(
+            modifier = Modifier.gridItem(row = 2, column = 1),
+            icon = painterResource(id = R.drawable.ic_courses),
+            text = "Kurzusok",
+            onClick = { onNavigate(SubjectsDestination) }
+        )
+        NavButton(
+            modifier = Modifier.gridItem(row = 2, column = 2),
+            icon = painterResource(id = R.drawable.ic_exams),
+            text = "Vizsgák",
+            onClick = { /* TODO */ }
+        )
+        NavButton(
+            modifier = Modifier.gridItem(row = 3, column = 1),
+            icon = painterResource(id = R.drawable.ic_semesters),
+            text = "Félévek",
+            onClick = { onNavigate(SemestersDestination) }
+        )
+        NavButton(
+            modifier = Modifier.gridItem(row = 3, column = 2),
+            icon = painterResource(id = R.drawable.ic_schedule),
+            text = "Időszakok",
+            onClick = { /* TODO */ }
+        )
+    }
+}
+
+@Composable
+private fun CurrentlyOngoingCourses(currentCourses: List<CalendarEntity.Event>) {
+    if (currentCourses.isNotEmpty()) {
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(currentCourses) { course ->
+                CurrentCourseItem(
+                    course = course,
+                    modifier = Modifier.fillParentMaxWidth()
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
@@ -410,114 +406,116 @@ fun CurrentCourseItem(
 
 @Composable
 fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 20.dp, vertical = 20.dp)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
+    state?.let {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
-            when (state) {
-                is ApiResult.Progress -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(50.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-                is ApiResult.Success -> {
-                    val event = state.data
-                    Row(
-                        modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Következő óra",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Event,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = event.startTime.getCourseDateString(),
-                                    fontSize = 15.sp,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_course),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = event.title.toString().trim(),
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_location),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = event.location.toString().trim(),
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                                )
-                            }
-                        }
-                        Column(
-                            horizontalAlignment = Alignment.End,
-                            verticalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .padding(vertical = 12.dp)
-                        ) {
-                            Text(
-                                text = "${event.startTime.hour}:${event.startTime.minute.toString().padStart(2, '0')}",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = "${event.endTime.hour}:${event.endTime.minute.toString().padStart(2, '0')}",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Box(
-                            modifier = Modifier
-                                .width(6.dp)
-                                .fillMaxHeight()
-                                .padding(vertical = 12.dp)
-                                .background(Color(event.color), CircleShape)
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp, vertical = 20.dp)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                when (state) {
+                    is ApiResult.Progress -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(50.dp),
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
+                    is ApiResult.Success -> {
+                        val event = state.data
+                        Row(
+                            modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Következő óra",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Event,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = event.startTime.getCourseDateString(),
+                                        fontSize = 15.sp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_course),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = event.title.toString().trim(),
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_location),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = event.location.toString().trim(),
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
+                            Column(
+                                horizontalAlignment = Alignment.End,
+                                verticalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .padding(vertical = 12.dp)
+                            ) {
+                                Text(
+                                    text = "${event.startTime.hour}:${event.startTime.minute.toString().padStart(2, '0')}",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "${event.endTime.hour}:${event.endTime.minute.toString().padStart(2, '0')}",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Box(
+                                modifier = Modifier
+                                    .width(6.dp)
+                                    .fillMaxHeight()
+                                    .padding(vertical = 12.dp)
+                                    .background(Color(event.color), CircleShape)
+                            )
+                        }
+                    }
+                    else -> { /* Handle Error or Nothing */ }
                 }
-                else -> { /* Handle Error or Nothing */ }
             }
         }
     }

@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.data.dao
+package hu.kocsisgeri.betterneptun.domain.model
 
 sealed class ApiResult<out T : Any> {
     data class Progress(val percentage: Int) : ApiResult<Nothing>()

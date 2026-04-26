@@ -4,7 +4,7 @@ import android.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.github.mikephil.charting.data.*
-import hu.kocsisgeri.betterneptun.data.dao.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.flow.map
 

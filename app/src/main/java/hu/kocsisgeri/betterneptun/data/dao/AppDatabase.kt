@@ -5,6 +5,6 @@ import androidx.room.RoomDatabase
 
 @Database(entities = [MessageEntity::class, ColorEntity::class], version = 4)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun savedMessages(): MessageDao
-    abstract fun savedCourseColors(): ColorDao
+    abstract val messages: MessageDao
+    abstract val colors: ColorDao
 }

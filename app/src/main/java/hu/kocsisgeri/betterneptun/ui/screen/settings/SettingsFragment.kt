@@ -5,11 +5,9 @@ import android.os.Bundle
 import android.view.*
 import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import hu.kocsisgeri.betterneptun.BuildConfig
 import hu.kocsisgeri.betterneptun.R
-import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
 import hu.kocsisgeri.betterneptun.databinding.FragmentSettingsBinding
 import hu.kocsisgeri.betterneptun.ui.screen.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
@@ -39,7 +37,6 @@ class SettingsFragment : ComposeFragment() {
         setThemeSelection()
         handleThemeSelect()
         setExitButton()
-        setStartTimes()
         setVersionData()
     }
 
@@ -48,20 +45,11 @@ class SettingsFragment : ComposeFragment() {
         binding.versionValue.text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
     }
 
-    private fun setStartTimes() {
-        HomeState.firstClassTime.asLiveData().observe(viewLifecycleOwner) {
-            binding.firstClassTime.text = it
-        }
-
-        HomeState.lastClassTime.asLiveData().observe(viewLifecycleOwner) {
-            binding.lastClassTime.text = it
-        }
-    }
-
     private fun setExitButton() {
         binding.logoutCard.setOnClickListener {
-            viewModel.logout()
-            navigator.navigateToInclusive(LoginDestination)
+            viewModel.logout {
+                navigator.navigateToInclusive(LoginDestination)
+            }
         }
     }
 

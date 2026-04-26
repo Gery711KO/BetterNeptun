@@ -13,7 +13,7 @@ import com.github.mikephil.charting.formatter.DefaultAxisValueFormatter
 import com.github.mikephil.charting.formatter.LargeValueFormatter
 import com.google.android.material.tabs.TabLayout
 import hu.kocsisgeri.betterneptun.R
-import hu.kocsisgeri.betterneptun.data.dao.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.databinding.FragmentSemestersBinding
 import hu.kocsisgeri.betterneptun.ui.screen.ComposeFragment
 import hu.kocsisgeri.betterneptun.utils.setBackButton

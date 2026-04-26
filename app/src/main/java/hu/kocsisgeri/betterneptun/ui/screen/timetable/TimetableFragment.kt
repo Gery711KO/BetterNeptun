@@ -42,10 +42,10 @@ class TimetableFragment : ComposeFragment() {
     }
 
     private fun initTable() {
-        viewModel.times.observe(viewLifecycleOwner) {
-            binding.weekView.minHour = it.split(":")[0].toInt()
-            binding.weekView.maxHour = it.split(":")[1].toInt()
-        }
+//        viewModel.times.observe(viewLifecycleOwner) {
+//            binding.weekView.minHour = it.split(":")[0].toInt()
+//            binding.weekView.maxHour = it.split(":")[1].toInt()
+//        }
 
         viewModel.timetableEvents.observe(viewLifecycleOwner) { list ->
             adapter.submitList(list)

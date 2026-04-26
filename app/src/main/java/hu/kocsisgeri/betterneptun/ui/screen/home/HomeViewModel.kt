@@ -3,63 +3,32 @@ package hu.kocsisgeri.betterneptun.ui.screen.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.data.dao.ApiResult
-import hu.kocsisgeri.betterneptun.data.repository.course.HomeState
-import hu.kocsisgeri.betterneptun.data.repository.course.Timer
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val neptunRepository: NeptunRepository
 ) : ViewModel() {
 
-    val isLoggedIn = MutableStateFlow(false)
-    val currentCourses = HomeState.currentCourses
-    val studentData = neptunRepository.studentData.asLiveData()
-    val unreadMessages = HomeState.unreadMessages.asLiveData()
+    val currentCourses = MutableStateFlow<List<CalendarEntity.Event>>(emptyList())
+    val nextCourse = MutableStateFlow<ApiResult<CalendarEntity.Event>?>(null)
+
     val refreshProgress = MutableSharedFlow<ApiResult<Unit>>(1, 50)
 
-    fun fetchData() {
-        viewModelScope.launch(Dispatchers.IO) {
-            HomeState.fetchCalendarTimes()
+    val studentData = neptunRepository.studentData
+    val unreadMessages = neptunRepository.unreadMessagesCount
 
-            HomeState.nextClass.onEach {
-                Timer.nextLooper(it)
-            }.launchIn(this)
-
-            HomeState.currentClasses.onEach {
-                Timer.currentLooper(it.isNotEmpty())
-            }.launchIn(this)
-
-            if (!isLoggedIn.value) {
-                neptunRepository.fetchCalendarData()
-                neptunRepository.fetchMarkBookData()
-                neptunRepository.fetchAverages()
-                neptunRepository.fetchMessages()
-                neptunRepository.fetchUnreadMessages()
-            }
-            isLoggedIn.tryEmit(true)
-        }
+    init {
+        refreshData()
     }
 
     fun refreshData() {
-        viewModelScope.launch(Dispatchers.IO) {
-//            neptunRepository.login(neptunRepository.currentUser.value).let { result ->
-//                when (result) {
-//                    is ApiResult.Error -> refreshProgress.emit(ApiResult.Error(result.error))
-//                    is ApiResult.Progress -> refreshProgress.emit(ApiResult.Progress(1))
-//                    is ApiResult.Success -> {
-//                        HomeState.fetchCalendarTimes()
-//                        neptunRepository.fetchCalendarData()
-//                        neptunRepository.fetchMarkBookData()
-//                        neptunRepository.fetchAverages()
-//                        neptunRepository.fetchMessages()
-//                        refreshProgress.emit(ApiResult.Success(Unit))
-//                    }
-//                }
-//            }
+        viewModelScope.launch {
+            neptunRepository.fetchUnreadMessages()
         }
     }
 }

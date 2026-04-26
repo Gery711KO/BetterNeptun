@@ -2,8 +2,9 @@ package hu.kocsisgeri.betterneptun.ui.screen.messages
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class MessagesViewModel(
     private val neptunRepository: NeptunRepository
@@ -15,6 +16,8 @@ class MessagesViewModel(
     fun getCurrentPosition() = (neptunRepository.currentMessagePage - 1) * 10 + 4
 
     fun readMessage(messageId : Int) {
-        neptunRepository.readMessage(messageId)
+        viewModelScope.launch {
+            neptunRepository.readMessage(messageId)
+        }
     }
 }

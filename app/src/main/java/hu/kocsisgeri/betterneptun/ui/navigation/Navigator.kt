@@ -7,9 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import org.koin.compose.navigation3.EntryProvider
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -21,6 +25,7 @@ private val LocalSharedTransitionScope =
 
 interface Navigator {
     val backStack: List<NavKey>
+    val currentScreen: NavKey
 
     @Composable
     fun getSharedTransitionScope(): SharedTransitionScope
@@ -47,6 +52,10 @@ interface Navigator {
                         backStack = navigator.backStack,
                         onBack = { navigator.navigateBack() },
                         entryProvider = entryProvider,
+                        entryDecorators = listOf(
+                            rememberSaveableStateHolderNavEntryDecorator(),
+                            rememberViewModelStoreNavEntryDecorator()
+                        ),
                         modifier = modifier
                     )
                 }
@@ -60,6 +69,7 @@ private data class DefaultNavigator(
     val startDestination: NavKey,
 ) : Navigator {
     override val backStack = mutableStateListOf<NavKey>(startDestination)
+    override val currentScreen: NavKey by derivedStateOf { backStack.last() }
 
     @Composable
     override fun getSharedTransitionScope() = LocalSharedTransitionScope.current

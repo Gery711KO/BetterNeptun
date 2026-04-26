@@ -2,12 +2,16 @@ package hu.kocsisgeri.betterneptun.ui.screen.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.data.dao.ApiResult
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.utils.*
-import hu.kocsisgeri.betterneptun.data.datamanager.DataManager
+import hu.kocsisgeri.betterneptun.BuildConfig
+import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.model.AuthenticationRequestDto
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
+import hu.kocsisgeri.betterneptun.utils.PREF_CURRENT_USER
+import hu.kocsisgeri.betterneptun.utils.PREF_STAY_LOGGED_ID
+import hu.kocsisgeri.betterneptun.utils.get
+import hu.kocsisgeri.betterneptun.utils.put
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -17,7 +21,7 @@ import timber.log.Timber
 
 class LoginViewModel(
     private val neptunRepository: NeptunRepository,
-    private val dataManager: DataManager,
+    private val localDataSource: LocalDataSource,
 ) : ViewModel() {
 
     private val neptunCode = MutableStateFlow<String?>(null)
@@ -31,7 +35,7 @@ class LoginViewModel(
         stayLoggedIn,
         forcedState
     ) { neptunCode, password, stayLoggedIn, forcedState ->
-        forcedState?: LoginState.Idle(
+        forcedState ?: LoginState.Idle(
             neptunCode = neptunCode.orEmpty(),
             password = password.orEmpty(),
             stayLoggedIn = stayLoggedIn,
@@ -42,7 +46,6 @@ class LoginViewModel(
         SharingStarted.WhileSubscribed(5000L),
         initialValue = null
     )
-
 
     fun login(isSilentLogin: Boolean) {
         viewModelScope.launch {
@@ -64,13 +67,15 @@ class LoginViewModel(
                     is ApiResult.Error -> forcedState.emit(
                         LoginState.Error(result.error)
                     )
+
                     is ApiResult.Progress -> forcedState.emit(
                         if (isSilentLogin) LoginState.SilentLogin
                         else LoginState.Loading
                     )
+
                     is ApiResult.Success -> {
-                        dataManager.putData(PREF_STAY_LOGGED_ID, stayLoggedIn.value)
-                        dataManager.putData(PREF_CURRENT_USER, user)
+                        localDataSource.cache.put(PREF_STAY_LOGGED_ID, stayLoggedIn.value)
+                        localDataSource.cache.put(PREF_CURRENT_USER, user)
                         neptunRepository.setStudentData(result.data)
                         forcedState.emit(LoginState.Success(result.data))
                     }
@@ -95,11 +100,29 @@ class LoginViewModel(
         forcedState.tryEmit(null)
     }
 
+    private fun demoData() {
+        if (BuildConfig.DEBUG) {
+            localDataSource.cache.put(
+                PREF_CURRENT_USER,
+                AuthenticationRequestDto(
+                    "x8jsus",
+                    "lavaember1112"
+                )
+            )
+
+            neptunCode.tryEmit("x8jsus")
+            password.tryEmit("lavaember1112")
+        }
+    }
+
     init {
-        dataManager.getDefault(PREF_STAY_LOGGED_ID, false).let {
+        localDataSource.cache.get(PREF_STAY_LOGGED_ID, false).let {
             if (it) {
                 try {
-                    dataManager.getDefault<AuthenticationRequestDto?>(PREF_CURRENT_USER, null)?.let { user ->
+                    localDataSource.cache.get<AuthenticationRequestDto?>(
+                        key = PREF_CURRENT_USER,
+                        defaultValue = null,
+                    )?.let { user ->
                         if (user.userName.isNotBlank() && user.password.isNotBlank()) {
                             forcedState.tryEmit(LoginState.SilentLogin)
                             neptunCode.tryEmit(user.userName)
@@ -112,5 +135,7 @@ class LoginViewModel(
                 }
             }
         }
+
+        demoData()
     }
 }
