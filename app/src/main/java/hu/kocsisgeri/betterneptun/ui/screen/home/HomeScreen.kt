@@ -115,7 +115,7 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalGridApi::class)
 @Composable
-fun HomeContent(
+private fun HomeContent(
     studentData: StudentData?,
     unreadMessages: Int,
     currentCourses: List<CalendarEntity.Event>,
