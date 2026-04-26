@@ -36,9 +36,7 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
                 Timber.tag("Navigation").d("BackStack: ${navigator.backStack.toList()}")
             }
 
-            BetterNeptunTheme(
-                dynamicColor = false
-            ) {
+            BetterNeptunTheme {
                 Navigator.createNavDisplay(
                     navigator = navigator,
                     entryProvider = entryProvider,
