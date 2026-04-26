@@ -17,9 +17,9 @@ class SettingsViewModel(
     val context: Context by lazy { context }
 
     val themeMode: Flow<ThemeMode?> = flow {
-        manager.getData(PREF_SAVED_THEME, ThemeMode::class.java).also { theme ->
-            saveTheme(theme?: ThemeMode.AUTO)
-            emit(theme?: ThemeMode.AUTO)
+        manager.getDefault(PREF_SAVED_THEME, ThemeMode.AUTO).also { theme ->
+            saveTheme(theme)
+            emit(theme)
         }
     }
 

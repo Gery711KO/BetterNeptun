@@ -1,5 +1,8 @@
 package hu.kocsisgeri.betterneptun.data.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class AuthenticationRequestDto(
     val userName: String,
     val password: String,

@@ -38,6 +38,7 @@ class HomeViewModel(
                 neptunRepository.fetchMarkBookData()
                 neptunRepository.fetchAverages()
                 neptunRepository.fetchMessages()
+                neptunRepository.fetchUnreadMessages()
             }
             isLoggedIn.tryEmit(true)
         }

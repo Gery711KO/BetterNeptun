@@ -3,9 +3,7 @@ package hu.kocsisgeri.betterneptun.data.di
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import hu.kocsisgeri.betterneptun.data.api.APIService
 import hu.kocsisgeri.betterneptun.data.api.network.CustomCookieJar
 import hu.kocsisgeri.betterneptun.data.api.network.NetworkResponseAdapterFactory
@@ -16,14 +14,13 @@ import hu.kocsisgeri.betterneptun.data.dao.MessageDao
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSourceImpl
 import hu.kocsisgeri.betterneptun.data.repository.neptun.NeptunRepositoryImpl
+import hu.kocsisgeri.betterneptun.data.serialization.Serialization
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.dsl.module
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.converter.moshi.MoshiConverterFactory
-import java.util.Date
 
 private const val SHARED_DATA = "Better_Neptun_Persistence"
 private const val BASE_URL = "https://neptun.uni-obuda.hu/ujhallgato/api/"
@@ -50,15 +47,9 @@ val dataModule = module {
         NeptunRepositoryImpl(
             networkDataSource =  get(),
             dataManager = get(),
-            tokenService = get()
+            tokenService = get(),
+            navigator = get()
         )
-    }
-
-    factory<Moshi> {
-        Moshi.Builder().apply {
-            add(Date::class.java, Rfc3339DateJsonAdapter())
-            add(KotlinJsonAdapterFactory())
-        }.build()
     }
 
     factory {
@@ -81,11 +72,6 @@ val dataModule = module {
         }
     }
 
-    factory {
-        val converter = MoshiConverterFactory.create(get())
-        converter.withNullSerialization()
-    }
-
     single {
         CustomCookieJar()
     }
@@ -103,9 +89,11 @@ val dataModule = module {
     factory {
         Retrofit.Builder()
             .client(get()).apply {
-                addConverterFactory(get<MoshiConverterFactory>())
+                addConverterFactory(
+                    Serialization.instance
+                        .asConverterFactory("application/json".toMediaType())
+                )
                 addCallAdapterFactory(NetworkResponseAdapterFactory())
-                addConverterFactory(GsonConverterFactory.create())
             }
             .baseUrl(BASE_URL)
             .build()

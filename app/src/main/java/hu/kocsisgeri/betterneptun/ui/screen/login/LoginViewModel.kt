@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.ui.model.NeptunUser
 import hu.kocsisgeri.betterneptun.utils.*
 import hu.kocsisgeri.betterneptun.data.datamanager.DataManager
+import hu.kocsisgeri.betterneptun.data.model.AuthenticationRequestDto
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -46,7 +46,10 @@ class LoginViewModel(
 
     fun login(isSilentLogin: Boolean) {
         viewModelScope.launch {
-            val user = NeptunUser(neptunCode.value.orEmpty(), password.value.orEmpty())
+            val user = AuthenticationRequestDto(
+                neptunCode.value.orEmpty(),
+                password.value.orEmpty()
+            )
 
             forcedState.emit(
                 if (isSilentLogin) {
@@ -56,7 +59,7 @@ class LoginViewModel(
                 }
             )
 
-            neptunRepository.login(user).let { result ->
+            neptunRepository.login(user.userName, user.password).let { result ->
                 when (result) {
                     is ApiResult.Error -> forcedState.emit(
                         LoginState.Error(result.error)
@@ -68,8 +71,7 @@ class LoginViewModel(
                     is ApiResult.Success -> {
                         dataManager.putData(PREF_STAY_LOGGED_ID, stayLoggedIn.value)
                         dataManager.putData(PREF_CURRENT_USER, user)
-                        neptunRepository.studentData.tryEmit(result.data)
-                        neptunRepository.currentUser.emit(user)
+                        neptunRepository.setStudentData(result.data)
                         forcedState.emit(LoginState.Success(result.data))
                     }
                 }
@@ -94,14 +96,14 @@ class LoginViewModel(
     }
 
     init {
-        dataManager.getData(PREF_STAY_LOGGED_ID, Boolean::class.java)?.let {
+        dataManager.getDefault(PREF_STAY_LOGGED_ID, false).let {
             if (it) {
                 try {
-                    dataManager.getData(PREF_CURRENT_USER, NeptunUser::class.java)?.let { user ->
-                        if (user.UserLogin.isNotBlank() && user.Password.isNotBlank()) {
+                    dataManager.getDefault<AuthenticationRequestDto?>(PREF_CURRENT_USER, null)?.let { user ->
+                        if (user.userName.isNotBlank() && user.password.isNotBlank()) {
                             forcedState.tryEmit(LoginState.SilentLogin)
-                            neptunCode.tryEmit(user.UserLogin)
-                            password.tryEmit(user.Password)
+                            neptunCode.tryEmit(user.userName)
+                            password.tryEmit(user.password)
                             login(true)
                         }
                     }

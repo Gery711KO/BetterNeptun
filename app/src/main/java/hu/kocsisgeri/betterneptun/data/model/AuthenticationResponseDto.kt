@@ -1,5 +1,8 @@
 package hu.kocsisgeri.betterneptun.data.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class AuthenticationResponseDto(
     val neptunCode: String,
     val accessToken: String,

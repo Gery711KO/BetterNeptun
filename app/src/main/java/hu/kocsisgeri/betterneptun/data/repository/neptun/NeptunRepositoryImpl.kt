@@ -14,7 +14,10 @@ import hu.kocsisgeri.betterneptun.ui.model.*
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.PREF_STAY_LOGGED_ID
 import hu.kocsisgeri.betterneptun.data.datamanager.DataManager
+import hu.kocsisgeri.betterneptun.data.model.AuthenticationRequestDto
 import hu.kocsisgeri.betterneptun.data.model.ReceivedMessageDto
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,28 +27,51 @@ import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
 class NeptunRepositoryImpl(
-    override val coroutineContext: CoroutineContext = Dispatchers.IO,
     private val networkDataSource: NetworkDataSource,
     private val tokenService: TokenService,
     private val dataManager: DataManager,
+    private val navigator: Navigator,
 ) : NeptunRepository, CoroutineScope {
+
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     override val events = MutableStateFlow<List<CalendarEntity.Event>>(listOf())
     override val messages = MutableStateFlow<ApiResult<List<ReceivedMessageDto>>>(ApiResult.Progress(0))
-    override val currentUser = MutableStateFlow<NeptunUser?>(null)
     override val studentData = MutableStateFlow<StudentData?>(null)
     override val markBookData =
         MutableStateFlow<ApiResult<List<MarkBookDataModel>>>(ApiResult.Progress(0))
     override val averages = MutableStateFlow<ApiResult<List<SemesterModel>>>(ApiResult.Progress(0))
     override var currentMessagePage = 0
 
+    override val unreadMessagesCount: MutableStateFlow<Int?> = MutableStateFlow(null)
+
     override fun fetchMessages() {
-        val save = dataManager.getData(PREF_STAY_LOGGED_ID, Boolean::class.java)
+        val save = dataManager.getDefault(PREF_STAY_LOGGED_ID, false)
 
         launch {
 //            networkDataSource.getReceivedMessages(
 //
 //            )
+        }
+    }
+
+    override fun fetchUnreadMessages() {
+        launch {
+            tokenService.executeApiRequestWithToken(
+                onForceLogOut = {
+                    navigator.navigateToInclusive(LoginDestination)
+                },
+                onExecuteApiRequest = {
+                    networkDataSource.getUnreadMessageCount(it).let {
+                        when (it) {
+                            is NetworkResponse.Failure<*> -> {
+                                // Nothing
+                            }
+                            is NetworkResponse.Success -> unreadMessagesCount.value = it.data.data.count
+                        }
+                    }
+                }
+            )
         }
     }
 
@@ -162,9 +188,14 @@ class NeptunRepositoryImpl(
         }
     }
 
-    override suspend fun login(user: NeptunUser): ApiResult<StudentData> =
+    override suspend fun login(neptunCode: String, password: String): ApiResult<StudentData> =
         withContext(Dispatchers.IO) {
-            networkDataSource.initiateLogin(user.loginRequestData()).let { response ->
+            networkDataSource.initiateLogin(
+                AuthenticationRequestDto(
+                    userName = neptunCode,
+                    password = password
+                )
+            ).let { response ->
                 when (response) {
                     is NetworkResponse.Failure<*> -> {
                         ApiResult.Error(response.error.getErrorMessage())
@@ -253,6 +284,10 @@ class NeptunRepositoryImpl(
 //                    }
 //                }
         }
+    }
+
+    override fun setStudentData(studentData: StudentData?) {
+        this.studentData.value = studentData
     }
 
     override fun resetMessagePage() {

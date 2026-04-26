@@ -1,7 +1,6 @@
 package hu.kocsisgeri.betterneptun.data.datamanager
 
 import android.content.SharedPreferences
-import com.squareup.moshi.Moshi
 import hu.kocsisgeri.betterneptun.data.dao.ColorDao
 import hu.kocsisgeri.betterneptun.data.dao.MessageDao
 import hu.kocsisgeri.betterneptun.utils.delete
@@ -13,32 +12,19 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 class DataManager(
-    val moshi: Moshi,
     val sharedPreferences: SharedPreferences,
     val messages: MessageDao,
     val colors: ColorDao,
-    override val coroutineContext: CoroutineContext = Dispatchers.IO
 ): CoroutineScope {
-    companion object {
-        const val DEFAULT = "default"
-    }
 
-    inline fun <reified T> getData(key: String, type: Class<T>): T? {
-        val json = sharedPreferences.get(key, DEFAULT)
-        return if (json != DEFAULT) {
-            moshi.adapter(type).fromJson(json)
-        } else {
-            null
-        }
-    }
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     inline fun <reified T> getDefault(key: String, default: T) : T {
         return sharedPreferences.get(key, default)
     }
 
     inline fun <reified T> putData(key: String, data: T) {
-        val json = moshi.adapter(T::class.java).toJson(data)
-        sharedPreferences.put(key, json)
+        sharedPreferences.put(key, data)
     }
 
     fun deleteData(key: String) {

@@ -25,7 +25,7 @@ class SplashViewModel : ViewModel(), KoinComponent {
     }.asLiveData(Dispatchers.IO)
 
     init {
-        dataManager.getData(PREF_SAVED_THEME, ThemeMode::class.java)?.let {
+        dataManager.getDefault(PREF_SAVED_THEME, ThemeMode.AUTO).let {
             AppCompatDelegate.setDefaultNightMode(it.mode)
         }
     }
