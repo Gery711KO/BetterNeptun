@@ -1,21 +1,14 @@
 package hu.kocsisgeri.betterneptun.ui.activity.main
 
-import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
@@ -42,7 +35,10 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
                 Timber.tag("Navigation").d("Current: ${navigator.currentScreen}")
                 Timber.tag("Navigation").d("BackStack: ${navigator.backStack.toList()}")
             }
-            BetterNeptunTheme {
+
+            BetterNeptunTheme(
+                dynamicColor = false
+            ) {
                 Navigator.createNavDisplay(
                     navigator = navigator,
                     entryProvider = entryProvider,

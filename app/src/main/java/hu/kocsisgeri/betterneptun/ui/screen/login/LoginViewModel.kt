@@ -11,12 +11,12 @@ import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
 import hu.kocsisgeri.betterneptun.utils.PREF_CURRENT_USER
 import hu.kocsisgeri.betterneptun.utils.PREF_STAY_LOGGED_ID
 import hu.kocsisgeri.betterneptun.utils.get
+import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.utils.put
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class LoginViewModel(
@@ -48,7 +48,7 @@ class LoginViewModel(
     )
 
     fun login(isSilentLogin: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launchReportingErrors {
             val user = AuthenticationRequestDto(
                 neptunCode.value.orEmpty(),
                 password.value.orEmpty()

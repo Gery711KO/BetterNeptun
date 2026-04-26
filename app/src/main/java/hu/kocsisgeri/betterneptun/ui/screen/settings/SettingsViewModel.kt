@@ -7,10 +7,10 @@ import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.utils.PREF_SAVED_THEME
 import hu.kocsisgeri.betterneptun.utils.ThemeMode
 import hu.kocsisgeri.betterneptun.utils.get
+import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.utils.put
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
 class SettingsViewModel(
@@ -32,7 +32,7 @@ class SettingsViewModel(
     }
 
     fun logout(onLogout: () -> Unit) {
-        viewModelScope.launch {
+        viewModelScope.launchReportingErrors {
             localDataSource.purge()
             onLogout()
         }

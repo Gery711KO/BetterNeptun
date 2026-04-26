@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
+import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 enum class ViewMode(val days: Int, @DrawableRes val icon : Int) {
     WEEK(5, R.drawable.ic_week_view), DAY(1, R.drawable.ic_day_view)
@@ -40,7 +40,7 @@ class TimetableViewModel(
     }
 
     fun changeColor(event: CalendarEntity.Event?, color: Int) {
-        viewModelScope.launch {
+        viewModelScope.launchReportingErrors {
             neptunRepository.setEventColor(event, color)
         }
     }

@@ -22,16 +22,19 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.asLiveData
-import androidx.navigation.NavController
 import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.R
-import hu.kocsisgeri.betterneptun.ui.screen.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.model.SubjectState
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.screen.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import io.noties.markwon.Markwon
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import org.jsoup.nodes.Element
+import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
@@ -86,9 +89,11 @@ fun TextView.setTextAndAddClickableLinks(
                 openUrl(text, context)
                 navigator.navigateBack()
             }
+
             text.contains("mailto:") || text.contains("@") -> {
                 text.removePrefix("mailto:").trim().sendEmail(context)
             }
+
             else -> {}
         }
     }
@@ -274,4 +279,15 @@ fun <T : Any> Flow<T>.observe(viewLifecycleOwner: LifecycleOwner, observe: (T) -
     asLiveData().observe(viewLifecycleOwner) {
         observe(it)
     }
+}
+
+fun CoroutineScope.launchReportingErrors(
+    block: suspend CoroutineScope.() -> Unit
+) {
+    launch(
+        context = CoroutineExceptionHandler { _, throwable ->
+            Timber.e(throwable)
+        },
+        block = block
+    )
 }

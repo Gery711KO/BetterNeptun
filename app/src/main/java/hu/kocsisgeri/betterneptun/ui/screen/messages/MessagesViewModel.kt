@@ -5,8 +5,8 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 
 class MessagesViewModel(
     private val neptunRepository: NeptunRepository
@@ -19,13 +19,13 @@ class MessagesViewModel(
     val messageDetail = _messageDetail.asLiveData()
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launchReportingErrors {
             neptunRepository.fetchMessages()
         }
     }
 
     fun readMessage(messageId : String) {
-        viewModelScope.launch {
+        viewModelScope.launchReportingErrors {
             _messageDetail.value = neptunRepository.getMessageDetail(messageId)
         }
     }

@@ -67,7 +67,6 @@ import hu.kocsisgeri.betterneptun.ui.screen.login.model.isLoading
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.theme.LightBaseButtonBg
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -142,8 +141,8 @@ private fun LoginContent(
                     .alpha(if (isButtonEnabled) 1f else 0.6f),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = LightBaseButtonBg,
-                    contentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 contentPadding = PaddingValues(vertical = 12.dp)
             ) {
@@ -204,12 +203,13 @@ private fun LoginContent(
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = TextFieldDefaults.colors(
-                                    focusedIndicatorColor = MaterialTheme.colorScheme.outline,
+                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                                     unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
-                                    focusedLabelColor = MaterialTheme.colorScheme.outline,
+                                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                     cursorColor = MaterialTheme.colorScheme.primary,
-                                    focusedTextColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.primary,
+                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                     focusedContainerColor = Color.Transparent,
                                     unfocusedContainerColor = Color.Transparent,
                                 )
@@ -247,12 +247,13 @@ private fun LoginContent(
                                     }
                                 },
                                 colors = TextFieldDefaults.colors(
-                                    focusedIndicatorColor = MaterialTheme.colorScheme.outline,
+                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                                     unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
-                                    focusedLabelColor = MaterialTheme.colorScheme.outline,
+                                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                     cursorColor = MaterialTheme.colorScheme.primary,
-                                    focusedTextColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.primary,
+                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                                     focusedContainerColor = Color.Transparent,
                                     unfocusedContainerColor = Color.Transparent,
                                 )
@@ -261,9 +262,9 @@ private fun LoginContent(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
+                                    .padding(vertical = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                                horizontalArrangement = Arrangement.Start
                             ) {
                                 Checkbox(
                                     checked = stayLoggedIn,
@@ -273,16 +274,16 @@ private fun LoginContent(
                                     },
                                     colors = CheckboxDefaults.colors(
                                         checkedColor = MaterialTheme.colorScheme.primary,
-                                        uncheckedColor = MaterialTheme.colorScheme.primary
+                                        uncheckedColor = MaterialTheme.colorScheme.outline
                                     )
                                 )
                                 Text(
-                                    text = "Maradjon bejelentkezve?",
-                                    color = MaterialTheme.colorScheme.primary
+                                    text = "Maradjak belépve",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(start = 8.dp)
                                 )
                             }
-
-                            Spacer(Modifier.weight(2f))
+                            Spacer(Modifier.weight(1f))
                         }
                     }
                 }
@@ -322,4 +323,3 @@ fun LoginContentLoadingPreview() {
         )
     }
 }
-

@@ -44,6 +44,7 @@ mpAndroidChart = "v3.1.0"
 coreKtx = "1.18.0"
 lifecycleViewmodelKtx = "2.10.0"
 ksp = "2.1.10-1.0.29"
+splashscreen = "1.2.0"
 
 navigation3Core = "1.1.1"
 navigation3ViewModel = "2.10.0"
@@ -145,6 +146,7 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
 mockito-kotlin = { group = "com.nhaarman.mockitokotlin2", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
 androidx-fragment-compose = { group = "androidx.fragment", name = "fragment-compose", version.ref = "fragmentCompose" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

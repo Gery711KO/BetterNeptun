@@ -154,7 +154,9 @@ private fun HomeContent(
             PullRefreshIndicator(
                 refreshing = isRefreshing,
                 state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
+                modifier = Modifier.align(Alignment.TopCenter),
+                backgroundColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -252,7 +254,10 @@ private fun Header(
                 .weight(1f)
                 .padding(end = 10.dp),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         ) {
             Row(
                 modifier = Modifier
@@ -264,13 +269,13 @@ private fun Header(
                         text = studentData?.name ?: "",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         text = studentData?.neptun ?: "",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                     )
                 }
                 if (unreadMessages > 0) {
@@ -279,14 +284,14 @@ private fun Header(
                             text = unreadMessages.toString(),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
                             painter = painterResource(id = R.drawable.ic_mail),
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
@@ -299,7 +304,10 @@ private fun Header(
                 .aspectRatio(1f)
                 .clickable { onNavigateToScreen(SettingsDestination) },
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            )
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -308,8 +316,8 @@ private fun Header(
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
-                    modifier = Modifier.size(36.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    modifier = Modifier.size(32.dp),
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
         }
@@ -324,7 +332,10 @@ fun CurrentCourseItem(
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
@@ -335,7 +346,7 @@ fun CurrentCourseItem(
                     text = "Éppen tart",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 LinearProgressIndicator(
                     progress = { course.getPercent() / 100f },
@@ -346,58 +357,59 @@ fun CurrentCourseItem(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_course),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = course.title.toString().trim(),
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                    )
-                }
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_course),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = course.title.toString().trim(),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             painter = painterResource(R.drawable.ic_location),
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = course.location.toString().trim(),
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_schedule),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = course.endTime.getTimeLeft(),
                             fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                     }
+                }
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_schedule),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = course.endTime.getTimeLeft(),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
                 }
             }
         }
@@ -410,7 +422,10 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         ) {
             Box(
                 modifier = Modifier
@@ -421,7 +436,7 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                 when (state) {
                     is ApiResult.Progress -> {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(50.dp),
+                            modifier = Modifier.size(40.dp),
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -436,21 +451,21 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                                     text = "Következő óra",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         imageVector = Icons.Default.Event,
                                         contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = event.startTime.getCourseDateString(),
-                                        fontSize = 15.sp,
-                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -458,14 +473,14 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_course),
                                         contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = event.title.toString().trim(),
                                         fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -473,14 +488,14 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_location),
                                         contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = event.location.toString().trim(),
                                         fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
                                 }
                             }
@@ -495,13 +510,13 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                                     text = "${event.startTime.hour}:${event.startTime.minute.toString().padStart(2, '0')}",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
                                     text = "${event.endTime.hour}:${event.endTime.minute.toString().padStart(2, '0')}",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                             Spacer(modifier = Modifier.width(12.dp))
@@ -532,27 +547,30 @@ fun NavButton(
         modifier = modifier,
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(20.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 painter = icon,
                 contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = MaterialTheme.colorScheme.primary
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = text,
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.onSecondaryContainer
             )
         }
     }
