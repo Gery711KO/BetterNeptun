@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.androidx.preference)
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.runtime.livedata)
     implementation(libs.androidx.legacy.support.v4)
 
     implementation(libs.google.material)
