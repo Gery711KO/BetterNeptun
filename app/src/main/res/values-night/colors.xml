@@ -1,40 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Material 3 Dark Colors -->
-    <color name="primary">#B8C4FF</color>
-    <color name="onPrimary">#002584</color>
-    <color name="primaryContainer">#0037B9</color>
-    <color name="onPrimaryContainer">#DDE1FF</color>
-    <color name="secondary">#C1C5DD</color>
-    <color name="onSecondary">#2B3042</color>
-    <color name="secondaryContainer">#414659</color>
-    <color name="onSecondaryContainer">#DEE1F9</color>
-    <color name="tertiary">#E4BADB</color>
-    <color name="onTertiary">#432740</color>
-    <color name="tertiaryContainer">#5B3D57</color>
-    <color name="onTertiaryContainer">#FFFFD7F3</color>
+    <!-- Material 3 Dark Colors - Fully Dark Gray -->
+    <color name="primary">#E0E0E0</color>
+    <color name="onPrimary">#212121</color>
+    <color name="primaryContainer">#424242</color>
+    <color name="onPrimaryContainer">#F5F5F5</color>
+    <color name="secondary">#BDBDBD</color>
+    <color name="onSecondary">#212121</color>
+    <color name="secondaryContainer">#424242</color>
+    <color name="onSecondaryContainer">#EEEEEE</color>
+    <color name="tertiary">#9E9E9E</color>
+    <color name="onTertiary">#212121</color>
+    <color name="tertiaryContainer">#616161</color>
+    <color name="onTertiaryContainer">#F5F5F5</color>
     <color name="error">#FFB4AB</color>
     <color name="onError">#690005</color>
     <color name="errorContainer">#93000A</color>
     <color name="onErrorContainer">#FFFFDAD6</color>
-    <color name="background">#1B1B1F</color>
-    <color name="onBackground">#E4E2E6</color>
-    <color name="surface">#1B1B1F</color>
-    <color name="onSurface">#E4E2E6</color>
-    <color name="surfaceVariant">#45464F</color>
-    <color name="onSurfaceVariant">#C5C6D0</color>
-    <color name="outline">#8F909A</color>
+    <color name="background">#121212</color>
+    <color name="onBackground">#EEEEEE</color>
+    <color name="surface">#121212</color>
+    <color name="onSurface">#EEEEEE</color>
+    <color name="surfaceVariant">#424242</color>
+    <color name="onSurfaceVariant">#BDBDBD</color>
+    <color name="outline">#9E9E9E</color>
 
     <!-- Main fragment colors -->
-    <color name="base_fragment_bg">#202020</color>
+    <color name="base_fragment_bg">@color/background</color>
     <color name="base_text_color">@color/white</color>
     <color name="base_text_selected_color">#80FFFFFF</color>
     <color name="text_input_box_color">#B3FFFFFF</color>
-    <color name="card_bg">#131313</color>
-    <color name="card_bg_60f">#CC202020</color>
-    <color name="message_bg">#1A1A1A</color>
-    <color name="radio_button_color">#244799</color>
+    <color name="card_bg">#1E1E1E</color>
+    <color name="card_bg_60f">#CC121212</color>
+    <color name="message_bg">#1E1E1E</color>
+    <color name="radio_button_color">#E0E0E0</color>
 
     <color name="chart_alpha_color">#4DFFFFFF</color>
-    <color name="chart_color">#B4B4B4</color>
+    <color name="chart_color">#BDBDBD</color>
 </resources>
