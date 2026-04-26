@@ -36,15 +36,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.BuildConfig
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import hu.kocsisgeri.betterneptun.utils.ThemeMode
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel(),
-    onBackClick: () -> Unit,
-    onLogoutSuccess: () -> Unit
+    navigator: Navigator = koinInject(),
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
 
@@ -61,7 +63,7 @@ fun SettingsScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = navigator::navigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Vissza"
@@ -149,7 +151,9 @@ fun SettingsScreen(
 
             LogoutButton(
                 onClick = {
-                    viewModel.logout(onLogoutSuccess)
+                    viewModel.logout {
+                        navigator.navigateToInclusive(LoginDestination)
+                    }
                 }
             )
 

@@ -17,15 +17,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.domain.model.Message
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
 import hu.kocsisgeri.betterneptun.ui.theme.Armata
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinActivityViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessagesScreen(
-    viewModel: MessagesViewModel = koinViewModel(),
-    onBackClick: () -> Unit,
-    onMessageClick: (String) -> Unit
+    viewModel: MessagesViewModel = koinActivityViewModel(),
+    navigator: Navigator = koinInject()
 ) {
     val messages by viewModel.listItems.observeAsState(emptyList())
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -43,7 +45,7 @@ fun MessagesScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = navigator::navigateBack) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back),
                             contentDescription = "Vissza"
@@ -90,7 +92,7 @@ fun MessagesScreen(
                             message = message,
                             onClick = {
                                 viewModel.readMessage(message.id)
-                                onMessageClick(message.id)
+                                navigator.navigateTo(MessageDetailDestination)
                             }
                         )
                     }

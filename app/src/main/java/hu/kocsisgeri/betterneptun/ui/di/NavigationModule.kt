@@ -6,8 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.AndroidFragment
-import hu.kocsisgeri.betterneptun.ui.screen.login.LoginScreen
-import hu.kocsisgeri.betterneptun.ui.screen.messages.MessagesFragment
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
@@ -18,7 +16,9 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
 import hu.kocsisgeri.betterneptun.ui.screen.home.HomeScreen
-import hu.kocsisgeri.betterneptun.ui.screen.messages.detail_dialog.MessageDetailFragment
+import hu.kocsisgeri.betterneptun.ui.screen.login.LoginScreen
+import hu.kocsisgeri.betterneptun.ui.screen.messages.MessagesScreen
+import hu.kocsisgeri.betterneptun.ui.screen.messages.detail_dialog.MessageDetailScreen
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.SemestersFragment
 import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsScreen
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsFragment
@@ -44,19 +44,15 @@ val navigationModule = module {
         }
 
         navigation<SettingsDestination> {
-            val navigator = get<Navigator>()
-            SettingsScreen(
-                onBackClick = { navigator.navigateBack() },
-                onLogoutSuccess = { navigator.navigateToInclusive(LoginDestination) }
-            )
+            SettingsScreen()
         }
 
         navigation<MessagesDestination> {
-            ComposeFragment<MessagesFragment>()
+            MessagesScreen()
         }
 
         navigation<MessageDetailDestination> {
-            ComposeFragment<MessageDetailFragment>()
+            MessageDetailScreen()
         }
 
         navigation<SemestersDestination> {

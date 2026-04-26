@@ -18,7 +18,7 @@ import org.koin.dsl.module
 private const val SHARED_DATA = "Better_Neptun_Persistence"
 
 val dataModule = module {
-    factory {
+    single {
         get<Context>().getSharedPreferences(SHARED_DATA, Context.MODE_PRIVATE)
     }
 

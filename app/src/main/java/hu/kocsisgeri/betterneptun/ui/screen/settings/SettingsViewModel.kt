@@ -10,11 +10,9 @@ import hu.kocsisgeri.betterneptun.utils.ThemeMode
 import hu.kocsisgeri.betterneptun.utils.get
 import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.utils.put
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
 import org.koin.core.component.KoinComponent
 
 class SettingsViewModel(
