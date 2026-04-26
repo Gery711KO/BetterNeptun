@@ -20,7 +20,7 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
 import hu.kocsisgeri.betterneptun.ui.screen.home.HomeScreen
 import hu.kocsisgeri.betterneptun.ui.screen.messages.detail_dialog.MessageDetailFragment
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.SemestersFragment
-import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsFragment
+import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsScreen
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsFragment
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.TimetableFragment
 import org.koin.androidx.scope.dsl.activityRetainedScope
@@ -44,7 +44,11 @@ val navigationModule = module {
         }
 
         navigation<SettingsDestination> {
-            ComposeFragment<SettingsFragment>()
+            val navigator = get<Navigator>()
+            SettingsScreen(
+                onBackClick = { navigator.navigateBack() },
+                onLogoutSuccess = { navigator.navigateToInclusive(LoginDestination) }
+            )
         }
 
         navigation<MessagesDestination> {

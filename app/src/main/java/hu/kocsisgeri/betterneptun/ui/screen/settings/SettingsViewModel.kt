@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.screen.settings
 
 import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
@@ -10,6 +11,9 @@ import hu.kocsisgeri.betterneptun.utils.get
 import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.utils.put
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import org.koin.core.component.KoinComponent
 
@@ -20,15 +24,17 @@ class SettingsViewModel(
 
     val context: Context by lazy { context }
 
-    val themeMode: Flow<ThemeMode?> = flow {
-        localDataSource.cache.get(PREF_SAVED_THEME, ThemeMode.AUTO).also { theme ->
-            saveTheme(theme)
-            emit(theme)
-        }
+    private val _themeMode = MutableStateFlow<ThemeMode?>(null)
+    val themeMode: StateFlow<ThemeMode?> = _themeMode.asStateFlow()
+
+    init {
+        _themeMode.value = localDataSource.cache.get(PREF_SAVED_THEME, ThemeMode.AUTO)
     }
 
     fun saveTheme(theme: ThemeMode) {
         localDataSource.cache.put(PREF_SAVED_THEME, theme)
+        _themeMode.value = theme
+        AppCompatDelegate.setDefaultNightMode(theme.mode)
     }
 
     fun logout(onLogout: () -> Unit) {
