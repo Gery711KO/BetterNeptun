@@ -5,6 +5,7 @@ import androidx.core.view.isVisible
 import com.hannesdorfmann.adapterdelegates4.dsl.adapterDelegateViewBinding
 import hu.kocsisgeri.betterneptun.databinding.CellSubjectBinding
 import hu.kocsisgeri.betterneptun.ui.adapter.ListItem
+import hu.kocsisgeri.betterneptun.ui.model.InteractionEvent
 import hu.kocsisgeri.betterneptun.ui.model.MarkBookDataModel
 import hu.kocsisgeri.betterneptun.utils.setSafeOnClickListener
 import kotlinx.coroutines.flow.MutableSharedFlow

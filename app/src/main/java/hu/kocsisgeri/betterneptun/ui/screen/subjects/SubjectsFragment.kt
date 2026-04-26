@@ -10,8 +10,8 @@ import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.databinding.FragmentSubjectsBinding
 import hu.kocsisgeri.betterneptun.ui.screen.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.adapter.DiffListAdapter
-import hu.kocsisgeri.betterneptun.ui.adapter.cell.InteractionEvent
 import hu.kocsisgeri.betterneptun.ui.adapter.cell.cellSubjectDelegate
+import hu.kocsisgeri.betterneptun.ui.model.InteractionEvent
 import hu.kocsisgeri.betterneptun.utils.setBackButton
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
