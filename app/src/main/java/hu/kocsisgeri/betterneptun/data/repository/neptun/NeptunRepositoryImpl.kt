@@ -11,15 +11,13 @@ import hu.kocsisgeri.betterneptun.data.api.token.TokenService
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.model.*
-import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.PREF_STAY_LOGGED_ID
 import hu.kocsisgeri.betterneptun.data.datamanager.DataManager
-import hu.kocsisgeri.betterneptun.data.model.MessageListDto
 import hu.kocsisgeri.betterneptun.data.model.ReceivedMessageDto
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

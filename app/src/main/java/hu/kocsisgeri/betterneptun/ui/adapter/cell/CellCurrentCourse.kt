@@ -3,14 +3,9 @@ package hu.kocsisgeri.betterneptun.ui.adapter.cell
 import com.hannesdorfmann.adapterdelegates4.dsl.adapterDelegateViewBinding
 import hu.kocsisgeri.betterneptun.databinding.CellCurrentCourseBinding
 import hu.kocsisgeri.betterneptun.ui.adapter.ListItem
-import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.getPercent
 import hu.kocsisgeri.betterneptun.utils.getTimeLeft
-import timber.log.Timber
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
-import kotlin.math.roundToInt
 
 fun cellCurrentCourseDelegate() =
     adapterDelegateViewBinding<CalendarEntity.Event, ListItem, CellCurrentCourseBinding>(

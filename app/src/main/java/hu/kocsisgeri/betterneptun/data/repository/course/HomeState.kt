@@ -3,7 +3,7 @@ package hu.kocsisgeri.betterneptun.data.repository.course
 import androidx.lifecycle.MutableLiveData
 import hu.kocsisgeri.betterneptun.data.dao.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.koin.core.component.KoinComponent

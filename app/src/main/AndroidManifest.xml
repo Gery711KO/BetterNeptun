@@ -20,19 +20,17 @@
         tools:replace="android:theme">
 
         <activity
-            android:name=".ui.splash.SplashActivity"
+            android:name=".ui.activity.splash.SplashActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.BetterNeptun.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
-            android:name=".ui.main.MainActivity"
+            android:name=".ui.activity.main.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/base_fragment_bg"
-    tools:context=".ui.semesters.SemestersFragment">
+    tools:context=".ui.screen.semesters.SemestersFragment">
 
     <ImageView
         android:id="@+id/back_button"

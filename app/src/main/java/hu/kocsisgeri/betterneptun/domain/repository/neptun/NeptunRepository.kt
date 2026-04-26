@@ -6,7 +6,7 @@ import hu.kocsisgeri.betterneptun.domain.model.StudentData
 import hu.kocsisgeri.betterneptun.ui.model.MarkBookDataModel
 import hu.kocsisgeri.betterneptun.ui.model.NeptunUser
 import hu.kocsisgeri.betterneptun.ui.model.SemesterModel
-import hu.kocsisgeri.betterneptun.ui.timetable.model.CalendarEntity
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 

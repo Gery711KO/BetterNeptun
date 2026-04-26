@@ -1,13 +1,13 @@
 package hu.kocsisgeri.betterneptun.ui.di
 
-import hu.kocsisgeri.betterneptun.ui.home.HomeViewModel
-import hu.kocsisgeri.betterneptun.ui.login.LoginViewModel
-import hu.kocsisgeri.betterneptun.ui.messages.MessagesViewModel
-import hu.kocsisgeri.betterneptun.ui.semesters.SemestersViewModel
-import hu.kocsisgeri.betterneptun.ui.settings.SettingsViewModel
-import hu.kocsisgeri.betterneptun.ui.splash.SplashViewModel
-import hu.kocsisgeri.betterneptun.ui.subjects.SubjectsViewModel
-import hu.kocsisgeri.betterneptun.ui.timetable.TimetableViewModel
+import hu.kocsisgeri.betterneptun.ui.screen.home.HomeViewModel
+import hu.kocsisgeri.betterneptun.ui.screen.login.LoginViewModel
+import hu.kocsisgeri.betterneptun.ui.screen.messages.MessagesViewModel
+import hu.kocsisgeri.betterneptun.ui.screen.semesters.SemestersViewModel
+import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsViewModel
+import hu.kocsisgeri.betterneptun.ui.activity.splash.SplashViewModel
+import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsViewModel
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.TimetableViewModel
 import hu.kocsisgeri.betterneptun.data.datamanager.DataManager
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
