@@ -61,7 +61,7 @@ class SettingsFragment : ComposeFragment() {
     private fun setExitButton() {
         binding.logoutCard.setOnClickListener {
             viewModel.logout()
-            navigator.navigateTo(LoginDestination)
+            navigator.navigateToInclusive(LoginDestination)
         }
     }
 

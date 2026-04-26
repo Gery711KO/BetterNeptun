@@ -44,6 +44,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
@@ -74,6 +75,7 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.utils.getCourseDateString
 import hu.kocsisgeri.betterneptun.utils.getPercent
@@ -129,12 +131,12 @@ fun HomeContent(
     )
 
     Scaffold(
-        containerColor = colorResource(id = R.color.base_fragment_bg),
+        containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = ScaffoldDefaults.contentWindowInsets.add(
             WindowInsets(10.dp, 10.dp, 10.dp, 10.dp)
         ),
         modifier = Modifier
-            .background(colorResource(id = R.color.base_fragment_bg))
+            .background(MaterialTheme.colorScheme.background)
             .pullRefresh(pullRefreshState),
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
@@ -254,7 +256,7 @@ private fun Header(
                 .weight(1f)
                 .padding(end = 10.dp),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.card_bg))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Row(
                 modifier = Modifier
@@ -266,13 +268,13 @@ private fun Header(
                         text = studentData?.name ?: "",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = colorResource(id = R.color.base_text_color)
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         text = studentData?.neptun ?: "",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = colorResource(id = R.color.base_text_color).copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                     )
                 }
                 if (unreadMessages > 0) {
@@ -281,14 +283,14 @@ private fun Header(
                             text = unreadMessages.toString(),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = colorResource(id = R.color.base_text_color)
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
                             painter = painterResource(id = R.drawable.ic_mail),
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
-                            tint = colorResource(id = R.color.base_text_color)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -301,7 +303,7 @@ private fun Header(
                 .aspectRatio(1f)
                 .clickable { onNavigateToScreen(SettingsDestination) },
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.card_bg))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -311,7 +313,7 @@ private fun Header(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
                     modifier = Modifier.size(36.dp),
-                    tint = colorResource(id = R.color.base_text_color)
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -326,7 +328,7 @@ fun CurrentCourseItem(
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.card_bg))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
@@ -337,7 +339,7 @@ fun CurrentCourseItem(
                     text = "Éppen tart",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = colorResource(id = R.color.base_text_color)
+                    color = MaterialTheme.colorScheme.primary
                 )
                 LinearProgressIndicator(
                     progress = { course.getPercent() / 100f },
@@ -359,13 +361,13 @@ fun CurrentCourseItem(
                         painter = painterResource(R.drawable.ic_course),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = course.title.toString().trim(),
                         fontSize = 16.sp,
-                        color = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                     )
                 }
                 Column {
@@ -374,13 +376,13 @@ fun CurrentCourseItem(
                             painter = painterResource(R.drawable.ic_location),
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
-                            tint = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = course.location.toString().trim(),
                             fontSize = 14.sp,
-                            color = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                         )
                     }
 
@@ -391,13 +393,13 @@ fun CurrentCourseItem(
                             painter = painterResource(R.drawable.ic_schedule),
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
-                            tint = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = course.endTime.getTimeLeft(),
                             fontSize = 13.sp,
-                            color = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                         )
                     }
                 }
@@ -411,7 +413,7 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.card_bg))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Box(
             modifier = Modifier
@@ -423,7 +425,7 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                 is ApiResult.Progress -> {
                     CircularProgressIndicator(
                         modifier = Modifier.size(50.dp),
-                        color = colorResource(id = R.color.base_text_color)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 is ApiResult.Success -> {
@@ -437,7 +439,7 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                                 text = "Következő óra",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = colorResource(id = R.color.base_text_color)
+                                color = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -445,13 +447,13 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                                     imageVector = Icons.Default.Event,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp),
-                                    tint = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = event.startTime.getCourseDateString(),
                                     fontSize = 15.sp,
-                                    color = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                                 )
                             }
                             Spacer(modifier = Modifier.height(4.dp))
@@ -460,13 +462,13 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                                     painter = painterResource(id = R.drawable.ic_course),
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp),
-                                    tint = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = event.title.toString().trim(),
                                     fontSize = 14.sp,
-                                    color = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                                 )
                             }
                             Spacer(modifier = Modifier.height(4.dp))
@@ -475,13 +477,13 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                                     painter = painterResource(id = R.drawable.ic_location),
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp),
-                                    tint = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = event.location.toString().trim(),
                                     fontSize = 14.sp,
-                                    color = colorResource(id = R.color.base_text_color).copy(alpha = 0.7f)
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                                 )
                             }
                         }
@@ -496,13 +498,13 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                                 text = "${event.startTime.hour}:${event.startTime.minute.toString().padStart(2, '0')}",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = colorResource(id = R.color.base_text_color)
+                                color = MaterialTheme.colorScheme.primary
                             )
                             Text(
                                 text = "${event.endTime.hour}:${event.endTime.minute.toString().padStart(2, '0')}",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = colorResource(id = R.color.base_text_color)
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
@@ -532,7 +534,7 @@ fun NavButton(
         modifier = modifier,
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.card_bg))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier
@@ -545,14 +547,14 @@ fun NavButton(
                 painter = icon,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
-                tint = colorResource(id = R.color.base_text_color)
+                tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = text,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = colorResource(id = R.color.base_text_color)
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -561,27 +563,29 @@ fun NavButton(
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    val mockEvent = CalendarEntity.Event(
-        id = 1,
-        title = "Mobil szoftverfejlesztés",
-        courseCode = "MSF123",
-        subjectCode = "SUB456",
-        teacher = "Dr. Kovács Béla",
-        startTime = LocalDateTime.now().plusHours(1),
-        endTime = LocalDateTime.now().plusHours(3),
-        location = "BA.F.01",
-        color = 0xFF4285F4.toInt(),
-        isAllDay = false,
-        isCanceled = false
-    )
+    BetterNeptunTheme {
+        val mockEvent = CalendarEntity.Event(
+            id = 1,
+            title = "Mobil szoftverfejlesztés",
+            courseCode = "MSF123",
+            subjectCode = "SUB456",
+            teacher = "Dr. Kovács Béla",
+            startTime = LocalDateTime.now().plusHours(1),
+            endTime = LocalDateTime.now().plusHours(3),
+            location = "BA.F.01",
+            color = 0xFF4285F4.toInt(),
+            isAllDay = false,
+            isCanceled = false
+        )
 
-    HomeContent(
-        studentData = StudentData("Példa János", "ABC123"),
-        unreadMessages = 5,
-        currentCourses = listOf(mockEvent.copy(title = "Éppen zajló óra", startTime = LocalDateTime.now().minusHours(1))),
-        nextCourseState = ApiResult.Success(mockEvent),
-        refreshProgress = null,
-        onRefresh = {},
-        onNavigate = {}
-    )
+        HomeContent(
+            studentData = StudentData("Példa János", "ABC123"),
+            unreadMessages = 5,
+            currentCourses = listOf(mockEvent.copy(title = "Éppen zajló óra", startTime = LocalDateTime.now().minusHours(1))),
+            nextCourseState = ApiResult.Success(mockEvent),
+            refreshProgress = null,
+            onRefresh = {},
+            onNavigate = {}
+        )
+    }
 }

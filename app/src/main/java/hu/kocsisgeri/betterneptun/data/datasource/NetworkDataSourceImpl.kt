@@ -47,27 +47,6 @@ class NetworkDataSourceImpl(
         )
     }
 
-
-//    override suspend fun getData(): ApiResult<StudentData> = withContext(Dispatchers.IO) {
-//        try {
-//            val doc = Jsoup.connect("https://neptun.uni-obuda.hu/hallgato/main.aspx")
-//                .cookies(cookieJar.getCookies().associate {
-//                    it.name to it.value
-//                }).get()
-//            val dataText =
-//                doc.getElementsByAttributeValue("id", "upTraining").first()?.child(2)?.text()
-//                    ?.split("-")
-//            ApiResult.Success(
-//                StudentData(
-//                    name = dataText?.get(0)?.trim(),
-//                    neptun = dataText?.get(1)?.trim(),
-//                )
-//            )
-//        } catch (ex: Exception) {
-//            ApiResult.Error("Network error")
-//        }
-//    }
-
     private suspend fun <T: Any> String.withToken(
         runnable: suspend (token: String) -> T,
     ): T = withContext(coroutineContext) {

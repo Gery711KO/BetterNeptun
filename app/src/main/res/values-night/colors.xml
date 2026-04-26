@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Main fragment colors -->
     <color name="base_fragment_bg">#202020</color>
     <color name="base_text_color">@color/white</color>
     <color name="base_text_selected_color">#80FFFFFF</color>
@@ -8,9 +9,6 @@
     <color name="card_bg_60f">#CC202020</color>
     <color name="message_bg">#1A1A1A</color>
     <color name="radio_button_color">#244799</color>
-    <color name="radio_button_color_bg">#80244799</color>
-    <color name="fab_ripple">#535353</color>
-
 
     <color name="chart_alpha_color">#4DFFFFFF</color>
     <color name="chart_color">#B4B4B4</color>

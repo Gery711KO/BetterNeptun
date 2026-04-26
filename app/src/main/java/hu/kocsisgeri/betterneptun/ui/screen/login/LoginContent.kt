@@ -17,6 +17,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
@@ -35,10 +36,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.AndroidUiModes.UI_MODE_NIGHT_YES
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.kocsisgeri.betterneptun.R
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.theme.LightBaseButtonBg
 
 @Composable
 fun LoginContent(
@@ -55,7 +59,7 @@ fun LoginContent(
     var passwordVisible by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = colorResource(id = R.color.base_fragment_bg),
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = ScaffoldDefaults.contentWindowInsets.add(
             WindowInsets(16.dp, 16.dp, 16.dp, 16.dp)
@@ -72,7 +76,7 @@ fun LoginContent(
                     .alpha(if (isButtonEnabled) 1f else 0.6f),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(id = R.color.base_button_bg),
+                    containerColor = LightBaseButtonBg,
                     contentColor = Color.White
                 ),
                 contentPadding = PaddingValues(vertical = 12.dp)
@@ -112,7 +116,7 @@ fun LoginContent(
                         Spacer(modifier = Modifier.height(16.dp))
                         LinearProgressIndicator(
                             modifier = Modifier.width(120.dp),
-                            color = colorResource(id = R.color.base_text_color)
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -134,12 +138,12 @@ fun LoginContent(
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = TextFieldDefaults.colors(
-                                    focusedIndicatorColor = colorResource(id = R.color.text_input_box_color),
-                                    unfocusedIndicatorColor = colorResource(id = R.color.text_input_box_color),
-                                    focusedLabelColor = colorResource(id = R.color.text_input_box_color),
-                                    cursorColor = colorResource(id = R.color.base_text_color),
-                                    focusedTextColor = colorResource(id = R.color.base_text_color),
-                                    unfocusedTextColor = colorResource(id = R.color.base_text_color),
+                                    focusedIndicatorColor = MaterialTheme.colorScheme.outline,
+                                    unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
+                                    focusedLabelColor = MaterialTheme.colorScheme.outline,
+                                    cursorColor = MaterialTheme.colorScheme.primary,
+                                    focusedTextColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.primary,
                                     focusedContainerColor = Color.Transparent,
                                     unfocusedContainerColor = Color.Transparent,
                                 )
@@ -172,17 +176,17 @@ fun LoginContent(
                                         Icon(
                                             imageVector = image,
                                             contentDescription = null,
-                                            tint = colorResource(id = R.color.base_text_color)
+                                            tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
                                 },
                                 colors = TextFieldDefaults.colors(
-                                    focusedIndicatorColor = colorResource(id = R.color.text_input_box_color),
-                                    unfocusedIndicatorColor = colorResource(id = R.color.text_input_box_color),
-                                    focusedLabelColor = colorResource(id = R.color.text_input_box_color),
-                                    cursorColor = colorResource(id = R.color.base_text_color),
-                                    focusedTextColor = colorResource(id = R.color.base_text_color),
-                                    unfocusedTextColor = colorResource(id = R.color.base_text_color),
+                                    focusedIndicatorColor = MaterialTheme.colorScheme.outline,
+                                    unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
+                                    focusedLabelColor = MaterialTheme.colorScheme.outline,
+                                    cursorColor = MaterialTheme.colorScheme.primary,
+                                    focusedTextColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.primary,
                                     focusedContainerColor = Color.Transparent,
                                     unfocusedContainerColor = Color.Transparent,
                                 )
@@ -202,13 +206,13 @@ fun LoginContent(
                                         onKeepMeLoggedInChange(it)
                                     },
                                     colors = CheckboxDefaults.colors(
-                                        checkedColor = colorResource(id = R.color.base_text_color),
-                                        uncheckedColor = colorResource(id = R.color.base_text_color)
+                                        checkedColor = MaterialTheme.colorScheme.primary,
+                                        uncheckedColor = MaterialTheme.colorScheme.primary
                                     )
                                 )
                                 Text(
                                     text = "Maradjon bejelentkezve?",
-                                    color = colorResource(id = R.color.base_text_color)
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
 
@@ -222,27 +226,33 @@ fun LoginContent(
 }
 
 @Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun LoginContentPreview() {
-    LoginContent(
-        isButtonEnabled = true,
-        isLoading = false,
-        onLoginClick = {},
-        onNeptunCodeChange = {},
-        onPasswordChange = {},
-        onKeepMeLoggedInChange = {}
-    )
+    BetterNeptunTheme {
+        LoginContent(
+            isButtonEnabled = true,
+            isLoading = false,
+            onLoginClick = {},
+            onNeptunCodeChange = {},
+            onPasswordChange = {},
+            onKeepMeLoggedInChange = {}
+        )
+    }
 }
 
 @Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun LoginContentLoadingPreview() {
-    LoginContent(
-        isButtonEnabled = false,
-        isLoading = true,
-        onLoginClick = {},
-        onNeptunCodeChange = {},
-        onPasswordChange = {},
-        onKeepMeLoggedInChange = {}
-    )
+    BetterNeptunTheme {
+        LoginContent(
+            isButtonEnabled = false,
+            isLoading = true,
+            onLoginClick = {},
+            onNeptunCodeChange = {},
+            onPasswordChange = {},
+            onKeepMeLoggedInChange = {}
+        )
+    }
 }

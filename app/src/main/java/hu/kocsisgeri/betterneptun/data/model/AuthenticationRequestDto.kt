@@ -6,4 +6,5 @@ data class AuthenticationRequestDto(
     val LCID: Int = 1038,
     val captcha: String = "",
     val captchaIdentifier: String = "",
+    val token: String = ""
 )
