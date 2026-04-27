@@ -10,18 +10,11 @@ import com.alamkanak.weekview.WeekViewEntity
 import com.alamkanak.weekview.jsr310.WeekViewPagingAdapterJsr310
 import com.alamkanak.weekview.jsr310.setEndTime
 import com.alamkanak.weekview.jsr310.setStartTime
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.ui.adapter.ListItem
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import java.io.Serializable
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
-import kotlin.coroutines.CoroutineContext
 
 sealed class CalendarEntity {
 
@@ -37,7 +30,7 @@ sealed class CalendarEntity {
         val color: Int,
         val isAllDay: Boolean,
         val isCanceled: Boolean
-    ) : CalendarEntity(), Serializable, ListItem
+    ) : CalendarEntity(), Serializable
 
     data class BlockedTimeSlot(
         val id: Long,
