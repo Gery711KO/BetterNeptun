@@ -46,8 +46,8 @@ class SemestersFragment : ComposeFragment() {
                 binding.barChart.isVisible = tab?.position == 0
                 binding.lineChart.isVisible = tab?.position == 1
                 when (tab?.position) {
-                    0 -> { binding.barChart.animateY(1000) }
-                    1 -> { binding.lineChart.animateY(1000) }
+                    0 -> { binding.barChart.animateY(500) }
+                    1 -> { binding.lineChart.animateY(500) }
                 }
             }
 

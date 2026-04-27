@@ -1,18 +1,24 @@
 package hu.kocsisgeri.betterneptun.ui.screen.semesters
 
-import android.graphics.Color
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import com.github.mikephil.charting.data.*
+import androidx.lifecycle.viewModelScope
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
 import kotlinx.coroutines.flow.map
 
 class SemestersViewModel(
     repo: NeptunRepository
 ) : ViewModel() {
 
-    private val creditFlow = repo.averages.map {
+    private val creditFlow = repo.terms.map {
         when (it) {
             is ApiResult.Error -> ApiResult.Error(it.error)
             is ApiResult.Progress -> ApiResult.Progress(it.percentage)
@@ -42,31 +48,31 @@ class SemestersViewModel(
             is ApiResult.Error -> ApiResult.Error(it.error)
             is ApiResult.Progress -> ApiResult.Progress(it.percentage)
             is ApiResult.Success -> {
-                val normalAverages = it.data.mapIndexed { index, model ->
+                val normalAverages = it.data.map { model ->
                     Entry(
-                        (index + 1).toFloat(),
+                        (model.index + 1).toFloat(),
                         model.normalAverage?.toFloat()?: 0f
                     )
                 }
 
-                val comAverages = it.data.mapIndexed { index, model ->
+                val comAverages = it.data.map { model ->
                     Entry(
-                        (index + 1).toFloat(),
+                        (model.index + 1).toFloat(),
                         model.commutativeAverage?.toFloat()?: 0f
                     )
                 }
 
                 val normalSet = LineDataSet(normalAverages, "Átlagok")
                     .apply {
-                        setCircleColor(Color.parseColor("#007541"))
+                        setCircleColor("#007541".toColorInt())
                         lineWidth = 3f
-                        color = Color.parseColor("#007541")
+                        color = "#007541".toColorInt()
                     }
                 val comSet = LineDataSet(comAverages, "Kommultatív átlagok")
                     .apply {
-                        setCircleColor(Color.parseColor("#096FB3"))
+                        setCircleColor("#096FB3".toColorInt())
                         lineWidth = 3f
-                        color = Color.parseColor("#096FB3")
+                        color = "#096FB3".toColorInt()
                     }
                 ApiResult.Success(LineData(normalSet, comSet))
             }
@@ -74,4 +80,14 @@ class SemestersViewModel(
     }
 
     val averages = averageFlow.asLiveData()
+
+    init {
+        viewModelScope.launchReportingErrors {
+            repo.fetchTerms()
+        }
+
+        viewModelScope.launchReportingErrors {
+            repo.fetchTermAverages()
+        }
+    }
 }

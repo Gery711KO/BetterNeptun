@@ -5,12 +5,12 @@ import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageEntity
-import hu.kocsisgeri.betterneptun.data.model.ReceivedMessageDto
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.Average
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.domain.model.Term
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.model.MarkBookDataModel
-import hu.kocsisgeri.betterneptun.ui.model.SemesterModel
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,8 +31,9 @@ internal class NeptunRepositoryImpl(
     override val studentData = MutableStateFlow<StudentData?>(null)
     override val markBookData =
         MutableStateFlow<ApiResult<List<MarkBookDataModel>>>(ApiResult.Progress(0))
-    override val averages = MutableStateFlow<ApiResult<List<SemesterModel>>>(ApiResult.Progress(0))
-    override var currentMessagePage = 0
+    override val terms = MutableStateFlow<ApiResult<List<Term>>>(ApiResult.Progress(0))
+    override val averages = MutableStateFlow<ApiResult<List<Average>>>(ApiResult.Progress(0))
+    override var currentMessagePage = 1
 
     override val unreadMessagesCount: MutableStateFlow<Int?> = MutableStateFlow(null)
 
@@ -52,7 +53,7 @@ internal class NeptunRepositoryImpl(
     }
 
     override suspend fun fetchUnreadMessages() {
-        withContext(ioDispatcher){
+        withContext(ioDispatcher) {
             networkDataSource.getUnreadMessageCount().let {
                 unreadMessagesCount.value = it.data.count
             }
@@ -159,11 +160,39 @@ internal class NeptunRepositoryImpl(
 //            }
     }
 
-    override suspend fun fetchAverages() {
-//            networkDataSource.getAverages().let {
-//                if (it.isNotEmpty()) averages.tryEmit(ApiResult.Success(it))
-//                else averages.tryEmit(ApiResult.Error("Network error"))
-//            }
+    override suspend fun fetchTerms() {
+        withContext(ioDispatcher) {
+            terms.value = ApiResult.Success(
+                networkDataSource.getTerms().data.let { terms ->
+                    terms.reversed().mapIndexed { index, term ->
+                        Term(
+                            index = index,
+                            semesterTitle = term.text,
+                            semesterFulfilledCredits = term.completedCredit,
+                            semesterTakenCredits = term.creditSum,
+                            allFulfilledCredits = terms.take(index + 1)
+                                .sumOf { it.completedCredit },
+                            allTakenCredits = terms.take(index + 1).sumOf { it.creditSum },
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    override suspend fun fetchTermAverages() {
+        withContext(ioDispatcher) {
+            averages.value = ApiResult.Success(
+                networkDataSource.getTermAverages().data.termAveragesByTrainings
+                    .mapIndexed { index, average ->
+                        Average(
+                            index = index,
+                            normalAverage = average.average,
+                            commutativeAverage = average.sumAverage
+                        )
+                    }
+            )
+        }
     }
 
     override suspend fun login(neptunCode: String, password: String): ApiResult<StudentData> =

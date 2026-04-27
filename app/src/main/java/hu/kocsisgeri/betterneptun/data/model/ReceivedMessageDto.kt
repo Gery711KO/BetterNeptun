@@ -1,6 +1,8 @@
 package hu.kocsisgeri.betterneptun.data.model
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import java.time.LocalDateTime
 
 @Serializable
 data class ReceivedMessageDto(
@@ -10,17 +12,11 @@ data class ReceivedMessageDto(
     val senderName: String,
     val isSystemMessage: Boolean,
     val subject: String,
-    val lastPostDate: String,
+    @Contextual
+    val lastPostDate: LocalDateTime,
     val unreadedPostCount: Int,
     val hasAttachment: Boolean,
     val taskId: String? = null,
     val taskName: String? = null,
     val taskDeadlineType: String? = null,
-    val uiDisplayState: UiDisplayStateDto
-) {
-    @Serializable
-    data class UiDisplayStateDto(
-        val type: Int,
-        val reasons: List<String>
-    )
-}
+)

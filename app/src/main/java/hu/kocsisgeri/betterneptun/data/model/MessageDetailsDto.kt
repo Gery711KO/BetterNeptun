@@ -1,6 +1,8 @@
 package hu.kocsisgeri.betterneptun.data.model
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import java.time.LocalDateTime
 
 @Serializable
 data class MessageDetailsDto(
@@ -15,7 +17,8 @@ data class MessageDetailsDto(
         val isSystemMessage: Boolean,
         val isReplyEnabled: Boolean,
         val description: String,
-        val endDate: String?,
+        @Contextual
+        val endDate: LocalDateTime?,
         val subject: String,
         val taskId: String?,
         val taskName: String?,
@@ -35,8 +38,10 @@ data class MessageDetailsDto(
         val senderUserId: String?,
         val plainTextPreview: String?,
         val htmlText: String,
-        val sendDate: String,
-        val expectedAttachmentsDeletionDate: String?,
+        @Contextual
+        val sendDate: LocalDateTime,
+        @Contextual
+        val expectedAttachmentsDeletionDate: LocalDateTime?,
         val attachments: List<String>, // Adjust type if attachments contain more than strings
         val isRead: Boolean
     )

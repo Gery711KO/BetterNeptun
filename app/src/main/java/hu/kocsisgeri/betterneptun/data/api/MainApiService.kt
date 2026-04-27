@@ -3,6 +3,10 @@ package hu.kocsisgeri.betterneptun.data.api
 import hu.kocsisgeri.betterneptun.data.model.ApiResponseDto
 import hu.kocsisgeri.betterneptun.data.model.MessageDetailsDto
 import hu.kocsisgeri.betterneptun.data.model.MessageListDto
+import hu.kocsisgeri.betterneptun.data.model.TermDetailDto
+import hu.kocsisgeri.betterneptun.data.model.ExtendedTermDto
+import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
+import hu.kocsisgeri.betterneptun.data.model.TermDto
 import hu.kocsisgeri.betterneptun.data.model.UnreadMessagesCountDto
 import hu.kocsisgeri.betterneptun.data.model.UserInfoDto
 import retrofit2.http.GET
@@ -34,4 +38,22 @@ interface MainApiService {
         @Path("msgId") msgId: String,
         @Query("messageId") messageId: String,
     ): ApiResponseDto<MessageDetailsDto>
+
+    @Headers("Content-Type: application/json")
+    @GET("RegistrySheet/GetStudentTrainingTermData")
+    suspend fun getExtendedTerms(): ApiResponseDto<List<ExtendedTermDto>>
+
+    @Headers("Content-Type: application/json")
+    @GET("Advancement/GetStudentTrainingTermData")
+    suspend fun getTermDetails(
+        @Query("studentTrainingTermDataId") termId: String
+    ): ApiResponseDto<TermDetailDto>
+
+    @Headers("Content-Type: application/json")
+    @GET("TakenSubjects/Terms")
+    suspend fun getTerms(): ApiResponseDto<List<TermDto>>
+
+    @Headers("Content-Type: application/json")
+    @GET("Advancement/GetTermAveragesByTraining")
+    suspend fun getTermAverages(): ApiResponseDto<TermAveragesDto>
 }

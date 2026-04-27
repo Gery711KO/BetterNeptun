@@ -42,8 +42,10 @@ import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
 import hu.kocsisgeri.betterneptun.ui.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.utils.DateUtils
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import java.time.LocalDateTime
 
 @Composable
 fun MessagesScreen(
@@ -171,7 +173,7 @@ fun MessageItem(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = message.date,
+                    text = DateUtils.formatDate(message.date),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -207,7 +209,7 @@ fun MessagesScreenPreview() {
                     id = "1",
                     name = "Kovács János",
                     subject = "Vizsga eredmény",
-                    date = "2023.10.25. 14:30",
+                    date = LocalDateTime.of(2023, 10, 25, 14, 30),
                     isNew = true,
                     detail = "Tisztelt Hallgató! A vizsgája sikerült."
                 ),
@@ -215,7 +217,7 @@ fun MessagesScreenPreview() {
                     id = "2",
                     name = "Neptun Rendszer",
                     subject = "Kurzusfelvétel",
-                    date = "2023.10.24. 09:15",
+                    date = LocalDateTime.of(2023, 10, 24, 9, 15),
                     isNew = false,
                     detail = "A kurzusfelvétel időszaka megkezdődött."
                 ),
@@ -223,7 +225,7 @@ fun MessagesScreenPreview() {
                     id = "3",
                     name = "Dr. Tanár Úr",
                     subject = "Elmaradt előadás",
-                    date = "2023.10.23. 18:00",
+                    date = LocalDateTime.of(2023, 10, 23, 18, 0),
                     isNew = true,
                     detail = "A holnapi előadás betegség miatt elmarad."
                 )
@@ -244,7 +246,7 @@ fun MessageItemPreview() {
                     id = "1",
                     name = "Kovács János",
                     subject = "Vizsga eredmény",
-                    date = "2023.10.25. 14:30",
+                    date = LocalDateTime.of(2023, 10, 25, 14, 30),
                     isNew = true,
                     detail = "Tisztelt Hallgató! A vizsgája sikerült."
                 ),
@@ -255,7 +257,7 @@ fun MessageItemPreview() {
                     id = "2",
                     name = "Neptun Rendszer",
                     subject = "Kurzusfelvétel",
-                    date = "2023.10.24. 09:15",
+                    date = LocalDateTime.of(2023, 10, 24, 9, 15),
                     isNew = false,
                     detail = "A kurzusfelvétel időszaka megkezdődött."
                 ),

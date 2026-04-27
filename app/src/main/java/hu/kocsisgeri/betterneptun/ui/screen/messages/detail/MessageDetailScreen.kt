@@ -48,12 +48,14 @@ import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.utils.DateUtils
 import hu.kocsisgeri.betterneptun.utils.HtmlText
 import hu.kocsisgeri.betterneptun.utils.openUrl
 import hu.kocsisgeri.betterneptun.utils.sendEmail
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import java.time.LocalDateTime
 
 @Composable
 fun MessageDetailScreen(
@@ -210,7 +212,7 @@ fun MessageDetailContent(
                                 DetailItem(
                                     icon = painterResource(R.drawable.ic_schedule),
                                     label = "Küldés ideje",
-                                    value = messageDetail.date
+                                    value = DateUtils.formatDate(messageDetail.date)
                                 )
                             }
                         }
@@ -316,7 +318,7 @@ fun MessageDetailContentPreview() {
             messageDetail = MessageDetail(
                 subject = "Vizsga eredmény",
                 sender = "Kovács János",
-                date = "2023.10.25. 14:30",
+                date = LocalDateTime.of(2023,10,25,14,30),
                 posts = listOf(
                     MessageDetail.Post(
                         id = "1",

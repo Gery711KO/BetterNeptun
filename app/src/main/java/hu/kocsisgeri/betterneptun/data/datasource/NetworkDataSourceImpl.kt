@@ -1,6 +1,8 @@
 package hu.kocsisgeri.betterneptun.data.datasource
 
 import hu.kocsisgeri.betterneptun.data.api.MainApiService
+import hu.kocsisgeri.betterneptun.data.model.ApiResponseDto
+import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
@@ -32,5 +34,25 @@ internal class NetworkDataSourceImpl(
     override suspend fun getMessageDetails(messageId: String) =
         withContext(ioDispatcher) {
             api.getMessageDetails(messageId, messageId)
+        }
+
+    override suspend fun getExtendedTerms() =
+        withContext(ioDispatcher) {
+            api.getExtendedTerms()
+        }
+
+    override suspend fun getTermDetails(termId: String) =
+        withContext(ioDispatcher) {
+            api.getTermDetails(termId)
+        }
+
+    override suspend fun getTerms() =
+        withContext(ioDispatcher) {
+            api.getTerms()
+        }
+
+    override suspend fun getTermAverages() =
+        withContext(ioDispatcher) {
+            api.getTermAverages()
         }
 }

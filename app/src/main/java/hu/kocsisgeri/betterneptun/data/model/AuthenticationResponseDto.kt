@@ -1,6 +1,8 @@
 package hu.kocsisgeri.betterneptun.data.model
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import java.time.LocalDateTime
 
 @Serializable
 data class AuthenticationResponseDto(
@@ -9,5 +11,6 @@ data class AuthenticationResponseDto(
     val numberOfDaysUntilADPasswordExpires: Int?,
     val isCaptchaRequired: Boolean,
     val isTwoFactorRequired: Boolean,
-    val refreshTokenExpiration: String,
+    @Contextual
+    val refreshTokenExpiration: LocalDateTime,
 )
