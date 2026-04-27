@@ -105,11 +105,7 @@ fun CalendarEntity.BlockedTimeSlot.toWeekViewEntity(): WeekViewEntity {
 
 class FragmentWeekViewAdapter(
     private val clickHandler: MutableSharedFlow<CalendarEntity.Event>
-) : WeekViewPagingAdapterJsr310<CalendarEntity>(), KoinComponent, CoroutineScope {
-
-    override val coroutineContext: CoroutineContext = Dispatchers.IO
-    private val neptunRepository : NeptunRepository by inject()
-
+) : WeekViewPagingAdapterJsr310<CalendarEntity>() {
     override fun onCreateEntity(item: CalendarEntity): WeekViewEntity = item.toWeekViewEntity()
 
     override fun onLoadMore(

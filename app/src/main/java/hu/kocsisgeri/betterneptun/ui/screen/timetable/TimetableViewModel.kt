@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable
 
 import androidx.annotation.DrawableRes
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
@@ -22,9 +23,7 @@ class TimetableViewModel(
     private val eventList = neptunRepository.events
 
     val timetableEvents = eventList.asLiveData()
-//    val times = combine(CourseRepository.firstClassTime, CourseRepository.lastClassTime) { first, last ->
-//        "${first?.split(":")?.get(0)?.toInt() ?: 8}:${last?.split(":")?.get(0)?.toInt() ?: 22}"
-//    }.asLiveData()
+    val times = MutableLiveData("8:22") // todo get correct values
 
     val clickHandler = MutableSharedFlow<CalendarEntity.Event>(0, 10)
     val clicked = MutableSharedFlow<CalendarEntity.Event>(0,10)

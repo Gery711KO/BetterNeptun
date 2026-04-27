@@ -22,7 +22,7 @@ import hu.kocsisgeri.betterneptun.ui.screen.messages.detail_dialog.MessageDetail
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.SemestersFragment
 import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsScreen
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsFragment
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.TimetableFragment
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.TimetableScreen
 import org.koin.androidx.scope.dsl.activityRetainedScope
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
@@ -64,7 +64,7 @@ val navigationModule = module {
         }
 
         navigation<TimetableDestination> {
-            ComposeFragment<TimetableFragment>()
+            TimetableScreen()
         }
     }
 }
