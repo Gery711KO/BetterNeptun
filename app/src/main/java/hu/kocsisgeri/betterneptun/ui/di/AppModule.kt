@@ -4,6 +4,7 @@ import hu.kocsisgeri.betterneptun.ui.activity.splash.SplashViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.home.HomeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.login.LoginViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.messages.MessagesViewModel
+import hu.kocsisgeri.betterneptun.ui.screen.messages.detail.MessageDetailViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.SemestersViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsViewModel
@@ -16,6 +17,7 @@ val appModule = module {
     viewModelOf(::LoginViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::MessagesViewModel)
+    viewModelOf(::MessageDetailViewModel)
     viewModelOf(::TimetableViewModel)
     viewModelOf(::SettingsViewModel)
     viewModelOf(::SubjectsViewModel)

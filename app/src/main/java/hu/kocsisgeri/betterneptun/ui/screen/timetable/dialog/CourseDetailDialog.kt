@@ -44,7 +44,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.madrapps.pikolo.HSLColorPicker
 import com.madrapps.pikolo.listeners.SimpleColorSelectionListener
 import hu.kocsisgeri.betterneptun.R
-import hu.kocsisgeri.betterneptun.ui.screen.messages.detail_dialog.DetailItem
+import hu.kocsisgeri.betterneptun.ui.screen.messages.detail.DetailItem
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import java.time.LocalDateTime

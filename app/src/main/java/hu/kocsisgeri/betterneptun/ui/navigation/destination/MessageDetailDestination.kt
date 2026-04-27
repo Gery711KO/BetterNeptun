@@ -4,4 +4,4 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object MessageDetailDestination: NavKey
+data class MessageDetailDestination(val messageId: String): NavKey

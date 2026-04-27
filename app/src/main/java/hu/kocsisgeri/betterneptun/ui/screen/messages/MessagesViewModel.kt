@@ -15,18 +15,9 @@ class MessagesViewModel(
     private val itemFlow = neptunRepository.messages
     val listItems = itemFlow.asLiveData()
 
-    private val _messageDetail = MutableStateFlow<MessageDetail?>(null)
-    val messageDetail = _messageDetail.asLiveData()
-
     init {
         viewModelScope.launchReportingErrors {
             neptunRepository.fetchMessages()
-        }
-    }
-
-    fun readMessage(messageId : String) {
-        viewModelScope.launchReportingErrors {
-            _messageDetail.value = neptunRepository.getMessageDetail(messageId)
         }
     }
 }

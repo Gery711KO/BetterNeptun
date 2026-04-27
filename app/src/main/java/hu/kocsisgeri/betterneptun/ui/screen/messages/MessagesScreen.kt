@@ -43,11 +43,11 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestina
 import hu.kocsisgeri.betterneptun.ui.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinActivityViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun MessagesScreen(
-    viewModel: MessagesViewModel = koinActivityViewModel(),
+    viewModel: MessagesViewModel = koinViewModel(),
     navigator: Navigator = koinInject()
 ) {
     val messages by viewModel.listItems.observeAsState(emptyList())
@@ -56,8 +56,7 @@ fun MessagesScreen(
         messages = messages,
         onBackClick = navigator::navigateBack,
         onMessageClick = { message ->
-            viewModel.readMessage(message.id)
-            navigator.navigateTo(MessageDetailDestination)
+            navigator.navigateTo(MessageDetailDestination(message.id))
         }
     )
 }

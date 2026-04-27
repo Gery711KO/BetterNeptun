@@ -18,7 +18,7 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
 import hu.kocsisgeri.betterneptun.ui.screen.home.HomeScreen
 import hu.kocsisgeri.betterneptun.ui.screen.login.LoginScreen
 import hu.kocsisgeri.betterneptun.ui.screen.messages.MessagesScreen
-import hu.kocsisgeri.betterneptun.ui.screen.messages.detail_dialog.MessageDetailScreen
+import hu.kocsisgeri.betterneptun.ui.screen.messages.detail.MessageDetailScreen
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.SemestersFragment
 import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsScreen
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsFragment
@@ -52,7 +52,7 @@ val navigationModule = module {
         }
 
         navigation<MessageDetailDestination> {
-            MessageDetailScreen()
+            MessageDetailScreen(it.messageId)
         }
 
         navigation<SemestersDestination> {
