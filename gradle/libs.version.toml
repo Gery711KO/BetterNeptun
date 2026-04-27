@@ -32,8 +32,9 @@ mockitoKotlin = "2.2.0"
 work = "2.11.2"
 weekView = "5.2.4"
 mpAndroidChart = "v3.1.0"
-ksp = "2.1.10-1.0.29"
+ksp = "2.3.7"
 splashscreen = "1.2.0"
+pikolo = "2.0.2"
 
 navigation3Core = "1.1.1"
 navigation3ViewModel = "2.10.0"
@@ -106,6 +107,7 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 weekView-core = { group = "com.github.thellmund.Android-Week-View", name = "core", version.ref = "weekView" }
 weekView-jsr310 = { group = "com.github.thellmund.Android-Week-View", name = "jsr310", version.ref = "weekView" }
 mpAndroidChart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpAndroidChart" }
+pikolo = { group = "com.github.madrapps", name = "pikolo", version.ref = "pikolo" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitExt" }
@@ -122,6 +124,7 @@ androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscree
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-room = { id = "androidx.room", version.ref = "room" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

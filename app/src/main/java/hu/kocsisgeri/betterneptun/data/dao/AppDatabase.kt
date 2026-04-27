@@ -7,7 +7,7 @@ import androidx.room.TypeConverters
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-@Database(entities = [MessageEntity::class, ColorEntity::class], version = 2)
+@Database(entities = [MessageEntity::class, ColorEntity::class], version = 1)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract val messages: MessageDao
