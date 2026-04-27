@@ -31,8 +31,8 @@ class SettingsViewModel(
 
     fun saveTheme(theme: ThemeMode) {
         localDataSource.cache.put(PREF_SAVED_THEME, theme)
-        _themeMode.value = theme
         AppCompatDelegate.setDefaultNightMode(theme.mode)
+        _themeMode.value = theme
     }
 
     fun logout(onLogout: () -> Unit) {

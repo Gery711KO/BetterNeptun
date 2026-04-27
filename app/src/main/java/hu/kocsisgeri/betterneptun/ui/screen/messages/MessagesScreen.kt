@@ -1,10 +1,30 @@
 package hu.kocsisgeri.betterneptun.ui.screen.messages
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.Badge
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -14,22 +34,41 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.domain.model.Message
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
 import hu.kocsisgeri.betterneptun.ui.theme.Armata
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinActivityViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessagesScreen(
     viewModel: MessagesViewModel = koinActivityViewModel(),
     navigator: Navigator = koinInject()
 ) {
     val messages by viewModel.listItems.observeAsState(emptyList())
+    
+    MessagesContent(
+        messages = messages,
+        onBackClick = navigator::navigateBack,
+        onMessageClick = { message ->
+            viewModel.readMessage(message.id)
+            navigator.navigateTo(MessageDetailDestination)
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MessagesContent(
+    messages: List<Message>,
+    onBackClick: () -> Unit,
+    onMessageClick: (Message) -> Unit
+) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     Scaffold(
@@ -45,7 +84,7 @@ fun MessagesScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = navigator::navigateBack) {
+                    IconButton(onClick = onBackClick) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_back),
                             contentDescription = "Vissza"
@@ -90,10 +129,7 @@ fun MessagesScreen(
                     items(messages) { message ->
                         MessageItem(
                             message = message,
-                            onClick = {
-                                viewModel.readMessage(message.id)
-                                navigator.navigateTo(MessageDetailDestination)
-                            }
+                            onClick = { onMessageClick(message) }
                         )
                     }
                 }
@@ -151,7 +187,7 @@ fun MessageItem(
         },
         colors = ListItemDefaults.colors(
             containerColor = if (message.isNew) 
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f) 
+                MaterialTheme.colorScheme.primaryContainer
                 else MaterialTheme.colorScheme.surface
         )
     )
@@ -160,4 +196,72 @@ fun MessageItem(
         thickness = 0.5.dp,
         color = MaterialTheme.colorScheme.outlineVariant
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MessagesScreenPreview() {
+    BetterNeptunTheme {
+        MessagesContent(
+            messages = listOf(
+                Message(
+                    id = "1",
+                    name = "Kovács János",
+                    subject = "Vizsga eredmény",
+                    date = "2023.10.25. 14:30",
+                    isNew = true,
+                    detail = "Tisztelt Hallgató! A vizsgája sikerült."
+                ),
+                Message(
+                    id = "2",
+                    name = "Neptun Rendszer",
+                    subject = "Kurzusfelvétel",
+                    date = "2023.10.24. 09:15",
+                    isNew = false,
+                    detail = "A kurzusfelvétel időszaka megkezdődött."
+                ),
+                Message(
+                    id = "3",
+                    name = "Dr. Tanár Úr",
+                    subject = "Elmaradt előadás",
+                    date = "2023.10.23. 18:00",
+                    isNew = true,
+                    detail = "A holnapi előadás betegség miatt elmarad."
+                )
+            ),
+            onBackClick = {},
+            onMessageClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MessageItemPreview() {
+    BetterNeptunTheme {
+        Column {
+            MessageItem(
+                message = Message(
+                    id = "1",
+                    name = "Kovács János",
+                    subject = "Vizsga eredmény",
+                    date = "2023.10.25. 14:30",
+                    isNew = true,
+                    detail = "Tisztelt Hallgató! A vizsgája sikerült."
+                ),
+                onClick = {}
+            )
+            MessageItem(
+                message = Message(
+                    id = "2",
+                    name = "Neptun Rendszer",
+                    subject = "Kurzusfelvétel",
+                    date = "2023.10.24. 09:15",
+                    isNew = false,
+                    detail = "A kurzusfelvétel időszaka megkezdődött."
+                ),
+                onClick = {}
+            )
+        }
+    }
 }

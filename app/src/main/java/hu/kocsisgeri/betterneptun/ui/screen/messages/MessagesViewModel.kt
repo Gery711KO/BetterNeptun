@@ -29,8 +29,4 @@ class MessagesViewModel(
             _messageDetail.value = neptunRepository.getMessageDetail(messageId)
         }
     }
-
-    fun clearMessageDetail() {
-        _messageDetail.value = null
-    }
 }
