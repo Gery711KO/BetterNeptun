@@ -74,7 +74,6 @@ class LoginViewModel(
                     )
 
                     is ApiResult.Success -> {
-                        localDataSource.cache.put(PREF_STAY_LOGGED_ID, stayLoggedIn.value)
                         localDataSource.cache.put(PREF_CURRENT_USER, user)
                         neptunRepository.setStudentData(result.data)
                         forcedState.emit(LoginState.Success(result.data))
@@ -94,25 +93,11 @@ class LoginViewModel(
 
     fun keepMeLoggedIn(keep: Boolean) {
         stayLoggedIn.tryEmit(keep)
+        localDataSource.cache.put(PREF_STAY_LOGGED_ID, keep)
     }
 
     fun setIdle() {
         forcedState.tryEmit(null)
-    }
-
-    private fun demoData() {
-        if (BuildConfig.DEBUG) {
-            localDataSource.cache.put(
-                PREF_CURRENT_USER,
-                AuthenticationRequestDto(
-                    "x8jsus",
-                    "lavaember1112"
-                )
-            )
-
-            neptunCode.tryEmit("x8jsus")
-            password.tryEmit("lavaember1112")
-        }
     }
 
     init {
@@ -135,7 +120,5 @@ class LoginViewModel(
                 }
             }
         }
-
-        demoData()
     }
 }

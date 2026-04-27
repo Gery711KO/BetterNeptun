@@ -2,7 +2,6 @@ package hu.kocsisgeri.betterneptun.data.di
 
 import hu.kocsisgeri.betterneptun.data.api.AuthApiService
 import hu.kocsisgeri.betterneptun.data.api.MainApiService
-import hu.kocsisgeri.betterneptun.data.api.network.CustomCookieJar
 import hu.kocsisgeri.betterneptun.data.api.token.TokenAuthenticator
 import hu.kocsisgeri.betterneptun.data.api.token.TokenInterceptor
 import hu.kocsisgeri.betterneptun.data.serialization.Serialization
@@ -16,8 +15,6 @@ import retrofit2.Retrofit
 private const val BASE_URL = "https://neptun.uni-obuda.hu/ujhallgato/api/"
 
 val networkModule = module {
-    single { CustomCookieJar() }
-
     factory { new(::TokenAuthenticator) }
     factory { new(::TokenInterceptor) }
 
