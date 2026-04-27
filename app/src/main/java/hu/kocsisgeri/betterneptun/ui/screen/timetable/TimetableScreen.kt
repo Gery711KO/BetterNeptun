@@ -22,29 +22,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alamkanak.weekview.WeekView
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.CourseDetailDestination
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.CourseDetailDialog
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.FragmentWeekViewAdapter
+import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinActivityViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimetableScreen(
-    viewModel: TimetableViewModel = koinActivityViewModel(),
+    viewModel: TimetableViewModel = koinViewModel(),
     navigator: Navigator = koinInject()
 ) {
     val events by viewModel.timetableEvents.observeAsState(emptyList())
     val times by viewModel.times.observeAsState("8:22")
     val viewMode by viewModel.viewMode.collectAsState()
+    val currentSelectedEvent by viewModel.getSelectedEvent().collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.clicked.collect { event ->
-            navigator.navigateTo(CourseDetailDestination(event.id.toString()))
-        }
-    }
+    CourseDetailDialog(
+        selectedEvent = currentSelectedEvent,
+        currentColor = currentSelectedEvent?.color ?: 0,
+        onDismissRequest = viewModel::clearSelectedEvent,
+        onChangeColor = viewModel::changeColor
+    )
 
     Scaffold(
         topBar = {

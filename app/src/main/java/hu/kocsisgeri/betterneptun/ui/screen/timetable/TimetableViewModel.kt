@@ -26,13 +26,7 @@ class TimetableViewModel(
     val times = MutableLiveData("8:22") // todo get correct values
 
     val clickHandler = MutableSharedFlow<CalendarEntity.Event>(0, 10)
-    val clicked = MutableSharedFlow<CalendarEntity.Event>(0,10)
     val viewMode = MutableStateFlow(ViewMode.WEEK)
-
-
-    fun selectEvent(event: CalendarEntity.Event?) {
-        currentSelected.tryEmit(event)
-    }
 
     fun getSelectedEvent() = currentSelected.asStateFlow()
 
@@ -42,10 +36,13 @@ class TimetableViewModel(
         }
     }
 
+    fun clearSelectedEvent() {
+        currentSelected.tryEmit(null)
+    }
+
     init {
         clickHandler.onEach {
             currentSelected.tryEmit(it)
-            clicked.tryEmit(it)
         }.launchIn(viewModelScope)
     }
 }
