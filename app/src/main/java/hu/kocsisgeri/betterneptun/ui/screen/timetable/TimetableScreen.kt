@@ -27,13 +27,13 @@ import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.CourseDetailDestination
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.FragmentWeekViewAdapter
-import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinActivityViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimetableScreen(
-    viewModel: TimetableViewModel = koinViewModel(),
+    viewModel: TimetableViewModel = koinActivityViewModel(),
     navigator: Navigator = koinInject()
 ) {
     val events by viewModel.timetableEvents.observeAsState(emptyList())

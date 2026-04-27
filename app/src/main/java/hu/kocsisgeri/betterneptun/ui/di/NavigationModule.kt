@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.AndroidFragment
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.CourseDetailDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
@@ -23,6 +24,7 @@ import hu.kocsisgeri.betterneptun.ui.screen.semesters.SemestersFragment
 import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsScreen
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsFragment
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.TimetableScreen
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.CourseDetailScreen
 import org.koin.androidx.scope.dsl.activityRetainedScope
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
@@ -65,6 +67,10 @@ val navigationModule = module {
 
         navigation<TimetableDestination> {
             TimetableScreen()
+        }
+
+        navigation<CourseDetailDestination> {
+            CourseDetailScreen()
         }
     }
 }

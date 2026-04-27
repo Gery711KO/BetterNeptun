@@ -34,9 +34,7 @@ class TimetableViewModel(
         currentSelected.tryEmit(event)
     }
 
-    fun getSelectedEvent(): CalendarEntity.Event? {
-        return currentSelected.value
-    }
+    fun getSelectedEvent() = currentSelected.asStateFlow()
 
     fun changeColor(event: CalendarEntity.Event?, color: Int) {
         viewModelScope.launchReportingErrors {
