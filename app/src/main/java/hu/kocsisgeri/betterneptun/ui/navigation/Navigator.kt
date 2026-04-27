@@ -83,6 +83,14 @@ interface Navigator {
                                 slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
                             }
                         },
+                        predictivePopTransitionSpec = {
+                            val isToLogin = targetState.checkType(LoginDestination)
+                            if (isToLogin) {
+                                fadeIn() togetherWith fadeOut()
+                            } else {
+                                slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                            }
+                        },
                         modifier = modifier
                     )
                 }
