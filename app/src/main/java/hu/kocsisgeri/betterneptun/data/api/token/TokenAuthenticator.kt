@@ -49,6 +49,7 @@ class TokenAuthenticator(
                     .header("Authorization", "Bearer $newToken")
                     .build()
             } catch (e: Exception) {
+                tokenStore.clear()
                 navigator.navigateToInclusive(LoginDestination)
                 null
             }

@@ -112,7 +112,7 @@ private fun HomeContent(
     onRefresh: () -> Unit,
     onNavigate: (NavKey) -> Unit,
 ) {
-    val isRefreshing = refreshProgress is ApiResult.Progress
+    val isRefreshing = refreshProgress is ApiResult.Loading
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
         onRefresh = onRefresh
@@ -434,7 +434,7 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                 contentAlignment = Alignment.Center
             ) {
                 when (state) {
-                    is ApiResult.Progress -> {
+                    is ApiResult.Loading -> {
                         CircularProgressIndicator(
                             modifier = Modifier.size(40.dp),
                             color = MaterialTheme.colorScheme.primary

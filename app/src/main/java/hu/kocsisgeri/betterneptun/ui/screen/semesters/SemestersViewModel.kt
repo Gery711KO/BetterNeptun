@@ -21,7 +21,7 @@ class SemestersViewModel(
     private val creditFlow = repo.terms.map {
         when (it) {
             is ApiResult.Error -> ApiResult.Error(it.error)
-            is ApiResult.Progress -> ApiResult.Progress(it.percentage)
+            is ApiResult.Loading -> ApiResult.Loading
             is ApiResult.Success -> {
                 val takenCredits = it.data.mapIndexed { index, model ->
                     BarEntry(
@@ -46,7 +46,7 @@ class SemestersViewModel(
     private val averageFlow = repo.averages.map {
         when(it) {
             is ApiResult.Error -> ApiResult.Error(it.error)
-            is ApiResult.Progress -> ApiResult.Progress(it.percentage)
+            is ApiResult.Loading -> ApiResult.Loading
             is ApiResult.Success -> {
                 val normalAverages = it.data.map { model ->
                     Entry(

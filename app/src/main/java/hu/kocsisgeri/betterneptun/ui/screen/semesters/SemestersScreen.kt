@@ -112,7 +112,7 @@ fun SemestersScreen(
                     0 -> {
                         creditsResult?.let { result ->
                             when (result) {
-                                is ApiResult.Progress -> LoadingIndicator()
+                                is ApiResult.Loading -> LoadingIndicator()
                                 is ApiResult.Success -> {
                                     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
                                     AndroidView(
@@ -152,7 +152,7 @@ fun SemestersScreen(
                     1 -> {
                         averagesResult?.let { result ->
                             when (result) {
-                                is ApiResult.Progress -> LoadingIndicator()
+                                is ApiResult.Loading -> LoadingIndicator()
                                 is ApiResult.Success -> {
                                     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
                                     AndroidView(

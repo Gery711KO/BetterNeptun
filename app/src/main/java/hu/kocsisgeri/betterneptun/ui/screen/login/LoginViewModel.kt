@@ -2,7 +2,6 @@ package hu.kocsisgeri.betterneptun.ui.screen.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.BuildConfig
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.model.AuthenticationRequestDto
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
@@ -54,6 +53,8 @@ class LoginViewModel(
                 password.value.orEmpty()
             )
 
+            localDataSource.cache.put(PREF_CURRENT_USER, user)
+
             forcedState.emit(
                 if (isSilentLogin) {
                     LoginState.SilentLogin
@@ -62,24 +63,7 @@ class LoginViewModel(
                 }
             )
 
-            neptunRepository.login(user.userName, user.password).let { result ->
-                when (result) {
-                    is ApiResult.Error -> forcedState.emit(
-                        LoginState.Error(result.error)
-                    )
-
-                    is ApiResult.Progress -> forcedState.emit(
-                        if (isSilentLogin) LoginState.SilentLogin
-                        else LoginState.Loading
-                    )
-
-                    is ApiResult.Success -> {
-                        localDataSource.cache.put(PREF_CURRENT_USER, user)
-                        neptunRepository.setStudentData(result.data)
-                        forcedState.emit(LoginState.Success(result.data))
-                    }
-                }
-            }
+            neptunRepository.login(user.userName, user.password)
         }
     }
 
@@ -101,6 +85,24 @@ class LoginViewModel(
     }
 
     init {
+        viewModelScope.launchReportingErrors {
+            neptunRepository.studentData.collect { result ->
+                when (result) {
+                    is ApiResult.Error -> forcedState.emit(
+                        LoginState.Error(result.error)
+                    )
+
+                    is ApiResult.Loading -> {
+                        // No nothing
+                    }
+
+                    is ApiResult.Success -> forcedState.emit(
+                        LoginState.Success(result.data)
+                    )
+                }
+            }
+        }
+
         localDataSource.cache.get(PREF_STAY_LOGGED_ID, false).let {
             if (it) {
                 try {

@@ -6,6 +6,7 @@ import hu.kocsisgeri.betterneptun.data.model.MessageDetailsDto
 import hu.kocsisgeri.betterneptun.data.model.MessageListDto
 import hu.kocsisgeri.betterneptun.data.model.TermDetailDto
 import hu.kocsisgeri.betterneptun.data.model.ExtendedTermDto
+import hu.kocsisgeri.betterneptun.data.model.SubjectDto
 import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
 import hu.kocsisgeri.betterneptun.data.model.TermDto
 import hu.kocsisgeri.betterneptun.data.model.UnreadMessagesCountDto
@@ -32,4 +33,6 @@ interface NetworkDataSource {
     suspend fun getTerms(): ApiResponseDto<List<TermDto>>
 
     suspend fun getTermAverages(): ApiResponseDto<TermAveragesDto>
+
+    suspend fun getTakenSubjects(termId: String): ApiResponseDto<List<SubjectDto>>
 }

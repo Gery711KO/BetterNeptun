@@ -49,7 +49,8 @@ import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.utils.DateUtils
-import hu.kocsisgeri.betterneptun.utils.HtmlText
+import hu.kocsisgeri.betterneptun.ui.composable.HtmlText
+import hu.kocsisgeri.betterneptun.ui.theme.Armata
 import hu.kocsisgeri.betterneptun.utils.openUrl
 import hu.kocsisgeri.betterneptun.utils.sendEmail
 import org.koin.compose.koinInject
@@ -240,7 +241,7 @@ fun MessageDetailContent(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = MaterialTheme.typography.bodyLarge.fontSize,
                                 fontFamily = MaterialTheme.typography.bodyLarge.fontFamily
-                                    ?: hu.kocsisgeri.betterneptun.ui.theme.Armata,
+                                    ?: Armata,
                                 onUrlClick = { url ->
                                     when {
                                         url.contains("http") -> openUrl(url, context)

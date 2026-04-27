@@ -3,6 +3,7 @@ package hu.kocsisgeri.betterneptun.data.api.token
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.model.AuthenticationRequestDto
 import hu.kocsisgeri.betterneptun.utils.PREF_CURRENT_USER
+import hu.kocsisgeri.betterneptun.utils.delete
 import hu.kocsisgeri.betterneptun.utils.get
 import hu.kocsisgeri.betterneptun.utils.put
 
@@ -19,6 +20,10 @@ class TokenStore(
         key = TOKEN_KEY,
         defaultValue = null
     )
+
+    fun clear() {
+        localDataSource.cache.delete(TOKEN_KEY)
+    }
 
     fun getUser() =
         localDataSource.cache.get<AuthenticationRequestDto?>(

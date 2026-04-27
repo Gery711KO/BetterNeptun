@@ -2,6 +2,7 @@ package hu.kocsisgeri.betterneptun.data.datasource
 
 import hu.kocsisgeri.betterneptun.data.api.MainApiService
 import hu.kocsisgeri.betterneptun.data.model.ApiResponseDto
+import hu.kocsisgeri.betterneptun.data.model.SubjectDto
 import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -54,5 +55,10 @@ internal class NetworkDataSourceImpl(
     override suspend fun getTermAverages() =
         withContext(ioDispatcher) {
             api.getTermAverages()
+        }
+
+    override suspend fun getTakenSubjects(termId: String) =
+        withContext(ioDispatcher) {
+            api.getTakenSubjects(termId)
         }
 }

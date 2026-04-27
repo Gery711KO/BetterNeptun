@@ -3,20 +3,30 @@ package hu.kocsisgeri.betterneptun.data.repository.neptun
 import android.graphics.Color
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
+import hu.kocsisgeri.betterneptun.data.mapper.toAverageDomain
+import hu.kocsisgeri.betterneptun.data.mapper.toExtendedTermDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageEntity
+import hu.kocsisgeri.betterneptun.data.mapper.toSubjectDomain
+import hu.kocsisgeri.betterneptun.data.mapper.toTermDomain
+import hu.kocsisgeri.betterneptun.data.model.ExtendedTermDto
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.Average
+import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.domain.model.Subject
 import hu.kocsisgeri.betterneptun.domain.model.Term
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.ui.model.MarkBookDataModel
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerializationException
+import retrofit2.HttpException
+import java.io.IOException
 
 internal class NeptunRepositoryImpl(
     private val networkDataSource: NetworkDataSource,
@@ -25,17 +35,23 @@ internal class NeptunRepositoryImpl(
 ) : NeptunRepository {
 
     override val events = MutableStateFlow<List<CalendarEntity.Event>>(listOf())
+
     override val messages = localDataSource.appDatabase.messages.getData().map { list ->
         list.map { it.toMessageDomain() }
     }
-    override val studentData = MutableStateFlow<StudentData?>(null)
-    override val markBookData =
-        MutableStateFlow<ApiResult<List<MarkBookDataModel>>>(ApiResult.Progress(0))
-    override val terms = MutableStateFlow<ApiResult<List<Term>>>(ApiResult.Progress(0))
-    override val averages = MutableStateFlow<ApiResult<List<Average>>>(ApiResult.Progress(0))
     override var currentMessagePage = 1
-
     override val unreadMessagesCount: MutableStateFlow<Int?> = MutableStateFlow(null)
+
+    override val studentData = MutableStateFlow<ApiResult<StudentData>>(ApiResult.Loading)
+
+    override val extendedTerms = MutableStateFlow<ApiResult<List<ExtendedTerm>>>(ApiResult.Loading)
+    override val subjects =
+        MutableStateFlow<ApiResult<List<Subject>>>(ApiResult.Loading)
+
+    override val terms = MutableStateFlow<ApiResult<List<Term>>>(ApiResult.Loading)
+    override val averages = MutableStateFlow<ApiResult<List<Average>>>(ApiResult.Loading)
+
+
 
     override suspend fun fetchMessages() {
         withContext(ioDispatcher) {
@@ -53,11 +69,74 @@ internal class NeptunRepositoryImpl(
     }
 
     override suspend fun fetchUnreadMessages() {
-        withContext(ioDispatcher) {
-            networkDataSource.getUnreadMessageCount().let {
-                unreadMessagesCount.value = it.data.count
+        networkDataSource.getUnreadMessageCount().let {
+            unreadMessagesCount.value = it.data.count
+        }
+    }
+
+    override suspend fun fetchExtendedTerms() {
+        extendedTerms.runApiCall {
+            networkDataSource.getExtendedTerms().data.toExtendedTermDomain()
+        }
+    }
+
+    override suspend fun fetchSubjects(termId: String) {
+        subjects.runApiCall {
+            networkDataSource.getTakenSubjects(termId).data.toSubjectDomain()
+        }
+    }
+
+    override suspend fun fetchTerms() {
+        terms.runApiCall {
+            networkDataSource.getTerms().data.toTermDomain()
+        }
+    }
+
+    override suspend fun fetchTermAverages() {
+        averages.runApiCall {
+            networkDataSource.getTermAverages()
+                .data
+                .termAveragesByTrainings
+                .toAverageDomain()
+        }
+    }
+
+    override suspend fun login(neptunCode: String, password: String) {
+        studentData.runApiCall {
+            networkDataSource.getUserInfo().data.let {
+                StudentData(
+                    name = it.name,
+                    neptun = it.neptunCode
+                )
             }
         }
+    }
+
+    override fun resetMessagePage() {
+        currentMessagePage = 0
+    }
+
+    override suspend fun getMessageDetail(messageId: String) =
+        withContext(ioDispatcher) {
+            networkDataSource.getMessageDetails(messageId).data.toMessageDomain()
+        }
+
+    override suspend fun randomiseCalendarColors() {
+//        withContext(ioDispatcher) {
+//            getRandomizedColoredEvents()?.let {
+//                events.tryEmit(it)
+//                CourseRepository.courses.tryEmit(it)
+//            }
+//        }
+    }
+
+    override suspend fun setEventColor(event: CalendarEntity.Event?, color: Int) {
+//        withContext(ioDispatcher) {
+//            setEventColorAsync(event, color)?.let {
+//                events.tryEmit(it)
+//                CourseRepository.courses.tryEmit(it)
+//            }
+//        }
     }
 
     override suspend fun fetchCalendarData() {
@@ -119,94 +198,6 @@ internal class NeptunRepositoryImpl(
 //            }
     }
 
-    override suspend fun fetchMarkBookData() {
-//            currentUser.first().let { user ->
-//                networkDataSource.getAddedCourses(user).check { subject ->
-//                    networkDataSource.getMarkBookData(user).check { mark ->
-//                        val data = subject.AddedSubjectsList.map {
-//                            MarkBookDataModel(
-//                                subjectId = it.SubjectID,
-//                                subjectCode = it.SubjectCode,
-//                                subjectCredit = it.SubjectCredit,
-//                                subjectName = it.SubjectName,
-//                                subjectRequirement = it.SubjectRequirement,
-//                                subjectType = it.SubjectType,
-//                                termId = it.TermId,
-//                                completed = false,
-//                                signer = "",
-//                                values = "",
-//                                state = SubjectState.DEFAULT
-//                            )
-//                        }.map { markData ->
-//                            markData.copy(
-//                                completed = mark.MarkBookList.firstOrNull {
-//                                    it.SubjectName == markData.subjectName
-//                                }?.Completed?:false,
-//                                signer = mark.MarkBookList.firstOrNull {
-//                                    it.SubjectName == markData.subjectName
-//                                }?.Signer?: "",
-//                                values = mark.MarkBookList.firstOrNull {
-//                                    it.SubjectName == markData.subjectName
-//                                }?.Values?: ""
-//                            )
-//                        }.map { markData ->
-//                            markData.copy(
-//                                state = getSubjectState(markData.completed, markData.signer)
-//                            )
-//                        }
-//                        markBookData.tryEmit(ApiResult.Success(data))
-//                    }
-//                }
-//            }
-    }
-
-    override suspend fun fetchTerms() {
-        withContext(ioDispatcher) {
-            terms.value = ApiResult.Success(
-                networkDataSource.getTerms().data.let { terms ->
-                    terms.reversed().mapIndexed { index, term ->
-                        Term(
-                            index = index,
-                            semesterTitle = term.text,
-                            semesterFulfilledCredits = term.completedCredit,
-                            semesterTakenCredits = term.creditSum,
-                            allFulfilledCredits = terms.take(index + 1)
-                                .sumOf { it.completedCredit },
-                            allTakenCredits = terms.take(index + 1).sumOf { it.creditSum },
-                        )
-                    }
-                }
-            )
-        }
-    }
-
-    override suspend fun fetchTermAverages() {
-        withContext(ioDispatcher) {
-            averages.value = ApiResult.Success(
-                networkDataSource.getTermAverages().data.termAveragesByTrainings
-                    .mapIndexed { index, average ->
-                        Average(
-                            index = index,
-                            normalAverage = average.average,
-                            commutativeAverage = average.sumAverage
-                        )
-                    }
-            )
-        }
-    }
-
-    override suspend fun login(neptunCode: String, password: String): ApiResult<StudentData> =
-        withContext(ioDispatcher) {
-            networkDataSource.getUserInfo().let { result ->
-                ApiResult.Success(
-                    StudentData(
-                        name = result.data.name,
-                        neptun = result.data.neptunCode
-                    )
-                )
-            }
-        }
-
     private suspend fun getRandomColor(title: String?, colorMap: MutableMap<String?, Int>): Int {
         val colors = localDataSource.appDatabase.colors.getData().firstOrNull()
         val current = colors?.firstOrNull { it.title == title }
@@ -241,32 +232,20 @@ internal class NeptunRepositoryImpl(
         }
     }
 
-    override suspend fun getMessageDetail(messageId: String) =
-        networkDataSource.getMessageDetails(messageId).data.toMessageDomain()
-
-    override suspend fun randomiseCalendarColors() {
-//        withContext(ioDispatcher) {
-//            getRandomizedColoredEvents()?.let {
-//                events.tryEmit(it)
-//                CourseRepository.courses.tryEmit(it)
-//            }
-//        }
-    }
-
-    override suspend fun setEventColor(event: CalendarEntity.Event?, color: Int) {
-//        withContext(ioDispatcher) {
-//            setEventColorAsync(event, color)?.let {
-//                events.tryEmit(it)
-//                CourseRepository.courses.tryEmit(it)
-//            }
-//        }
-    }
-
-    override fun setStudentData(studentData: StudentData?) {
-        this.studentData.value = studentData
-    }
-
-    override fun resetMessagePage() {
-        currentMessagePage = 0
+    private suspend fun <T : Any> MutableStateFlow<ApiResult<T>>.runApiCall(
+        block: suspend () -> T
+    ) {
+        withContext(ioDispatcher) {
+            try {
+                value = ApiResult.Loading
+                value = ApiResult.Success(block())
+            } catch (exception: HttpException) {
+                value = ApiResult.Error(exception.message ?: "Network error.")
+            } catch (exception: IOException) {
+                value = ApiResult.Error(exception.message ?: "Something went wrong.")
+            } catch (exception: SerializationException) {
+                value = ApiResult.Error(exception.message ?: "Serialization error.")
+            }
+        }
     }
 }

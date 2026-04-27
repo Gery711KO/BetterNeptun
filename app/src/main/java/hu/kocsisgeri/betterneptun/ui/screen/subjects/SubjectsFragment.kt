@@ -48,7 +48,7 @@ class SubjectsFragment : ComposeFragment() {
         viewModel.listItems.observe(viewLifecycleOwner) {
             when (it) {
                 is ApiResult.Error -> {}
-                is ApiResult.Progress -> {
+                is ApiResult.Loading -> {
                     binding.courseLoading.isVisible = true
                 }
                 is ApiResult.Success -> {
