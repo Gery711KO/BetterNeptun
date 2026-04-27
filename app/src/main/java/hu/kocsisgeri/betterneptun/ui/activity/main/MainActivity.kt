@@ -1,9 +1,9 @@
 package hu.kocsisgeri.betterneptun.ui.activity.main
 
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -21,7 +21,7 @@ import org.koin.core.scope.Scope
 import timber.log.Timber
 
 @OptIn(KoinExperimentalAPI::class)
-class MainActivity : AppCompatActivity(), AndroidScopeComponent {
+class MainActivity : ComponentActivity(), AndroidScopeComponent {
 
     override val scope: Scope by activityRetainedScope()
     val navigator: Navigator by inject()

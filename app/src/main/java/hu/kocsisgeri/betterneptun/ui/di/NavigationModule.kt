@@ -21,7 +21,7 @@ import hu.kocsisgeri.betterneptun.ui.screen.messages.MessagesScreen
 import hu.kocsisgeri.betterneptun.ui.screen.messages.detail.MessageDetailScreen
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.SemestersScreen
 import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsScreen
-import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsFragment
+import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsScreen
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.TimetableScreen
 import org.koin.androidx.scope.dsl.activityRetainedScope
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -60,7 +60,7 @@ val navigationModule = module {
         }
 
         navigation<SubjectsDestination> {
-            ComposeFragment<SubjectsFragment>()
+            SubjectsScreen()
         }
 
         navigation<TimetableDestination> {
