@@ -4,17 +4,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.SystemClock
-import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.asLiveData
-import hu.kocsisgeri.betterneptun.ui.screen.ComposeFragment
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDateTime
@@ -78,29 +72,6 @@ fun LocalDateTime.getTimeLeft(): String {
     return "$minutes perc"
 }
 
-fun ComposeFragment.setBackButton(view: View) {
-    view.setOnClickListener {
-        navigator.navigateBack()
-    }
-}
-
-fun View.setSafeOnClickListener(
-    defaultInterval: Int = 1000,
-    onSafeClick: (View) -> Unit
-) {
-    setOnClickListener(object : View.OnClickListener {
-        private var lastTimeClicked: Long = 0
-
-        override fun onClick(v: View) {
-            if (SystemClock.elapsedRealtime() - lastTimeClicked < defaultInterval) {
-                return
-            }
-            lastTimeClicked = SystemClock.elapsedRealtime()
-            onSafeClick(v)
-        }
-    })
-}
-
 fun CalendarEntity.Event.getRemainingTime(): Float {
     val diff =
         endTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
@@ -116,12 +87,6 @@ fun CalendarEntity.Event.getTime(): Float {
 
 fun CalendarEntity.Event.getPercent(): Int {
     return (100f - (getRemainingTime() / getTime()) * 100f).roundToInt()
-}
-
-fun <T : Any> Flow<T>.observe(viewLifecycleOwner: LifecycleOwner, observe: (T) -> Unit) {
-    asLiveData().observe(viewLifecycleOwner) {
-        observe(it)
-    }
 }
 
 fun CoroutineScope.launchReportingErrors(

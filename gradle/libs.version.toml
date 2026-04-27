@@ -1,11 +1,11 @@
 [versions]
 minSdk = "26"
 compileSdk = "36"
-targetSdk = "33"
+targetSdk = "36"
+
 agp = "9.1.1"
 kotlin = "2.3.20"
 coroutines = "1.10.2"
-navigation = "2.9.7"
 googleServices = "4.3.13"
 firebaseCrashlyticsPlugin = "3.0.7"
 firebasePerformancePlugin = "2.0.2"
@@ -18,14 +18,11 @@ firebaseBom = "34.12.0"
 appcompat = "1.7.1"
 lifecycle = "2.10.0"
 lifecycleExt = "2.2.0"
-constraintLayout = "2.2.1"
 ktxCore = "1.18.0"
-adapterDelegates = "4.3.2"
 material = "1.13.0"
 koin = "4.2.1"
 timber = "5.0.1"
 room = "2.8.4"
-jsoup = "1.22.2"
 junit = "4.13.2"
 junitExt = "1.3.0"
 testRunner = "1.7.0"
@@ -33,16 +30,8 @@ espresso = "3.7.0"
 mockk = "1.14.9"
 mockitoKotlin = "2.2.0"
 work = "2.11.2"
-fragmentKtx = "1.8.9"
-material3 = "1.4.0"
-preference = "1.2.1"
-persistentCookieJar = "v1.0.1"
 weekView = "5.2.4"
-markwon = "4.6.2"
-pikolo = "2.0.2"
 mpAndroidChart = "v3.1.0"
-coreKtx = "1.18.0"
-lifecycleViewmodelKtx = "2.10.0"
 ksp = "2.1.10-1.0.29"
 splashscreen = "1.2.0"
 
@@ -52,27 +41,20 @@ navigation3ViewModel = "2.10.0"
 androidxImmutable = "0.4.0"
 activityCompose = "1.13.0"
 composeBom = "2026.04.01"
-fragmentCompose = "1.8.9"
 
-kotlinxSerializationJson = "1.10.0"
+kotlinxSerializationJson = "1.11.0"
 
 [libraries]
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "ktxCore" }
-androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintLayout" }
 androidx-lifecycle-extensions = { group = "androidx.lifecycle", name = "lifecycle-extensions", version.ref = "lifecycleExt" }
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
-androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigation" }
-androidx-navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigation" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-work-runtime = { group = "androidx.work", name = "work-runtime", version.ref = "work" }
-androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
-androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
-androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version = "1.0.0" }
 
 androidx-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "androidxImmutable" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -120,18 +102,9 @@ koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koin" }
 
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
-jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 
-adapterDelegates = { group = "com.hannesdorfmann", name = "adapterdelegates4", version.ref = "adapterDelegates" }
-adapterDelegates-dsl = { group = "com.hannesdorfmann", name = "adapterdelegates4-kotlin-dsl", version.ref = "adapterDelegates" }
-adapterDelegates-dsl-layoutcontainer = { group = "com.hannesdorfmann", name = "adapterdelegates4-kotlin-dsl-layoutcontainer", version.ref = "adapterDelegates" }
-adapterDelegates-dsl-viewbinding = { group = "com.hannesdorfmann", name = "adapterdelegates4-kotlin-dsl-viewbinding", version.ref = "adapterDelegates" }
-
-persistentCookieJar = { group = "com.github.franmontiel", name = "PersistentCookieJar", version.ref = "persistentCookieJar" }
 weekView-core = { group = "com.github.thellmund.Android-Week-View", name = "core", version.ref = "weekView" }
 weekView-jsr310 = { group = "com.github.thellmund.Android-Week-View", name = "jsr310", version.ref = "weekView" }
-markwon-core = { group = "io.noties.markwon", name = "core", version.ref = "markwon" }
-pikolo = { group = "com.github.madrapps", name = "pikolo", version.ref = "pikolo" }
 mpAndroidChart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpAndroidChart" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -145,14 +118,12 @@ androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espres
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
 mockito-kotlin = { group = "com.nhaarman.mockitokotlin2", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
-androidx-fragment-compose = { group = "androidx.fragment", name = "fragment-compose", version.ref = "fragmentCompose" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 [bundles]
@@ -181,19 +152,18 @@ androidx-lifecycle = [
     "androidx-lifecycle-runtime-ktx",
     "androidx-lifecycle-extensions"
 ]
-androidx-navigation = [
-    "androidx-navigation-fragment",
-    "androidx-navigation-ui"
-]
+
 androidx-room = [
     "androidx-room-runtime",
     "androidx-room-ktx"
 ]
+
 firebase = [
     "firebase-analytics",
     "firebase-crashlytics",
     "firebase-performance"
 ]
+
 koin = [
     "koin-core",
     "koin-androidx-compose",
@@ -210,12 +180,7 @@ networking = [
     "okhttp",
     "okhttp-logging-interceptor",
 ]
-adapterDelegates = [
-    "adapterDelegates",
-    "adapterDelegates-dsl",
-    "adapterDelegates-dsl-layoutcontainer",
-    "adapterDelegates-dsl-viewbinding"
-]
+
 test = [
     "junit",
     "kotlinx-coroutines-test",
@@ -224,6 +189,7 @@ test = [
     "androidx-test-runner",
     "androidx-test-ext-junit"
 ]
+
 androidTest = [
     "androidx-test-runner",
     "androidx-test-rules",

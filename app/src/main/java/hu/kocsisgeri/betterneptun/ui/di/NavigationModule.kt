@@ -4,8 +4,6 @@ import android.os.Bundle
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.fragment.app.Fragment
-import androidx.fragment.compose.AndroidFragment
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
@@ -67,15 +65,4 @@ val navigationModule = module {
             TimetableScreen()
         }
     }
-}
-
-@Composable
-inline fun <reified T: Fragment> ComposeFragment(
-    noinline onUpdate: (T) -> Unit = {},
-) {
-    AndroidFragment<T>(
-        modifier = Modifier.fillMaxSize(),
-        arguments = Bundle.EMPTY,
-        onUpdate = onUpdate
-    )
 }
