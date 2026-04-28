@@ -30,3 +30,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "BetterNeptun"
 include(":app")
+include(":common")
+include(":domain")
+include(":data")
+include(":ui")

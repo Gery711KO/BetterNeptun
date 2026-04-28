@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
@@ -35,11 +36,11 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
     val entryProvider by entryProvider<NavKey>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             LaunchedEffect(navigator.currentScreen) {
-                Timber.tag("Navigation").d("Current: ${navigator.currentScreen}")
                 Timber.tag("Navigation").d("BackStack: ${navigator.backStack.toList()}")
             }
 

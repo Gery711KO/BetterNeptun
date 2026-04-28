@@ -2,8 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.android.room)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
 }
@@ -11,9 +9,7 @@ plugins {
 android {
     namespace = "hu.kocsisgeri.betterneptun"
 
-    compileSdk {
-        version = release(libs.versions.compileSdk.get().toInt())
-    }
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "hu.kocsisgeri.betterneptun"
@@ -75,10 +71,6 @@ android {
     }
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
-}
-
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_11
@@ -86,30 +78,20 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.bundles.androidx.room)
+    implementation(project(":common"))
+    implementation(project(":domain"))
+    implementation(project(":data"))
+    implementation(project(":ui"))
 
+    implementation(libs.bundles.androidx.room)
+    ksp(libs.androidx.room.compiler)
+
+    implementation(libs.bundles.koin)
+    implementation(libs.timber)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
+    
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)
     implementation(libs.bundles.navigation3)
-
-    ksp(libs.androidx.room.compiler)
-    
-    implementation(libs.bundles.androidx.lifecycle)
-    implementation(libs.bundles.koin)
-    implementation(libs.bundles.networking)
-    ksp(libs.moshi.codegen)
-
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.core.splashscreen)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.work.runtime)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.runtime.livedata)
-
-    implementation(libs.google.material)
-    implementation(libs.timber)
-    implementation(libs.weekView.core)
-    implementation(libs.weekView.jsr310)
-    implementation(libs.mpAndroidChart)
-    implementation(libs.pikolo)
 }
