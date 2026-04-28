@@ -1,0 +1,12 @@
+package hu.kocsisgeri.betterneptun.domain.model
+
+import java.time.LocalDateTime
+
+data class Message(
+    val id: String,
+    val name: String,
+    val subject: String,
+    val date: LocalDateTime,
+    val isNew : Boolean,
+    val detail: String = ""
+)

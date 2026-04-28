@@ -1,0 +1,104 @@
+package hu.kocsisgeri.betterneptun.ui.screen.login
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
+import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
+import hu.kocsisgeri.betterneptun.common.launchReportingErrors
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+
+class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
+
+    private val neptunCode = MutableStateFlow<String?>(null)
+    private val password = MutableStateFlow<String?>(null)
+    private val stayLoggedIn = MutableStateFlow(false)
+    private val forcedState = MutableStateFlow<LoginState?>(null)
+
+    val loginState = combine(
+        neptunCode,
+        password,
+        stayLoggedIn,
+        forcedState
+    ) { neptunCode, password, stayLoggedIn, forcedState ->
+        forcedState ?: LoginState.Idle(
+            neptunCode = neptunCode.orEmpty(),
+            password = password.orEmpty(),
+            stayLoggedIn = stayLoggedIn,
+            isButtonEnabled = neptunCode.isNullOrEmpty().not() && password.isNullOrEmpty().not()
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000L),
+        initialValue = null
+    )
+
+    init {
+        viewModelScope.launchReportingErrors {
+            loginRepository.studentData.collect { result ->
+                when (result) {
+                    is ApiResult.Error -> forcedState.emit(
+                        LoginState.Error(result.error)
+                    )
+
+                    is ApiResult.Loading -> {
+                        // No nothing
+                    }
+
+                    is ApiResult.Success -> forcedState.emit(
+                        LoginState.Success(result.data)
+                    )
+                }
+            }
+        }
+
+
+        viewModelScope.launchReportingErrors {
+            loginRepository.shouldAutoLogin.collect { autoLogin ->
+                if (autoLogin) {
+                    forcedState.tryEmit(LoginState.Loading)
+                    loginRepository.silentLogin()
+                }
+            }
+        }
+    }
+
+    fun login() {
+        viewModelScope.launchReportingErrors {
+            val neptunCode = neptunCode.value
+            val password = password.value
+
+            if (neptunCode.isNullOrEmpty() || password.isNullOrEmpty()) {
+                return@launchReportingErrors
+            }
+
+            if (stayLoggedIn.value) {
+                loginRepository.saveCurrentUser(neptunCode, password)
+            }
+
+            forcedState.emit(LoginState.Loading)
+
+            loginRepository.login(neptunCode, password)
+        }
+    }
+
+    fun passwordInput(input: String) {
+        password.tryEmit(input)
+    }
+
+    fun neptunCodeInput(input: String) {
+        neptunCode.tryEmit(input)
+    }
+
+    fun keepMeLoggedIn(keep: Boolean) {
+        stayLoggedIn.tryEmit(keep)
+        loginRepository.saveAutoLoginPreference(keep)
+    }
+
+    fun setIdle() {
+        forcedState.tryEmit(null)
+    }
+}

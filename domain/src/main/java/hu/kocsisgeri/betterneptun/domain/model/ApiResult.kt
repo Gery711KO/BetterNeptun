@@ -1,0 +1,7 @@
+package hu.kocsisgeri.betterneptun.domain.model
+
+sealed class ApiResult<out T : Any> {
+    data object Loading : ApiResult<Nothing>()
+    data class Success<out T : Any>(val data: T) : ApiResult<T>()
+    data class Error(val error: String) : ApiResult<Nothing>()
+}
