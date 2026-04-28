@@ -48,11 +48,11 @@ import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.utils.DateUtils
+import hu.kocsisgeri.betterneptun.common.DateUtils
 import hu.kocsisgeri.betterneptun.ui.composable.HtmlText
 import hu.kocsisgeri.betterneptun.ui.theme.Armata
-import hu.kocsisgeri.betterneptun.utils.openUrl
-import hu.kocsisgeri.betterneptun.utils.sendEmail
+import hu.kocsisgeri.betterneptun.common.openUrl
+import hu.kocsisgeri.betterneptun.common.sendEmail
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf

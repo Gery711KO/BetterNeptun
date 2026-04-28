@@ -61,6 +61,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessagesDestination
@@ -68,11 +69,10 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.getPercent
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.utils.getCourseDateString
-import hu.kocsisgeri.betterneptun.utils.getPercent
-import hu.kocsisgeri.betterneptun.utils.getTimeLeft
+import hu.kocsisgeri.betterneptun.common.getCourseDateString
+import hu.kocsisgeri.betterneptun.common.getTimeLeft
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.time.LocalDateTime

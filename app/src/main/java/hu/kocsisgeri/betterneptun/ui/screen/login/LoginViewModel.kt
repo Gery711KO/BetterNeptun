@@ -2,26 +2,16 @@ package hu.kocsisgeri.betterneptun.ui.screen.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
-import hu.kocsisgeri.betterneptun.data.model.AuthenticationRequestDto
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
-import hu.kocsisgeri.betterneptun.utils.PREF_CURRENT_USER
-import hu.kocsisgeri.betterneptun.utils.PREF_STAY_LOGGED_ID
-import hu.kocsisgeri.betterneptun.utils.get
-import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
-import hu.kocsisgeri.betterneptun.utils.put
+import hu.kocsisgeri.betterneptun.common.launchReportingErrors
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import timber.log.Timber
 
-class LoginViewModel(
-    private val neptunRepository: NeptunRepository,
-    private val localDataSource: LocalDataSource,
-) : ViewModel() {
+class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
 
     private val neptunCode = MutableStateFlow<String?>(null)
     private val password = MutableStateFlow<String?>(null)
@@ -46,47 +36,9 @@ class LoginViewModel(
         initialValue = null
     )
 
-    fun login(isSilentLogin: Boolean) {
-        viewModelScope.launchReportingErrors {
-            val user = AuthenticationRequestDto(
-                neptunCode.value.orEmpty(),
-                password.value.orEmpty()
-            )
-
-            localDataSource.cache.put(PREF_CURRENT_USER, user)
-
-            forcedState.emit(
-                if (isSilentLogin) {
-                    LoginState.SilentLogin
-                } else {
-                    LoginState.Loading
-                }
-            )
-
-            neptunRepository.login(user.userName, user.password)
-        }
-    }
-
-    fun passwordInput(input: String) {
-        password.tryEmit(input)
-    }
-
-    fun neptunCodeInput(input: String) {
-        neptunCode.tryEmit(input)
-    }
-
-    fun keepMeLoggedIn(keep: Boolean) {
-        stayLoggedIn.tryEmit(keep)
-        localDataSource.cache.put(PREF_STAY_LOGGED_ID, keep)
-    }
-
-    fun setIdle() {
-        forcedState.tryEmit(null)
-    }
-
     init {
         viewModelScope.launchReportingErrors {
-            neptunRepository.studentData.collect { result ->
+            loginRepository.studentData.collect { result ->
                 when (result) {
                     is ApiResult.Error -> forcedState.emit(
                         LoginState.Error(result.error)
@@ -103,24 +55,50 @@ class LoginViewModel(
             }
         }
 
-        localDataSource.cache.get(PREF_STAY_LOGGED_ID, false).let {
-            if (it) {
-                try {
-                    localDataSource.cache.get<AuthenticationRequestDto?>(
-                        key = PREF_CURRENT_USER,
-                        defaultValue = null,
-                    )?.let { user ->
-                        if (user.userName.isNotBlank() && user.password.isNotBlank()) {
-                            forcedState.tryEmit(LoginState.SilentLogin)
-                            neptunCode.tryEmit(user.userName)
-                            password.tryEmit(user.password)
-                            login(true)
-                        }
-                    }
-                } catch (ex: Exception) {
-                    Timber.e(ex)
+
+        viewModelScope.launchReportingErrors {
+            loginRepository.shouldAutoLogin.collect { autoLogin ->
+                if (autoLogin) {
+                    forcedState.tryEmit(LoginState.Loading)
+                    loginRepository.silentLogin()
                 }
             }
         }
+    }
+
+    fun login() {
+        viewModelScope.launchReportingErrors {
+            val neptunCode = neptunCode.value
+            val password = password.value
+
+            if (neptunCode.isNullOrEmpty() || password.isNullOrEmpty()) {
+                return@launchReportingErrors
+            }
+
+            if (stayLoggedIn.value) {
+                loginRepository.saveCurrentUser(neptunCode, password)
+            }
+
+            forcedState.emit(LoginState.Loading)
+
+            loginRepository.login(neptunCode, password)
+        }
+    }
+
+    fun passwordInput(input: String) {
+        password.tryEmit(input)
+    }
+
+    fun neptunCodeInput(input: String) {
+        neptunCode.tryEmit(input)
+    }
+
+    fun keepMeLoggedIn(keep: Boolean) {
+        stayLoggedIn.tryEmit(keep)
+        loginRepository.saveAutoLoginPreference(keep)
+    }
+
+    fun setIdle() {
+        forcedState.tryEmit(null)
     }
 }

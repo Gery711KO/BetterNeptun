@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.utils
+package hu.kocsisgeri.betterneptun.common
 
 import android.content.Context
 import android.content.Intent
@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -70,23 +69,6 @@ fun LocalDateTime.getTimeLeft(): String {
     val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
     val minutes = kotlin.math.ceil(seconds / 60f).roundToInt()
     return "$minutes perc"
-}
-
-fun CalendarEntity.Event.getRemainingTime(): Float {
-    val diff =
-        endTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
-    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-    return seconds / 60f
-}
-
-fun CalendarEntity.Event.getTime(): Float {
-    val diff = endTime.toEpochSecond(ZoneOffset.UTC) - startTime.toEpochSecond(ZoneOffset.UTC)
-    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-    return seconds / 60f
-}
-
-fun CalendarEntity.Event.getPercent(): Int {
-    return (100f - (getRemainingTime() / getTime()) * 100f).roundToInt()
 }
 
 fun CoroutineScope.launchReportingErrors(

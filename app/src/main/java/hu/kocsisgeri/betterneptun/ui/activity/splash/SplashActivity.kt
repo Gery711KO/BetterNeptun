@@ -2,13 +2,13 @@ package hu.kocsisgeri.betterneptun.ui.activity.splash
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import hu.kocsisgeri.betterneptun.ui.activity.main.MainActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class SplashActivity : ComponentActivity() {
+class SplashActivity : AppCompatActivity() {
 
     private val viewModel: SplashViewModel by viewModel()
 

@@ -10,33 +10,29 @@ import com.alamkanak.weekview.WeekViewEntity
 import com.alamkanak.weekview.jsr310.WeekViewPagingAdapterJsr310
 import com.alamkanak.weekview.jsr310.setEndTime
 import com.alamkanak.weekview.jsr310.setStartTime
+import hu.kocsisgeri.betterneptun.domain.model.CalendarEntity
 import kotlinx.coroutines.flow.MutableSharedFlow
-import java.io.Serializable
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
+import java.time.ZoneOffset
+import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
-sealed class CalendarEntity {
+class FragmentWeekViewAdapter(
+    private val clickHandler: MutableSharedFlow<CalendarEntity.Event>
+) : WeekViewPagingAdapterJsr310<CalendarEntity>() {
+    override fun onCreateEntity(item: CalendarEntity): WeekViewEntity = item.toWeekViewEntity()
 
-    data class Event(
-        val id: Long,
-        val title: CharSequence,
-        val courseCode: String,
-        val subjectCode : String,
-        val teacher: String,
-        val startTime: LocalDateTime,
-        val endTime: LocalDateTime,
-        val location: CharSequence,
-        val color: Int,
-        val isAllDay: Boolean,
-        val isCanceled: Boolean
-    ) : CalendarEntity(), Serializable
+    override fun onLoadMore(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ) = Unit
 
-    data class BlockedTimeSlot(
-        val id: Long,
-        val startTime: LocalDateTime,
-        val endTime: LocalDateTime
-    ) : CalendarEntity()
+    override fun onEventClick(data: CalendarEntity, bounds: RectF) {
+        super.onEventClick(data, bounds)
+        clickHandler.tryEmit(data as CalendarEntity.Event)
+    }
 }
 
 fun CalendarEntity.toWeekViewEntity(): WeekViewEntity {
@@ -96,20 +92,22 @@ fun CalendarEntity.BlockedTimeSlot.toWeekViewEntity(): WeekViewEntity {
         .build()
 }
 
-class FragmentWeekViewAdapter(
-    private val clickHandler: MutableSharedFlow<CalendarEntity.Event>
-) : WeekViewPagingAdapterJsr310<CalendarEntity>() {
-    override fun onCreateEntity(item: CalendarEntity): WeekViewEntity = item.toWeekViewEntity()
 
-    override fun onLoadMore(
-        startDate: LocalDate,
-        endDate: LocalDate
-    ) = Unit
+fun CalendarEntity.Event.getRemainingTime(): Float {
+    val diff =
+        endTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+    return seconds / 60f
+}
 
-    override fun onEventClick(data: CalendarEntity, bounds: RectF) {
-        super.onEventClick(data, bounds)
-        clickHandler.tryEmit(data as CalendarEntity.Event)
-    }
+fun CalendarEntity.Event.getTime(): Float {
+    val diff = endTime.toEpochSecond(ZoneOffset.UTC) - startTime.toEpochSecond(ZoneOffset.UTC)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+    return seconds / 60f
+}
+
+fun CalendarEntity.Event.getPercent(): Int {
+    return (100f - (getRemainingTime() / getTime()) * 100f).roundToInt()
 }
 
 fun yearMonthsBetween(startDate: LocalDate, endDate: LocalDate): List<YearMonth> {

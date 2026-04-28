@@ -3,6 +3,7 @@ package hu.kocsisgeri.betterneptun
 import android.app.Application
 import hu.kocsisgeri.betterneptun.data.di.dataModule
 import hu.kocsisgeri.betterneptun.data.di.networkModule
+import hu.kocsisgeri.betterneptun.domain.di.domainModule
 import hu.kocsisgeri.betterneptun.ui.di.appModule
 import hu.kocsisgeri.betterneptun.ui.di.navigationModule
 import org.koin.android.ext.koin.androidContext
@@ -30,10 +31,11 @@ open class MyApplication : Application() {
 
     companion object {
         internal val koinModules = listOf(
-            appModule,
             networkModule,
             dataModule,
+            domainModule,
             navigationModule,
+            appModule,
         )
     }
 }

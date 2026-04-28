@@ -103,7 +103,7 @@ fun LoginScreen(
     LoginContent(
         isButtonEnabled = isButtonEnabled,
         isLoading = isLoading,
-        onLoginClick = { viewModel.login(false) },
+        onLoginClick = { viewModel.login() },
         onNeptunCodeChange = { viewModel.neptunCodeInput(it) },
         onPasswordChange = { viewModel.passwordInput(it) },
         onKeepMeLoggedInChange = { viewModel.keepMeLoggedIn(it) }

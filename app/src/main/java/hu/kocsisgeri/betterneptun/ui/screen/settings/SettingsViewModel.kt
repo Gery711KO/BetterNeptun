@@ -1,44 +1,28 @@
 package hu.kocsisgeri.betterneptun.ui.screen.settings
 
-import android.content.Context
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
-import hu.kocsisgeri.betterneptun.utils.PREF_SAVED_THEME
-import hu.kocsisgeri.betterneptun.utils.ThemeMode
-import hu.kocsisgeri.betterneptun.utils.get
-import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
-import hu.kocsisgeri.betterneptun.utils.put
-import kotlinx.coroutines.flow.MutableStateFlow
+import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
+import hu.kocsisgeri.betterneptun.domain.usecase.LogOutUseCase
+import hu.kocsisgeri.betterneptun.common.ThemeMode
+import hu.kocsisgeri.betterneptun.common.launchReportingErrors
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import org.koin.core.component.KoinComponent
 
 class SettingsViewModel(
-    private val localDataSource: LocalDataSource,
-    context: Context
-) : ViewModel(), KoinComponent {
+    private val settingsRepository: SettingsRepository,
+    private val logOutUseCase: LogOutUseCase,
+) : ViewModel() {
 
-    val context: Context by lazy { context }
-
-    private val _themeMode = MutableStateFlow<ThemeMode?>(null)
-    val themeMode: StateFlow<ThemeMode?> = _themeMode.asStateFlow()
-
-    init {
-        _themeMode.value = localDataSource.cache.get(PREF_SAVED_THEME, ThemeMode.AUTO)
-    }
+    val themeMode: StateFlow<ThemeMode> = settingsRepository.storedTheme
 
     fun saveTheme(theme: ThemeMode) {
-        localDataSource.cache.put(PREF_SAVED_THEME, theme)
-        AppCompatDelegate.setDefaultNightMode(theme.mode)
-        _themeMode.value = theme
+        settingsRepository.saveTheme(theme)
     }
 
-    fun logout(onLogout: () -> Unit) {
-        viewModelScope.launchReportingErrors {
-            localDataSource.purge()
-            onLogout()
+    fun logout() {
+        CoroutineScope(Dispatchers.IO).launchReportingErrors {
+            logOutUseCase()
         }
     }
 }

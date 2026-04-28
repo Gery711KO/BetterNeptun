@@ -4,7 +4,7 @@ import okhttp3.Interceptor
 import okhttp3.Response
 
 class TokenInterceptor(
-    private val tokenStore: TokenStore,
+    private val tokenStore: AuthStore,
 ): Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val token = tokenStore.getToken()

@@ -1,11 +1,10 @@
 package hu.kocsisgeri.betterneptun.ui.screen.messages.detail
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
+import hu.kocsisgeri.betterneptun.common.launchReportingErrors
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

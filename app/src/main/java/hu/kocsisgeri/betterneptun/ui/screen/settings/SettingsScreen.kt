@@ -38,7 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.BuildConfig
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
-import hu.kocsisgeri.betterneptun.utils.ThemeMode
+import hu.kocsisgeri.betterneptun.common.ThemeMode
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -151,9 +151,8 @@ fun SettingsScreen(
 
             LogoutButton(
                 onClick = {
-                    viewModel.logout {
-                        navigator.navigateToInclusive(LoginDestination)
-                    }
+                    viewModel.logout()
+                    navigator.navigateToInclusive(LoginDestination)
                 }
             )
 

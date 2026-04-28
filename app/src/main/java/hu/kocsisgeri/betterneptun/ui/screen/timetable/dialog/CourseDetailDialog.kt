@@ -44,8 +44,8 @@ import androidx.compose.ui.window.DialogProperties
 import com.madrapps.pikolo.HSLColorPicker
 import com.madrapps.pikolo.listeners.SimpleColorSelectionListener
 import hu.kocsisgeri.betterneptun.R
+import hu.kocsisgeri.betterneptun.domain.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.ui.screen.messages.detail.DetailItem
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import java.time.LocalDateTime
 import java.time.format.TextStyle
@@ -213,15 +213,6 @@ fun CourseDetailDialog(
 }
 }
 
-private fun getTimeText(event: CalendarEntity.Event): String {
-    val day = event.startTime.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("hu"))
-    val startMin = event.startTime.minute.let { if (it < 10) "0$it" else it }
-    val endMin = event.endTime.minute.let { if (it < 10) "0$it" else it }
-    val timeText = "${event.startTime.hour}:${startMin} - ${event.endTime.hour}:${endMin} ($day)"
-
-    return timeText
-}
-
 @Composable
 private fun DetailItem(icon: Painter, label: String, value: String) {
     Row(
@@ -258,6 +249,15 @@ private fun DetailItem(icon: Painter, label: String, value: String) {
             )
         }
     }
+}
+
+private fun getTimeText(event: CalendarEntity.Event): String {
+    val day = event.startTime.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("hu"))
+    val startMin = event.startTime.minute.let { if (it < 10) "0$it" else it }
+    val endMin = event.endTime.minute.let { if (it < 10) "0$it" else it }
+    val timeText = "${event.startTime.hour}:${startMin} - ${event.endTime.hour}:${endMin} ($day)"
+
+    return timeText
 }
 
 @Preview(showBackground = true, name = "Light Mode")

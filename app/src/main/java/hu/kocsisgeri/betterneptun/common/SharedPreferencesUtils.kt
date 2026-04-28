@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.utils
+package hu.kocsisgeri.betterneptun.common
 
 import android.content.SharedPreferences
 import androidx.core.content.edit

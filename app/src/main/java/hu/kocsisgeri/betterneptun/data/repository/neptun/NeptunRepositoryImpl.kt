@@ -9,24 +9,19 @@ import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageEntity
 import hu.kocsisgeri.betterneptun.data.mapper.toSubjectDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toTermDomain
-import hu.kocsisgeri.betterneptun.data.model.ExtendedTermDto
+import hu.kocsisgeri.betterneptun.data.repository.runApiCall
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.Average
+import hu.kocsisgeri.betterneptun.domain.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
-import hu.kocsisgeri.betterneptun.domain.model.StudentData
 import hu.kocsisgeri.betterneptun.domain.model.Subject
 import hu.kocsisgeri.betterneptun.domain.model.Term
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.SerializationException
-import retrofit2.HttpException
-import java.io.IOException
 
 internal class NeptunRepositoryImpl(
     private val networkDataSource: NetworkDataSource,
@@ -34,15 +29,14 @@ internal class NeptunRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher,
 ) : NeptunRepository {
 
+    override var currentMessagePage = 1
+
     override val events = MutableStateFlow<List<CalendarEntity.Event>>(listOf())
 
     override val messages = localDataSource.appDatabase.messages.getData().map { list ->
         list.map { it.toMessageDomain() }
     }
-    override var currentMessagePage = 1
     override val unreadMessagesCount: MutableStateFlow<Int?> = MutableStateFlow(null)
-
-    override val studentData = MutableStateFlow<ApiResult<StudentData>>(ApiResult.Loading)
 
     override val extendedTerms = MutableStateFlow<ApiResult<List<ExtendedTerm>>>(ApiResult.Loading)
     override val subjects =
@@ -51,19 +45,17 @@ internal class NeptunRepositoryImpl(
     override val terms = MutableStateFlow<ApiResult<List<Term>>>(ApiResult.Loading)
     override val averages = MutableStateFlow<ApiResult<List<Average>>>(ApiResult.Loading)
 
-
-
     override suspend fun fetchMessages() {
         withContext(ioDispatcher) {
             networkDataSource.getReceivedMessages(
                 firstRow = 0,
                 lastRow = 20
             ).let {
-                localDataSource.appDatabase.messages.insertAll(
-                    it.data.receivedMessages.map { message ->
-                        message.toMessageEntity()
-                    }
-                )
+                it.data.receivedMessages.map { message ->
+                    message.toMessageEntity()
+                }.forEach { entity ->
+                    localDataSource.appDatabase.messages.insertOne(entity)
+                }
             }
         }
     }
@@ -75,25 +67,25 @@ internal class NeptunRepositoryImpl(
     }
 
     override suspend fun fetchExtendedTerms() {
-        extendedTerms.runApiCall {
+        extendedTerms.runApiCall(ioDispatcher) {
             networkDataSource.getExtendedTerms().data.toExtendedTermDomain()
         }
     }
 
     override suspend fun fetchSubjects(termId: String) {
-        subjects.runApiCall {
+        subjects.runApiCall(ioDispatcher) {
             networkDataSource.getTakenSubjects(termId).data.toSubjectDomain()
         }
     }
 
     override suspend fun fetchTerms() {
-        terms.runApiCall {
+        terms.runApiCall(ioDispatcher) {
             networkDataSource.getTerms().data.toTermDomain()
         }
     }
 
     override suspend fun fetchTermAverages() {
-        averages.runApiCall {
+        averages.runApiCall(ioDispatcher) {
             networkDataSource.getTermAverages()
                 .data
                 .termAveragesByTrainings
@@ -101,25 +93,20 @@ internal class NeptunRepositoryImpl(
         }
     }
 
-    override suspend fun login(neptunCode: String, password: String) {
-        studentData.runApiCall {
-            networkDataSource.getUserInfo().data.let {
-                StudentData(
-                    name = it.name,
-                    neptun = it.neptunCode
-                )
-            }
-        }
-    }
-
-    override fun resetMessagePage() {
-        currentMessagePage = 0
-    }
-
     override suspend fun getMessageDetail(messageId: String) =
         withContext(ioDispatcher) {
             networkDataSource.getMessageDetails(messageId).data.toMessageDomain()
         }
+
+    override fun purge() {
+        events.value = emptyList()
+        unreadMessagesCount.value = null
+        extendedTerms.value = ApiResult.Loading
+        subjects.value = ApiResult.Loading
+        terms.value = ApiResult.Loading
+        averages.value = ApiResult.Loading
+        currentMessagePage = 1
+    }
 
     override suspend fun randomiseCalendarColors() {
 //        withContext(ioDispatcher) {
@@ -228,23 +215,6 @@ internal class NeptunRepositoryImpl(
             } else {
                 colorMap[title] = Color.rgb(red, green, blue)
                 colorMap[title]!!
-            }
-        }
-    }
-
-    private suspend fun <T : Any> MutableStateFlow<ApiResult<T>>.runApiCall(
-        block: suspend () -> T
-    ) {
-        withContext(ioDispatcher) {
-            try {
-                value = ApiResult.Loading
-                value = ApiResult.Success(block())
-            } catch (exception: HttpException) {
-                value = ApiResult.Error(exception.message ?: "Network error.")
-            } catch (exception: IOException) {
-                value = ApiResult.Error(exception.message ?: "Something went wrong.")
-            } catch (exception: SerializationException) {
-                value = ApiResult.Error(exception.message ?: "Serialization error.")
             }
         }
     }

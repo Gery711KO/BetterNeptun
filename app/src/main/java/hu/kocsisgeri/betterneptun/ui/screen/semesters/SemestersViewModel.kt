@@ -11,7 +11,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
+import hu.kocsisgeri.betterneptun.common.launchReportingErrors
 import kotlinx.coroutines.flow.map
 
 class SemestersViewModel(

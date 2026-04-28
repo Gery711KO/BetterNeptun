@@ -1,8 +1,6 @@
 package hu.kocsisgeri.betterneptun.data.api.token
 
 import hu.kocsisgeri.betterneptun.data.api.AuthApiService
-import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -12,9 +10,8 @@ import okhttp3.Response
 import okhttp3.Route
 
 class TokenAuthenticator(
-    private val tokenStore: TokenStore,
+    private val tokenStore: AuthStore,
     private val authApiService: AuthApiService,
-    private val navigator: Navigator,
 ): Authenticator {
 
     private val mutex = Mutex()
@@ -50,7 +47,6 @@ class TokenAuthenticator(
                     .build()
             } catch (e: Exception) {
                 tokenStore.clear()
-                navigator.navigateToInclusive(LoginDestination)
                 null
             }
         }

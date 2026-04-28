@@ -6,9 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.R
+import hu.kocsisgeri.betterneptun.domain.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.CalendarEntity
-import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
+import hu.kocsisgeri.betterneptun.common.launchReportingErrors
 import kotlinx.coroutines.flow.*
 
 enum class ViewMode(val days: Int, @DrawableRes val icon : Int) {

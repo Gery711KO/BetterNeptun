@@ -5,7 +5,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.utils.launchReportingErrors
+import hu.kocsisgeri.betterneptun.common.launchReportingErrors
 
 class SubjectsViewModel(
     repo: NeptunRepository

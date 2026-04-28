@@ -1,17 +1,22 @@
 package hu.kocsisgeri.betterneptun.ui.activity.main
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.NavKey
+import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 import org.koin.android.scope.AndroidScopeComponent
 import org.koin.androidx.compose.navigation3.entryProvider
@@ -21,9 +26,11 @@ import org.koin.core.scope.Scope
 import timber.log.Timber
 
 @OptIn(KoinExperimentalAPI::class)
-class MainActivity : ComponentActivity(), AndroidScopeComponent {
+class MainActivity : AppCompatActivity(), AndroidScopeComponent {
 
     override val scope: Scope by activityRetainedScope()
+
+    val loginRepository: LoginRepository by inject()
     val navigator: Navigator by inject()
     val entryProvider by entryProvider<NavKey>()
 
@@ -46,5 +53,9 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
                 )
             }
         }
+
+        loginRepository.forceLogOut.onEach {
+            navigator.navigateToInclusive(LoginDestination)
+        }.launchIn(lifecycleScope)
     }
 }
