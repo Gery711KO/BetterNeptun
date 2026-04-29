@@ -2,7 +2,7 @@ package hu.kocsisgeri.betterneptun.domain.repository.neptun
 
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.Average
-import hu.kocsisgeri.betterneptun.domain.model.CalendarEntity
+import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
 import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
 import hu.kocsisgeri.betterneptun.domain.model.Message
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
@@ -13,8 +13,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface NeptunRepository {
 
-    val events: Flow<List<CalendarEntity.Event>>
-    val messages: Flow<List<Message>>
+    val events: Flow<List<CalendarItem>>
+    val messages: StateFlow<ApiResult<List<Message>>>
     val unreadMessagesCount : StateFlow<Int?>
 
     val extendedTerms : StateFlow<ApiResult<List<ExtendedTerm>>>
@@ -36,7 +36,10 @@ interface NeptunRepository {
     suspend fun fetchTermAverages()
 
     suspend fun randomiseCalendarColors()
-    suspend fun setEventColor(event: CalendarEntity.Event?, color: Int)
+    suspend fun setLocalEventColor(event: CalendarItem.LocalEvent, color: Int)
+
+    suspend fun addLocalEvent(event: CalendarItem.LocalEvent)
+    suspend fun deleteLocalEvent(eventId: Long)
 
     fun purge()
 }

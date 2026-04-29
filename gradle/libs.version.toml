@@ -43,6 +43,9 @@ androidxImmutable = "0.4.0"
 activityCompose = "1.13.0"
 composeBom = "2026.04.01"
 
+composeWeekView = "4.1.3"
+colorpicker = "1.1.3"
+
 kotlinxSerializationJson = "1.11.0"
 
 [libraries]
@@ -104,10 +107,10 @@ koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", versio
 
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
-weekView-core = { group = "com.github.thellmund.Android-Week-View", name = "core", version.ref = "weekView" }
-weekView-jsr310 = { group = "com.github.thellmund.Android-Week-View", name = "jsr310", version.ref = "weekView" }
+weekView-compose = { module = "com.github.tobiasschuerg:android-week-view", version.ref = "composeWeekView" }
 mpAndroidChart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpAndroidChart" }
 pikolo = { group = "com.github.madrapps", name = "pikolo", version.ref = "pikolo" }
+compose-colorpicker = { module = "com.github.skydoves:colorpicker-compose", version.ref = "colorpicker" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitExt" }

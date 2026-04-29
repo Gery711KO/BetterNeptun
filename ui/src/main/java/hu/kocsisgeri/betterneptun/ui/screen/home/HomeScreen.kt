@@ -38,7 +38,6 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -59,20 +58,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
-import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.CalendarEntity
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessagesDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.getPercent
+import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
+import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.common.getCourseDateString
-import hu.kocsisgeri.betterneptun.common.getTimeLeft
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.time.LocalDateTime
@@ -106,8 +103,8 @@ fun HomeScreen(
 private fun HomeContent(
     studentData: StudentData?,
     unreadMessages: Int,
-    currentCourses: List<CalendarEntity.Event>,
-    nextCourseState: ApiResult<CalendarEntity.Event>?,
+    currentCourses: List<CurrentCourseDetail>,
+    nextCourseState: NextCourseDetail?,
     refreshProgress: ApiResult<Unit>?,
     onRefresh: () -> Unit,
     onNavigate: (NavKey) -> Unit,
@@ -132,22 +129,16 @@ private fun HomeContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(vertical = 16.dp)
+                    .padding(vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Header(
                     studentData = studentData,
                     unreadMessages = unreadMessages,
                     onNavigateToScreen = onNavigate
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 CurrentlyOngoingCourses(currentCourses)
-
                 NextCourseCard(nextCourseState)
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 NavigationGrid(onNavigate)
             }
 
@@ -220,7 +211,7 @@ private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
 }
 
 @Composable
-private fun CurrentlyOngoingCourses(currentCourses: List<CalendarEntity.Event>) {
+private fun CurrentlyOngoingCourses(currentCourses: List<CurrentCourseDetail>) {
     if (currentCourses.isNotEmpty()) {
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
@@ -233,7 +224,6 @@ private fun CurrentlyOngoingCourses(currentCourses: List<CalendarEntity.Event>) 
                 )
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
@@ -326,7 +316,7 @@ private fun Header(
 
 @Composable
 fun CurrentCourseItem(
-    course: CalendarEntity.Event,
+    course: CurrentCourseDetail,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -349,7 +339,7 @@ fun CurrentCourseItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 LinearProgressIndicator(
-                    progress = { course.getPercent() / 100f },
+                    progress = { course.progress / 100f },
                     modifier = Modifier.fillMaxWidth().height(8.dp),
                     color = Color(course.color),
                     trackColor = Color(course.color).copy(alpha = 0.2f),
@@ -373,26 +363,28 @@ fun CurrentCourseItem(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = course.title.toString().trim(),
+                            text = course.title.trim(),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_location),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = course.location.toString().trim(),
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
+                    if (course.location.isNullOrBlank().not()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_location),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = course.location!!.trim(),
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        }
                     }
                 }
                 
@@ -405,7 +397,7 @@ fun CurrentCourseItem(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = course.endTime.getTimeLeft(),
+                        text = course.remainingTime,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -417,8 +409,8 @@ fun CurrentCourseItem(
 }
 
 @Composable
-fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
-    state?.let {
+fun NextCourseCard(course: NextCourseDetail?) {
+    course?.let {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
@@ -433,103 +425,94 @@ fun NextCourseCard(state: ApiResult<CalendarEntity.Event>?) {
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                when (state) {
-                    is ApiResult.Loading -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(40.dp),
-                            color = MaterialTheme.colorScheme.primary
+                Row(
+                    modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Következő óra",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    }
-                    is ApiResult.Success -> {
-                        val event = state.data
-                        Row(
-                            modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "Következő óra",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Default.Event,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = event.startTime.getCourseDateString(),
-                                        fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_course),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = event.title.toString().trim(),
-                                        fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_location),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = event.location.toString().trim(),
-                                        fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                                    )
-                                }
-                            }
-                            Column(
-                                horizontalAlignment = Alignment.End,
-                                verticalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .padding(vertical = 12.dp)
-                            ) {
-                                Text(
-                                    text = "${event.startTime.hour}:${event.startTime.minute.toString().padStart(2, '0')}",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = "${event.endTime.hour}:${event.endTime.minute.toString().padStart(2, '0')}",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Box(
-                                modifier = Modifier
-                                    .width(6.dp)
-                                    .fillMaxHeight()
-                                    .padding(vertical = 12.dp)
-                                    .background(Color(event.color), CircleShape)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Event,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = course.timeUntilEvent,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
                         }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_course),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = course.title.trim(),
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        }
+                        if (course.location.isNullOrBlank().not()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_location),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = course.location.trim(),
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
                     }
-                    else -> { /* Handle Error or Nothing */ }
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .padding(vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = "${course.startTime.hour}:${course.startTime.minute.toString().padStart(2, '0')}",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "${course.endTime.hour}:${course.endTime.minute.toString().padStart(2, '0')}",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Box(
+                        modifier = Modifier
+                            .width(6.dp)
+                            .fillMaxHeight()
+                            .padding(vertical = 12.dp)
+                            .background(Color(course.color), CircleShape)
+                    )
                 }
             }
         }
@@ -580,25 +563,28 @@ fun NavButton(
 @Composable
 fun HomeScreenPreview() {
     BetterNeptunTheme {
-        val mockEvent = CalendarEntity.Event(
-            id = 1,
+        val currentCourse = CurrentCourseDetail(
             title = "Mobil szoftverfejlesztés",
-            courseCode = "MSF123",
-            subjectCode = "SUB456",
-            teacher = "Dr. Kovács Béla",
-            startTime = LocalDateTime.now().plusHours(1),
-            endTime = LocalDateTime.now().plusHours(3),
             location = "BA.F.01",
             color = 0xFF4285F4.toInt(),
-            isAllDay = false,
-            isCanceled = false
+            progress = 30,
+            remainingTime = "30 perc"
+        )
+
+        val nextCourse = NextCourseDetail(
+            title = "Full stack fejlesztés",
+            startTime = LocalDateTime.now().plusHours(1),
+            endTime = LocalDateTime.now().plusHours(3),
+            location = "BA.F.02",
+            color = 0xFF4285F4.toInt(),
+            timeUntilEvent = "1 óra múlva"
         )
 
         HomeContent(
             studentData = StudentData("Példa János", "ABC123"),
             unreadMessages = 5,
-            currentCourses = listOf(mockEvent.copy(title = "Éppen zajló óra", startTime = LocalDateTime.now().minusHours(1))),
-            nextCourseState = ApiResult.Success(mockEvent),
+            currentCourses = listOf(currentCourse),
+            nextCourseState = nextCourse,
             refreshProgress = null,
             onRefresh = {},
             onNavigate = {}

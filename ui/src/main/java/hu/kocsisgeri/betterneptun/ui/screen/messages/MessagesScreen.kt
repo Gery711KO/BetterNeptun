@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.screen.messages
 
+import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,22 +32,24 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import hu.kocsisgeri.betterneptun.ui.R
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import hu.kocsisgeri.betterneptun.common.DateUtils
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.Message
+import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
 import hu.kocsisgeri.betterneptun.ui.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.common.DateUtils
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDateTime
@@ -52,11 +59,12 @@ fun MessagesScreen(
     viewModel: MessagesViewModel = koinViewModel(),
     navigator: Navigator = koinInject()
 ) {
-    val messages by viewModel.listItems.observeAsState(emptyList())
+    val messages by viewModel.listItems.collectAsStateWithLifecycle()
     
     MessagesContent(
         messages = messages,
         onBackClick = navigator::navigateBack,
+        onRetryClick = viewModel::refresh,
         onMessageClick = { message ->
             navigator.navigateTo(MessageDetailDestination(message.id))
         }
@@ -66,7 +74,8 @@ fun MessagesScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessagesContent(
-    messages: List<Message>,
+    messages: ApiResult<List<Message>>,
+    onRetryClick: () -> Unit,
     onBackClick: () -> Unit,
     onMessageClick: (Message) -> Unit
 ) {
@@ -107,8 +116,40 @@ fun MessagesContent(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (messages.isEmpty()) {
-                Column(
+            when (messages) {
+                is ApiResult.Error -> Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Warning,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Hiba történt az üzenetek betőltése közben.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(
+                        onClick = onRetryClick,
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Text("Újra")
+                    }
+                }
+                ApiResult.Loading -> Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -123,11 +164,10 @@ fun MessagesContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            } else {
-                LazyColumn(
+                is ApiResult.Success -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    items(messages) { message ->
+                    items(messages.data) { message ->
                         MessageItem(
                             message = message,
                             onClick = { onMessageClick(message) }
@@ -199,70 +239,68 @@ fun MessageItem(
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Success - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Success - Dark")
 @Composable
-fun MessagesScreenPreview() {
+fun MessagesSuccessPreview() {
     BetterNeptunTheme {
         MessagesContent(
-            messages = listOf(
-                Message(
-                    id = "1",
-                    name = "Kovács János",
-                    subject = "Vizsga eredmény",
-                    date = LocalDateTime.of(2023, 10, 25, 14, 30),
-                    isNew = true,
-                    detail = "Tisztelt Hallgató! A vizsgája sikerült."
-                ),
-                Message(
-                    id = "2",
-                    name = "Neptun Rendszer",
-                    subject = "Kurzusfelvétel",
-                    date = LocalDateTime.of(2023, 10, 24, 9, 15),
-                    isNew = false,
-                    detail = "A kurzusfelvétel időszaka megkezdődött."
-                ),
-                Message(
-                    id = "3",
-                    name = "Dr. Tanár Úr",
-                    subject = "Elmaradt előadás",
-                    date = LocalDateTime.of(2023, 10, 23, 18, 0),
-                    isNew = true,
-                    detail = "A holnapi előadás betegség miatt elmarad."
+            messages = ApiResult.Success(
+                listOf(
+                    Message(
+                        id = "1",
+                        name = "Kovács János",
+                        subject = "Vizsga eredmény",
+                        date = LocalDateTime.of(2023, 10, 25, 14, 30),
+                        isNew = true,
+                    ),
+                    Message(
+                        id = "2",
+                        name = "Neptun Rendszer",
+                        subject = "Kurzusfelvétel",
+                        date = LocalDateTime.of(2023, 10, 24, 9, 15),
+                        isNew = false,
+                    ),
+                    Message(
+                        id = "3",
+                        name = "Dr. Tanár Úr",
+                        subject = "Elmaradt előadás",
+                        date = LocalDateTime.of(2023, 10, 23, 18, 0),
+                        isNew = true,
+                    )
                 )
             ),
+            onRetryClick = {},
             onBackClick = {},
             onMessageClick = {}
         )
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Loading - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Loading - Dark")
 @Composable
-fun MessageItemPreview() {
+fun MessagesLoadingPreview() {
     BetterNeptunTheme {
-        Column {
-            MessageItem(
-                message = Message(
-                    id = "1",
-                    name = "Kovács János",
-                    subject = "Vizsga eredmény",
-                    date = LocalDateTime.of(2023, 10, 25, 14, 30),
-                    isNew = true,
-                    detail = "Tisztelt Hallgató! A vizsgája sikerült."
-                ),
-                onClick = {}
-            )
-            MessageItem(
-                message = Message(
-                    id = "2",
-                    name = "Neptun Rendszer",
-                    subject = "Kurzusfelvétel",
-                    date = LocalDateTime.of(2023, 10, 24, 9, 15),
-                    isNew = false,
-                    detail = "A kurzusfelvétel időszaka megkezdődött."
-                ),
-                onClick = {}
-            )
-        }
+        MessagesContent(
+            messages = ApiResult.Loading,
+            onRetryClick = {},
+            onBackClick = {},
+            onMessageClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Error - Light")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Error - Dark")
+@Composable
+fun MessagesErrorPreview() {
+    BetterNeptunTheme {
+        MessagesContent(
+            messages = ApiResult.Error("Hiba történt az üzenetek betöltése közben."),
+            onRetryClick = {},
+            onBackClick = {},
+            onMessageClick = {}
+        )
     }
 }

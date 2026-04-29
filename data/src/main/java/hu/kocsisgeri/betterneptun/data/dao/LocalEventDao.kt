@@ -7,17 +7,17 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ColorDao {
+interface LocalEventDao {
 
-    @Query("SELECT * FROM color")
-    fun getData(): Flow<List<ColorEntity>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(list: List<ColorEntity>)
+    @Query("SELECT * FROM local_event")
+    fun getData(): Flow<List<LocalEventEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOne(color: ColorEntity)
+    suspend fun insertOne(event: LocalEventEntity)
 
-    @Query("DELETE FROM color")
+    @Query("DELETE FROM local_event WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
+    @Query("DELETE FROM local_event")
     suspend fun deleteAll()
 }

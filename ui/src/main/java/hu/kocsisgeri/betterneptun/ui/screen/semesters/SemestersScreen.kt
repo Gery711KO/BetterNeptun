@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Legend
@@ -51,8 +51,8 @@ fun SemestersScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Kreditek", "Átlagok")
 
-    val creditsResult by viewModel.credits.observeAsState()
-    val averagesResult by viewModel.averages.observeAsState()
+    val creditsResult by viewModel.credits.collectAsStateWithLifecycle()
+    val averagesResult by viewModel.averages.collectAsStateWithLifecycle()
 
     val colors = MaterialTheme.colorScheme
 

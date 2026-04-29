@@ -1,23 +1,22 @@
 package hu.kocsisgeri.betterneptun.ui.screen.messages.detail
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hu.kocsisgeri.betterneptun.common.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.common.launchReportingErrors
+import hu.kocsisgeri.betterneptun.ui.base.ComposeViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 class MessageDetailViewModel(
     private val messageId: String,
     private val neptunRepository: NeptunRepository,
-) : ViewModel() {
+) : ComposeViewModel() {
 
     private val _isError = MutableStateFlow<String?>(null)
-    val isError = _isError.asStateFlow()
+    val isError = _isError.stateWhileSubscribed()
     
     private val _messageDetail = MutableStateFlow<MessageDetail?>(null)
-    val messageDetail = _messageDetail.asStateFlow()
+    val messageDetail = _messageDetail.stateWhileSubscribed()
     
     fun refresh() {
         _isError.value = null

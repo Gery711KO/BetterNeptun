@@ -15,8 +15,7 @@ internal class LocalDataSourceImpl(
     override suspend fun purge() {
         withContext(ioDispatcher) {
             cache.edit { clear() }
-            appDatabase.messages.deleteAll()
-            appDatabase.colors.deleteAll()
+            appDatabase.localEvents.deleteAll()
         }
     }
 }

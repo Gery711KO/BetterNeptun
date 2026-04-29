@@ -45,8 +45,9 @@ dependencies {
 
     implementation(libs.google.material)
     implementation(libs.timber)
-    implementation(libs.weekView.core)
-    implementation(libs.weekView.jsr310)
+
+    implementation(libs.weekView.compose)
+    implementation(libs.compose.colorpicker)
+
     implementation(libs.mpAndroidChart)
-    implementation(libs.pikolo)
 }

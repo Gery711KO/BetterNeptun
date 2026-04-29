@@ -1,19 +1,22 @@
 package hu.kocsisgeri.betterneptun.ui.screen.messages
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.common.launchReportingErrors
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.ui.base.ComposeViewModel
 
 class MessagesViewModel(
     private val neptunRepository: NeptunRepository
-) : ViewModel() {
+) : ComposeViewModel() {
 
-    private val itemFlow = neptunRepository.messages
-    val listItems = itemFlow.asLiveData()
+    val listItems = neptunRepository.messages
+        .stateWhileSubscribed()
 
     init {
+        refresh()
+    }
+
+    fun refresh() {
         viewModelScope.launchReportingErrors {
             neptunRepository.fetchMessages()
         }

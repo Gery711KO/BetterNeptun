@@ -1,24 +1,23 @@
 package hu.kocsisgeri.betterneptun.ui.screen.semesters
 
 import androidx.core.graphics.toColorInt
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import hu.kocsisgeri.betterneptun.common.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.common.launchReportingErrors
+import hu.kocsisgeri.betterneptun.ui.base.ComposeViewModel
 import kotlinx.coroutines.flow.map
 
 class SemestersViewModel(
     repo: NeptunRepository
-) : ViewModel() {
+) : ComposeViewModel() {
 
-    private val creditFlow = repo.terms.map {
+    val credits = repo.terms.map {
         when (it) {
             is ApiResult.Error -> ApiResult.Error(it.error)
             is ApiResult.Loading -> ApiResult.Loading
@@ -40,10 +39,9 @@ class SemestersViewModel(
                 ApiResult.Success(Pair(takenSet, aquiredSet))
             }
         }
-    }
-    val credits = creditFlow.asLiveData()
+    }.stateWhileSubscribed(ApiResult.Loading)
 
-    private val averageFlow = repo.averages.map {
+    val averages = repo.averages.map {
         when(it) {
             is ApiResult.Error -> ApiResult.Error(it.error)
             is ApiResult.Loading -> ApiResult.Loading
@@ -77,9 +75,7 @@ class SemestersViewModel(
                 ApiResult.Success(LineData(normalSet, comSet))
             }
         }
-    }
-
-    val averages = averageFlow.asLiveData()
+    }.stateWhileSubscribed(ApiResult.Loading)
 
     init {
         viewModelScope.launchReportingErrors {

@@ -1,22 +1,13 @@
 package hu.kocsisgeri.betterneptun.data.mapper
 
-import hu.kocsisgeri.betterneptun.data.dao.MessageEntity
 import hu.kocsisgeri.betterneptun.data.model.MessageDetailsDto
 import hu.kocsisgeri.betterneptun.data.model.ReceivedMessageDto
 import hu.kocsisgeri.betterneptun.domain.model.Message
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 
-fun MessageEntity.toMessageDomain() = Message(
-    id = id,
-    name = senderName,
-    subject = subject,
-    date = date,
-    isNew = isNew,
-)
-
-fun ReceivedMessageDto.toMessageEntity() = MessageEntity(
+fun ReceivedMessageDto.toMessageDomain() = Message(
     id = messageId,
-    senderName = if (isSystemMessage) "Rendszerüzenet" else senderName,
+    name = if (isSystemMessage) "Rendszerüzenet" else senderName,
     subject = subject,
     date = lastPostDate,
     isNew = unreadedPostCount > 0,

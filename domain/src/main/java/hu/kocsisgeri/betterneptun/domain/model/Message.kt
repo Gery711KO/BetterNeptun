@@ -8,5 +8,4 @@ data class Message(
     val subject: String,
     val date: LocalDateTime,
     val isNew : Boolean,
-    val detail: String = ""
 )
