@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -67,19 +68,38 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import hu.kocsisgeri.betterneptun.ui.permission.PermissionHandler
+import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
+import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionDisclaimer
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import org.koin.core.parameter.parametersOf
 import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
-    navigator: Navigator = koinInject()
+    navigator: Navigator = koinInject(),
 ) {
+    val activity = LocalActivity.current
+    val permissionHandler: PermissionHandler = koinInject()
+
     val studentData by viewModel.studentData.collectAsStateWithLifecycle()
     val unreadMessages by viewModel.unreadMessages.collectAsStateWithLifecycle()
 
@@ -87,11 +107,16 @@ fun HomeScreen(
     val nextCourseState by viewModel.nextCourse.collectAsStateWithLifecycle()
     val refreshProgress by viewModel.refreshProgress.collectAsState(initial = null)
 
+    val permissionDisclaimers by permissionHandler
+        .getPermissions(activity!!)
+        .collectAsStateWithLifecycle(emptyList())
+
     HomeContent(
         studentData = studentData,
         unreadMessages = unreadMessages?: 0,
         currentCourses = currentCourses,
         nextCourseState = nextCourseState,
+        permissions = permissionDisclaimers,
         refreshProgress = refreshProgress,
         onRefresh = { viewModel.refreshData() },
         onNavigate = { navigator.navigateTo(it) }
@@ -105,15 +130,26 @@ private fun HomeContent(
     unreadMessages: Int,
     currentCourses: List<CurrentCourseDetail>,
     nextCourseState: NextCourseDetail?,
+    permissions: List<PermissionData>,
     refreshProgress: ApiResult<Unit>?,
     onRefresh: () -> Unit,
     onNavigate: (NavKey) -> Unit,
 ) {
+    val activity = LocalActivity.current
     val isRefreshing = refreshProgress is ApiResult.Loading
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
         onRefresh = onRefresh
     )
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LifecycleResumeEffect(permissions) {
+        activity?.let { activity
+            permissions.forEach { it.refreshPermissionState(activity) }
+        }
+        onPauseOrDispose {}
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -137,6 +173,7 @@ private fun HomeContent(
                     unreadMessages = unreadMessages,
                     onNavigateToScreen = onNavigate
                 )
+                PermissionDisclaimerCarousel(permissions)
                 CurrentlyOngoingCourses(currentCourses)
                 NextCourseCard(nextCourseState)
                 NavigationGrid(onNavigate)
@@ -149,6 +186,95 @@ private fun HomeContent(
                 backgroundColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.primary
             )
+        }
+    }
+}
+
+@Composable
+private fun PermissionDisclaimerCarousel(
+    permissions: List<PermissionData>,
+    modifier: Modifier = Modifier
+) {
+    val activity = LocalActivity.current
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        activity?.let {
+            permissions.forEach { it.refreshPermissionState(activity) }
+        }
+    }
+
+    val visibleDisclaimers by remember(permissions) {
+        derivedStateOf {
+            permissions.filter {
+                it.permissionState != PermissionData.State.Granted
+            }
+        }
+    }
+
+    if (visibleDisclaimers.isNotEmpty()) {
+        LazyRow(
+            modifier = modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(visibleDisclaimers) { permission ->
+                PermissionDisclaimerCard(
+                    disclaimer = permission.disclaimer,
+                    onRequest = {
+                        activity?.let {
+                            permission.requestPermission(activity, launcher)
+                        }
+                    },
+                    modifier = Modifier.fillParentMaxWidth()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PermissionDisclaimerCard(
+    disclaimer: PermissionDisclaimer,
+    onRequest: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+        )
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = disclaimer.humanReadablePermissionName,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = disclaimer.disclaimer,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onRequest,
+                modifier = Modifier.align(Alignment.End),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.tertiary,
+                    contentColor = MaterialTheme.colorScheme.onTertiary
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "Engedélyezés",
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
@@ -586,6 +712,7 @@ fun HomeScreenPreview() {
             currentCourses = listOf(currentCourse),
             nextCourseState = nextCourse,
             refreshProgress = null,
+            permissions = emptyList(),
             onRefresh = {},
             onNavigate = {}
         )

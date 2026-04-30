@@ -1,7 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable
 
 import androidx.annotation.DrawableRes
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.tobiasschuerg.weekview.data.LocalDateRange
 import hu.kocsisgeri.betterneptun.common.launchReportingErrors
@@ -10,10 +9,7 @@ import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.base.ComposeViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -24,7 +20,7 @@ enum class ViewMode(val days: Int, @DrawableRes val icon : Int) {
 }
 
 class TimetableViewModel(
-    private val neptunRepository: NeptunRepository
+    private val neptunRepository: NeptunRepository,
 ) : ComposeViewModel() {
 
     private val currentSelected = MutableStateFlow<Long?>(null)

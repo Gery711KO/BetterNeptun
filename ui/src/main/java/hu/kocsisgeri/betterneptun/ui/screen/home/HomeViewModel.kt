@@ -66,6 +66,7 @@ class HomeViewModel(
         .stateWhileSubscribed(null)
 
     val unreadMessages = neptunRepository.unreadMessagesCount
+        .stateWhileSubscribed()
 
     init {
         refreshData()

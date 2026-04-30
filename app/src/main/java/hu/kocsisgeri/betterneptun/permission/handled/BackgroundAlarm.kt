@@ -1,0 +1,60 @@
+package hu.kocsisgeri.betterneptun.permission.handled
+
+import android.Manifest
+import android.app.Activity
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.res.Resources
+import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat
+import hu.kocsisgeri.betterneptun.R
+import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
+import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionDisclaimer
+
+class BackgroundAlarm(
+    appName: String,
+): PermissionData {
+
+    override val permission: String = Manifest.permission.SCHEDULE_EXACT_ALARM
+    override var permissionState : PermissionData.State? by mutableStateOf(null)
+
+    override val disclaimer: PermissionDisclaimer = PermissionDisclaimer(
+        humanReadablePermissionName = "Háttérműveletek",
+        disclaimer = "A háttérműveletek bekapcsolása az értesítések megfelelő működéséhez szükséges, " +
+                "ugyanis az értesítések teljesen lokálisan szerver nélkül kerülnek elküldésre.\n" +
+                "A felugró ablakban keresd ki az $appName appot és engedélyezd a háttérműveleteket."
+    )
+
+    override fun requestPermission(
+        activity: Activity,
+        launcher: ManagedActivityResultLauncher<String, Boolean>
+    ) {
+        if (permissionState == PermissionData.State.PermanentlyDenied) {
+            activity.startActivity(
+                Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    Uri.fromParts("package", activity.packageName, null)
+                }
+            )
+        } else {
+            // Do nothing we have permission
+        }
+    }
+
+    override fun refreshPermissionState(activity: Activity) {
+        permissionState = getCurrentPermissionState(activity)
+    }
+
+    private fun getCurrentPermissionState(activity: Activity) = run {
+        val alarmManager = (activity.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
+
+        if (alarmManager.canScheduleExactAlarms()) PermissionData.State.Granted
+        else PermissionData.State.PermanentlyDenied
+    }
+}

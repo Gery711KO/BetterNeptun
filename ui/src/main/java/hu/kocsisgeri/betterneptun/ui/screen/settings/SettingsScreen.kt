@@ -124,9 +124,34 @@ fun SettingsScreen(
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    InfoRow(label = "Legkorábbi óra", value = "8:00")
-                    InfoRow(label = "Legkésőbbi óra", value = "22:00")
+                val notificationDelay by viewModel.notificationDelay.collectAsStateWithLifecycle()
+
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    DelayOption(
+                        label = "Nincs értesítés",
+                        selected = notificationDelay == -1,
+                        onClick = { viewModel.saveNotificationDelay(-1) }
+                    )
+                    DelayOption(
+                        label = "5 perccel előtte",
+                        selected = notificationDelay == 5,
+                        onClick = { viewModel.saveNotificationDelay(5) }
+                    )
+                    DelayOption(
+                        label = "10 perccel előtte",
+                        selected = notificationDelay == 10,
+                        onClick = { viewModel.saveNotificationDelay(10) }
+                    )
+                    DelayOption(
+                        label = "15 perccel előtte",
+                        selected = notificationDelay == 15,
+                        onClick = { viewModel.saveNotificationDelay(15) }
+                    )
+                    DelayOption(
+                        label = "30 perccel előtte",
+                        selected = notificationDelay == 30,
+                        onClick = { viewModel.saveNotificationDelay(30) }
+                    )
                 }
             }
 
@@ -171,6 +196,42 @@ fun SettingsSectionLabel(label: String) {
             .padding(top = 24.dp, bottom = 8.dp),
         color = MaterialTheme.colorScheme.onBackground
     )
+}
+
+@Composable
+fun DelayOption(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+            ),
+            color = if (selected) {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        )
+        RadioButton(
+            selected = selected,
+            onClick = null,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.primary,
+                unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        )
+    }
 }
 
 @Composable

@@ -8,6 +8,8 @@ import hu.kocsisgeri.betterneptun.common.serialization.Serialization
 const val PREF_CURRENT_USER = "CURRENT_SAVED_USER"
 const val PREF_STAY_LOGGED_ID = "STAY_LOGGED_IN"
 const val PREF_SAVED_THEME = "SAVED_THEME"
+const val PREF_NOTIFICATION_DELAY = "NOTIFICATION_DELAY"
+
 
 inline fun <reified T> SharedPreferences.get(
     key: String,

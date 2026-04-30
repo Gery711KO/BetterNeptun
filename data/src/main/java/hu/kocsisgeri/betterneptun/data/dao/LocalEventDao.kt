@@ -15,6 +15,9 @@ interface LocalEventDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOne(event: LocalEventEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(events: List<LocalEventEntity>)
+
     @Query("DELETE FROM local_event WHERE id = :id")
     suspend fun deleteById(id: Long)
 

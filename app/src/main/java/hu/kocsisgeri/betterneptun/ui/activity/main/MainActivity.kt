@@ -13,9 +13,17 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
+import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
+import hu.kocsisgeri.betterneptun.permission.PermissionHandlerImpl
+import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
+import hu.kocsisgeri.betterneptun.ui.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.util.ClockTickReceiver
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
@@ -31,9 +39,17 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
 
     override val scope: Scope by activityRetainedScope()
 
-    val loginRepository: LoginRepository by inject()
-    val navigator: Navigator by inject()
-    val entryProvider by entryProvider<NavKey>()
+    private val loginRepository: LoginRepository by inject()
+    private val neptunRepository: NeptunRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
+
+    private val clockTickReceiver: ClockTickReceiver by inject()
+
+    private val navigator: Navigator by inject()
+    private val entryProvider by entryProvider<NavKey>()
+
+    private val notificationScheduler: NotificationScheduler by inject()
+    private val permissionHandler: PermissionHandler by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -57,6 +73,33 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
 
         loginRepository.forceLogOut.onEach {
             navigator.navigateToInclusive(LoginDestination)
+        }.launchIn(lifecycleScope)
+
+        combine(
+            clockTickReceiver.minuteTickFlow,
+            neptunRepository.events,
+            settingsRepository.notificationDelay,
+            permissionHandler.getPermissions(this),
+        ) { _, events, delay, permissions ->
+            if (
+                permissions.isNotEmpty() &&
+                permissions.count {
+                    it.permissionState == PermissionData.State.Granted
+                } == permissions.size
+            ) {
+                Timber.tag("Alarm").d("Has required permissions")
+                if (delay != -1) {
+                    events.forEach { event ->
+                        notificationScheduler.scheduleNotification(event, delay)
+                    }
+                } else {
+                    events.forEach { event ->
+                        notificationScheduler.cancelNotification(event.id)
+                    }
+                }
+            } else {
+                Timber.tag("Alarm").d("Needs permissions")
+            }
         }.launchIn(lifecycleScope)
     }
 }

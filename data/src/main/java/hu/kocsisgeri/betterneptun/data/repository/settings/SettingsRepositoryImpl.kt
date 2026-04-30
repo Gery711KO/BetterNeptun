@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import hu.kocsisgeri.betterneptun.common.PREF_SAVED_THEME
+import hu.kocsisgeri.betterneptun.common.PREF_NOTIFICATION_DELAY
 import hu.kocsisgeri.betterneptun.common.ThemeMode
 import hu.kocsisgeri.betterneptun.common.get
 import hu.kocsisgeri.betterneptun.common.put
@@ -20,6 +21,13 @@ class SettingsRepositoryImpl(
         )
     )
 
+    override val notificationDelay = MutableStateFlow(
+        localDataSource.cache.get<Int>(
+            key = PREF_NOTIFICATION_DELAY,
+            defaultValue = 10
+        )
+    )
+
     init {
         AppCompatDelegate.setDefaultNightMode(
             localDataSource.cache.get<ThemeMode>(
@@ -33,6 +41,11 @@ class SettingsRepositoryImpl(
         localDataSource.cache.put(PREF_SAVED_THEME, themeMode)
         storedTheme.value = themeMode
         AppCompatDelegate.setDefaultNightMode(themeMode.mode)
+    }
+
+    override fun saveNotificationDelay(delayMinutes: Int) {
+        localDataSource.cache.put(PREF_NOTIFICATION_DELAY, delayMinutes)
+        notificationDelay.value = delayMinutes
     }
 
     override suspend fun purgeLocalData() {

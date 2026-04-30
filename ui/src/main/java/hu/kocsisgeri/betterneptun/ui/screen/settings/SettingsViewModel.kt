@@ -17,8 +17,15 @@ class SettingsViewModel(
     val themeMode: StateFlow<ThemeMode> = settingsRepository.storedTheme
         .stateWhileSubscribed()
 
+    val notificationDelay: StateFlow<Int> = settingsRepository.notificationDelay
+        .stateWhileSubscribed()
+
     fun saveTheme(theme: ThemeMode) {
         settingsRepository.saveTheme(theme)
+    }
+
+    fun saveNotificationDelay(delay: Int) {
+        settingsRepository.saveNotificationDelay(delay)
     }
 
     fun logout() {

@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 
 @Entity(tableName = "local_event")
 data class LocalEventEntity(
-    @PrimaryKey(autoGenerate = false) val id: Long = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "title") var title: String,
     @ColumnInfo(name = "start_time") var startTime: LocalDateTime,
     @ColumnInfo(name = "end_time") var endTime: LocalDateTime,
