@@ -1,5 +1,8 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,11 +14,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -30,15 +39,23 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.github.skydoves.colorpicker.compose.AlphaSlider
+import com.github.skydoves.colorpicker.compose.BrightnessSlider
+import com.github.skydoves.colorpicker.compose.HsvColorPicker
+import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
 import hu.kocsisgeri.betterneptun.ui.R
 import java.time.Instant
@@ -60,13 +77,68 @@ fun AddEventDialog(
     var date by remember { mutableStateOf(event?.startTime?.toLocalDate()?: LocalDate.now()) }
     var startTime by remember { mutableStateOf(event?.startTime?.toLocalTime()?: LocalTime.now()) }
     var endTime by remember { mutableStateOf(event?.endTime?.toLocalTime()?: LocalTime.now().plusMinutes(30)) }
+    var selectedColor by remember { mutableIntStateOf(event?.color ?: PREDEFINED_COLORS[5]) }
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
+    var showColorPopup by remember { mutableStateOf(false) }
+    var showCustomColorPicker by remember { mutableStateOf(false) }
 
     val dateFormatter = remember { DateTimeFormatter.ofPattern("yyyy. MM. dd.") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
+
+    if (showCustomColorPicker) {
+        val controller = rememberColorPickerController()
+        AlertDialog(
+            onDismissRequest = { showCustomColorPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    selectedColor = controller.selectedColor.value.toArgb()
+                    showCustomColorPicker = false
+                }) {
+                    Text("OK")
+                    Spacer(Modifier.width(12.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(controller.selectedColor.value)
+                            .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCustomColorPicker = false }) { Text("Mégsem") }
+            },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    HsvColorPicker(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp),
+                        controller = controller,
+                        initialColor = Color(selectedColor),
+                    )
+                    AlphaSlider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(35.dp),
+                        controller = controller
+                    )
+                    BrightnessSlider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(35.dp),
+                        controller = controller
+                    )
+                }
+            }
+        )
+    }
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
@@ -159,7 +231,7 @@ fun AddEventDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Új esemény hozzáadása",
+                    text = if (event == null) "Új esemény hozzáadása" else "Esemény szerkesztése",
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -172,6 +244,86 @@ fun AddEventDialog(
                     leadingIcon = {
                         Icon(painter = painterResource(R.drawable.ic_event), contentDescription = null, modifier = Modifier.size(20.dp))
                     },
+                    trailingIcon = {
+                        Box(modifier = Modifier.padding(end = 4.dp)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(selectedColor))
+                                    .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                                    .clickable { showColorPopup = true }
+                            )
+                            DropdownMenu(
+                                expanded = showColorPopup,
+                                onDismissRequest = { showColorPopup = false },
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                shape = MaterialTheme.shapes.medium
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(
+                                        top = 12.dp,
+                                        start = 12.dp,
+                                        end = 12.dp
+                                    ),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    PREDEFINED_COLORS.chunked(4).forEach { chunk ->
+                                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                            chunk.forEach { color ->
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(36.dp)
+                                                        .clip(CircleShape)
+                                                        .background(Color(color))
+                                                        .clickable {
+                                                            selectedColor = color
+                                                            showColorPopup = false
+                                                        }
+                                                        .then(
+                                                            if (selectedColor == color) {
+                                                                Modifier.border(
+                                                                    width =  2.dp,
+                                                                    color = MaterialTheme.colorScheme.primary,
+                                                                    shape = CircleShape
+                                                                )
+                                                            } else Modifier
+                                                        )
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    DropdownMenuItem(
+                                        text = { Text("Egyéni szín...") },
+                                        onClick = {
+                                            showColorPopup = false
+                                            showCustomColorPicker = true
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        },
+                                        trailingIcon = if (selectedColor !in PREDEFINED_COLORS) {
+                                            {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(24.dp)
+                                                        .clip(CircleShape)
+                                                        .background(Color(selectedColor))
+                                                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                                                )
+                                            }
+                                        } else null,
+                                        modifier = Modifier.clip(MaterialTheme.shapes.small)
+                                    )
+                                }
+                            }
+                        }
+                    },
                     singleLine = true
                 )
 
@@ -181,7 +333,11 @@ fun AddEventDialog(
                     label = { Text("Helyszín") },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = {
-                        Icon(painter = painterResource(R.drawable.ic_location), contentDescription = null, modifier = Modifier.size(20.dp))
+                        Icon(
+                            painter = painterResource(R.drawable.ic_location),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
                     },
                     singleLine = true
                 )
@@ -204,11 +360,20 @@ fun AddEventDialog(
                             modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(painter = painterResource(R.drawable.ic_calendar), contentDescription = null)
+                            Icon(
+                                painter = painterResource(R.drawable.ic_calendar),
+                                contentDescription = null
+                            )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text("Dátum", style = MaterialTheme.typography.labelSmall)
-                                Text(date.format(dateFormatter), style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    text = "Dátum",
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                                Text(
+                                    text = date.format(dateFormatter),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
                             }
                         }
                     }
@@ -226,11 +391,21 @@ fun AddEventDialog(
                                 modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(painter = painterResource(R.drawable.ic_schedule), contentDescription = null, modifier = Modifier.size(20.dp))
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_schedule),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
-                                    Text("Kezdés", style = MaterialTheme.typography.labelSmall)
-                                    Text(startTime.format(timeFormatter), style = MaterialTheme.typography.bodyLarge)
+                                    Text(
+                                        text = "Kezdés",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                    Text(
+                                        text = startTime.format(timeFormatter),
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
                                 }
                             }
                         }
@@ -244,11 +419,21 @@ fun AddEventDialog(
                                 modifier = Modifier.padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(painter = painterResource(R.drawable.ic_schedule), contentDescription = null, modifier = Modifier.size(20.dp))
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_schedule),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
-                                    Text("Vége", style = MaterialTheme.typography.labelSmall)
-                                    Text(endTime.format(timeFormatter), style = MaterialTheme.typography.bodyLarge)
+                                    Text(
+                                        text = "Vége",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                    Text(
+                                        text = endTime.format(timeFormatter),
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
                                 }
                             }
                         }
@@ -272,7 +457,7 @@ fun AddEventDialog(
                                 startTime = LocalDateTime.of(date, startTime),
                                 endTime = LocalDateTime.of(date, endTime),
                                 location = location,
-                                color = android.graphics.Color.GRAY,
+                                color = selectedColor,
                             )
                             onAddEvent(event)
                             onDismissRequest()
@@ -286,3 +471,14 @@ fun AddEventDialog(
         }
     }
 }
+
+private val PREDEFINED_COLORS = listOf(
+    0xFFF44336, // Red
+    0xFFE91E63, // Pink
+    0xFF9C27B0, // Purple
+    0xFF673AB7, // Deep Purple
+    0xFF3F51B5, // Indigo
+    0xFF2196F3, // Blue
+    0xFF4CAF50, // Green
+    0xFFFF9800  // Orange
+).map { it.toInt() }

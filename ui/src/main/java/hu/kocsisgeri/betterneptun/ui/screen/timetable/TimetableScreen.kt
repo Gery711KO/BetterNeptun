@@ -72,7 +72,6 @@ fun TimetableScreen(
         onPrevious = viewModel::previous,
         onEventClick = viewModel::selectEvent,
         onDismissDetail = viewModel::clearSelectedEvent,
-        onChangeColor = viewModel::changeColor,
         onDeleteEvent = viewModel::deleteEvent,
         onAddEvent = viewModel::addEvent
     )
@@ -92,7 +91,6 @@ fun TimetableContent(
     onPrevious: () -> Unit,
     onEventClick: (Long) -> Unit,
     onDismissDetail: () -> Unit,
-    onChangeColor: (CalendarItem, Int) -> Unit,
     onDeleteEvent: (Long) -> Unit,
     onAddEvent: (CalendarItem.LocalEvent) -> Unit,
 ) {
@@ -121,7 +119,6 @@ fun TimetableContent(
         currentColor = currentSelectedEvent?.color ?: 0,
         onDismissRequest = onDismissDetail,
         onEditEvent = { showAddEventDialog = true },
-        onChangeColor = onChangeColor,
         onDeleteLocalEvent = onDeleteEvent
     )
 
@@ -288,7 +285,6 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
         onPrevious = {},
         onEventClick = {},
         onDismissDetail = {},
-        onChangeColor = { _, _ -> },
         onDeleteEvent = {},
         onAddEvent = {}
     )

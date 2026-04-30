@@ -58,17 +58,6 @@ class TimetableViewModel(
         }
     }.stateWhileSubscribed(null)
 
-    fun changeColor(event: CalendarItem, color: Int) {
-        viewModelScope.launchReportingErrors {
-            when (event) {
-                is CalendarItem.Event -> {
-                    // TODO
-                }
-                is CalendarItem.LocalEvent -> neptunRepository.setLocalEventColor(event, color)
-            }
-        }
-    }
-
     fun selectEvent(eventId: Long?) {
         currentSelected.value = eventId
     }

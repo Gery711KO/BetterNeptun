@@ -12,4 +12,9 @@ interface PermissionHandler {
     fun getPermissions(activity: Activity): Flow<List<PermissionData>>
 
     fun refreshPermissions()
+
+    interface Launcher {
+
+        fun launch(permissionData: PermissionData)
+    }
 }

@@ -31,7 +31,10 @@ class PermissionHandlerImpl(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getPermissions(activity: Activity) = refresher
-        .onStart { emit(Unit) }
+        .onStart {
+            isConfigured = true
+            emit(Unit)
+        }
         .flatMapLatest {
             flowOf(
                 handledPermissions.map {
@@ -39,7 +42,6 @@ class PermissionHandlerImpl(
                 }
             )
         }.onEach {
-            isConfigured = true
             _permissions.value = it
         }
 
@@ -52,7 +54,7 @@ class PermissionHandlerImpl(
             ====================================================================
             PERMISSION HANDLER ERROR
             ====================================================================
-            You are accessing 'permissions' StateFlow before it's configured!
+            You are accessing 'permissions' StateFlow before it is configured!
                 
             ACTION REQUIRED:
             You must collect 'getPermissions(activity)' FIRST from your activity

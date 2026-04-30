@@ -19,7 +19,7 @@ class BackgroundAlarm(
 ): PermissionData() {
 
     override val permission: String = Manifest.permission.SCHEDULE_EXACT_ALARM
-    override var permissionState : State? by mutableStateOf(null)
+    override var permissionState : State by mutableStateOf(State.NotRequested)
 
     override val disclaimer: PermissionDisclaimer = PermissionDisclaimer(
         humanReadablePermissionName = "Háttérműveletek",

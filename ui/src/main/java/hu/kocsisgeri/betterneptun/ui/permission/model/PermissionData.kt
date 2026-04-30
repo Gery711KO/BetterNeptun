@@ -9,7 +9,7 @@ abstract class PermissionData {
     protected val cacheKey = "first_time_asking_$permission"
 
     abstract val permission: String
-    abstract val permissionState: State?
+    abstract val permissionState: State
     abstract val disclaimer: PermissionDisclaimer
 
     abstract fun requestPermission(

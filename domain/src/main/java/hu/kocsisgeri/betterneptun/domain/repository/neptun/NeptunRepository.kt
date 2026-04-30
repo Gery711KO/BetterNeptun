@@ -35,9 +35,6 @@ interface NeptunRepository {
     suspend fun fetchTerms()
     suspend fun fetchTermAverages()
 
-    suspend fun randomiseCalendarColors()
-    suspend fun setLocalEventColor(event: CalendarItem.LocalEvent, color: Int)
-
     suspend fun addLocalEvent(event: CalendarItem.LocalEvent)
     suspend fun deleteLocalEvent(eventId: Long)
 

@@ -21,7 +21,6 @@ import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -113,33 +112,6 @@ internal class NeptunRepositoryImpl(
         terms.value = ApiResult.Loading
         averages.value = ApiResult.Loading
         currentMessagePage = 1
-    }
-
-    override suspend fun randomiseCalendarColors() {
-//        withContext(ioDispatcher) {
-//            getRandomizedColoredEvents()?.let {
-//                events.tryEmit(it)
-//                CourseRepository.courses.tryEmit(it)
-//            }
-//        }
-    }
-
-    override suspend fun setLocalEventColor(event: CalendarItem.LocalEvent, color: Int) {
-        withContext(ioDispatcher) {
-            val mappedEvents = localDataSource.appDatabase.localEvents.getData().map { events ->
-                events.map {
-                    if (it.id == event.id) {
-                        it.toDomain().copy(
-                            color = color
-                        ).toEntity()
-                    } else {
-                        it
-                    }
-                }
-            }.first()
-
-            localDataSource.appDatabase.localEvents.insertAll(mappedEvents)
-        }
     }
 
     override suspend fun addLocalEvent(event: CalendarItem.LocalEvent) {

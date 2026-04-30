@@ -1,7 +1,5 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -57,7 +55,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -77,6 +74,7 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
 import hu.kocsisgeri.betterneptun.ui.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionDisclaimer
+import hu.kocsisgeri.betterneptun.ui.permission.rememberPermissionLauncher
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
@@ -91,6 +89,7 @@ fun HomeScreen(
     navigator: Navigator = koinInject(),
 ) {
     val permissionHandler: PermissionHandler = koinInject()
+    val launcher = rememberPermissionLauncher(permissionHandler)
 
     val studentData by viewModel.studentData.collectAsStateWithLifecycle()
     val unreadMessages by viewModel.unreadMessages.collectAsStateWithLifecycle()
@@ -109,7 +108,9 @@ fun HomeScreen(
         permissions = permissions,
         refreshProgress = refreshProgress,
         onRefresh = { viewModel.refreshData() },
-        onRefreshPermissions = permissionHandler::refreshPermissions,
+        onLaunchPermissionRequest = {
+            launcher.launch(it)
+        },
         onNavigate = { navigator.navigateTo(it) }
     )
 }
@@ -123,7 +124,7 @@ private fun HomeContent(
     nextCourseState: NextCourseDetail?,
     permissions: List<PermissionData>,
     refreshProgress: ApiResult<Unit>?,
-    onRefreshPermissions: () -> Unit,
+    onLaunchPermissionRequest: (PermissionData) -> Unit,
     onRefresh: () -> Unit,
     onNavigate: (NavKey) -> Unit,
 ) {
@@ -157,7 +158,7 @@ private fun HomeContent(
                 )
                 PermissionDisclaimerCarousel(
                     permissions = permissions,
-                    onRefreshPermissions = onRefreshPermissions
+                    onLaunchPermissionRequest = onLaunchPermissionRequest
                 )
                 CurrentlyOngoingCourses(currentCourses)
                 NextCourseCard(nextCourseState)
@@ -179,15 +180,8 @@ private fun HomeContent(
 private fun PermissionDisclaimerCarousel(
     permissions: List<PermissionData>,
     modifier: Modifier = Modifier,
-    onRefreshPermissions: () -> Unit
+    onLaunchPermissionRequest: (PermissionData) -> Unit,
 ) {
-    val context = LocalContext.current
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { _ ->
-        onRefreshPermissions()
-    }
-
     val visibleDisclaimers by remember(permissions) {
         derivedStateOf {
             permissions.filter {
@@ -204,9 +198,7 @@ private fun PermissionDisclaimerCarousel(
             items(visibleDisclaimers) { permission ->
                 PermissionDisclaimerCard(
                     disclaimer = permission.disclaimer,
-                    onRequest = {
-                        permission.requestPermission(context, launcher)
-                    },
+                    onRequest = { onLaunchPermissionRequest(permission) },
                     modifier = Modifier.fillParentMaxWidth()
                 )
             }
@@ -702,7 +694,7 @@ fun HomeScreenPreview() {
             refreshProgress = null,
             permissions = emptyList(),
             onRefresh = {},
-            onRefreshPermissions = {},
+            onLaunchPermissionRequest = {},
             onNavigate = {}
         )
     }

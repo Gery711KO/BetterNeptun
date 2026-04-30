@@ -27,7 +27,7 @@ class NotificationPermission(
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override val permission: String = Manifest.permission.POST_NOTIFICATIONS
-    override var permissionState: State? by mutableStateOf(null)
+    override var permissionState: State by mutableStateOf(State.NotRequested)
 
     override val disclaimer: PermissionDisclaimer = PermissionDisclaimer(
         humanReadablePermissionName = "Értesítések",
@@ -47,9 +47,6 @@ class NotificationPermission(
                 State.Denied -> launcher.launch(permission)
                 State.NotRequested -> launcher.launch(permission)
                 State.PermanentlyDenied -> context.openSettings()
-                null -> {
-                    // do nothing
-                }
             }
 
             sharedPreferences.put(cacheKey, false)
