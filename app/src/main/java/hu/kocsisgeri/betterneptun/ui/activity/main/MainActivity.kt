@@ -10,19 +10,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
-import hu.kocsisgeri.betterneptun.permission.PermissionHandlerImpl
-import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import hu.kocsisgeri.betterneptun.ui.permission.PermissionHandler
+import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.util.ClockTickReceiver
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -43,13 +43,15 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
     private val neptunRepository: NeptunRepository by inject()
     private val settingsRepository: SettingsRepository by inject()
 
-    private val clockTickReceiver: ClockTickReceiver by inject()
-
     private val navigator: Navigator by inject()
     private val entryProvider by entryProvider<NavKey>()
 
     private val notificationScheduler: NotificationScheduler by inject()
     private val permissionHandler: PermissionHandler by inject()
+
+    private val permissions by lazy {
+        permissionHandler.getPermissions(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -58,6 +60,12 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
         setContent {
             LaunchedEffect(navigator.currentScreen) {
                 Timber.tag("Navigation").d("BackStack: ${navigator.backStack.toList()}")
+            }
+
+            LifecycleResumeEffect(permissionHandler.permissions.collectAsStateWithLifecycle()) {
+                permissionHandler.refreshPermissions()
+
+                onPauseOrDispose {}
             }
 
             BetterNeptunTheme {
@@ -76,18 +84,16 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
         }.launchIn(lifecycleScope)
 
         combine(
-            clockTickReceiver.minuteTickFlow,
             neptunRepository.events,
             settingsRepository.notificationDelay,
-            permissionHandler.getPermissions(this),
-        ) { _, events, delay, permissions ->
+            permissions,
+        ) { events, delay, permissions ->
             if (
                 permissions.isNotEmpty() &&
                 permissions.count {
                     it.permissionState == PermissionData.State.Granted
                 } == permissions.size
             ) {
-                Timber.tag("Alarm").d("Has required permissions")
                 if (delay != -1) {
                     events.forEach { event ->
                         notificationScheduler.scheduleNotification(event, delay)

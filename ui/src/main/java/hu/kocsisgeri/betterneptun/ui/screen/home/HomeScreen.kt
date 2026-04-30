@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
-import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +38,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -47,11 +50,14 @@ import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -68,18 +74,6 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import hu.kocsisgeri.betterneptun.ui.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionDisclaimer
@@ -88,7 +82,6 @@ import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-import org.koin.core.parameter.parametersOf
 import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -97,7 +90,6 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
     navigator: Navigator = koinInject(),
 ) {
-    val activity = LocalActivity.current
     val permissionHandler: PermissionHandler = koinInject()
 
     val studentData by viewModel.studentData.collectAsStateWithLifecycle()
@@ -107,18 +99,17 @@ fun HomeScreen(
     val nextCourseState by viewModel.nextCourse.collectAsStateWithLifecycle()
     val refreshProgress by viewModel.refreshProgress.collectAsState(initial = null)
 
-    val permissionDisclaimers by permissionHandler
-        .getPermissions(activity!!)
-        .collectAsStateWithLifecycle(emptyList())
+    val permissions by permissionHandler.permissions.collectAsStateWithLifecycle()
 
     HomeContent(
         studentData = studentData,
-        unreadMessages = unreadMessages?: 0,
+        unreadMessages = unreadMessages ?: 0,
         currentCourses = currentCourses,
         nextCourseState = nextCourseState,
-        permissions = permissionDisclaimers,
+        permissions = permissions,
         refreshProgress = refreshProgress,
         onRefresh = { viewModel.refreshData() },
+        onRefreshPermissions = permissionHandler::refreshPermissions,
         onNavigate = { navigator.navigateTo(it) }
     )
 }
@@ -132,24 +123,15 @@ private fun HomeContent(
     nextCourseState: NextCourseDetail?,
     permissions: List<PermissionData>,
     refreshProgress: ApiResult<Unit>?,
+    onRefreshPermissions: () -> Unit,
     onRefresh: () -> Unit,
     onNavigate: (NavKey) -> Unit,
 ) {
-    val activity = LocalActivity.current
     val isRefreshing = refreshProgress is ApiResult.Loading
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
         onRefresh = onRefresh
     )
-
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    LifecycleResumeEffect(permissions) {
-        activity?.let { activity
-            permissions.forEach { it.refreshPermissionState(activity) }
-        }
-        onPauseOrDispose {}
-    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -173,7 +155,10 @@ private fun HomeContent(
                     unreadMessages = unreadMessages,
                     onNavigateToScreen = onNavigate
                 )
-                PermissionDisclaimerCarousel(permissions)
+                PermissionDisclaimerCarousel(
+                    permissions = permissions,
+                    onRefreshPermissions = onRefreshPermissions
+                )
                 CurrentlyOngoingCourses(currentCourses)
                 NextCourseCard(nextCourseState)
                 NavigationGrid(onNavigate)
@@ -193,15 +178,14 @@ private fun HomeContent(
 @Composable
 private fun PermissionDisclaimerCarousel(
     permissions: List<PermissionData>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onRefreshPermissions: () -> Unit
 ) {
-    val activity = LocalActivity.current
+    val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { _ ->
-        activity?.let {
-            permissions.forEach { it.refreshPermissionState(activity) }
-        }
+        onRefreshPermissions()
     }
 
     val visibleDisclaimers by remember(permissions) {
@@ -221,9 +205,7 @@ private fun PermissionDisclaimerCarousel(
                 PermissionDisclaimerCard(
                     disclaimer = permission.disclaimer,
                     onRequest = {
-                        activity?.let {
-                            permission.requestPermission(activity, launcher)
-                        }
+                        permission.requestPermission(context, launcher)
                     },
                     modifier = Modifier.fillParentMaxWidth()
                 )
@@ -466,7 +448,9 @@ fun CurrentCourseItem(
                 )
                 LinearProgressIndicator(
                     progress = { course.progress / 100f },
-                    modifier = Modifier.fillMaxWidth().height(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp),
                     color = Color(course.color),
                     trackColor = Color(course.color).copy(alpha = 0.2f),
                     strokeCap = StrokeCap.Round
@@ -513,7 +497,7 @@ fun CurrentCourseItem(
                         }
                     }
                 }
-                
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         painter = painterResource(R.drawable.ic_schedule),
@@ -619,13 +603,17 @@ fun NextCourseCard(course: NextCourseDetail?) {
                             .padding(vertical = 12.dp)
                     ) {
                         Text(
-                            text = "${course.startTime.hour}:${course.startTime.minute.toString().padStart(2, '0')}",
+                            text = "${course.startTime.hour}:${
+                                course.startTime.minute.toString().padStart(2, '0')
+                            }",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "${course.endTime.hour}:${course.endTime.minute.toString().padStart(2, '0')}",
+                            text = "${course.endTime.hour}:${
+                                course.endTime.minute.toString().padStart(2, '0')
+                            }",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -714,6 +702,7 @@ fun HomeScreenPreview() {
             refreshProgress = null,
             permissions = emptyList(),
             onRefresh = {},
+            onRefreshPermissions = {},
             onNavigate = {}
         )
     }

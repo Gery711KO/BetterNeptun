@@ -3,6 +3,7 @@ package hu.kocsisgeri.betterneptun.permission.handled
 import android.Manifest
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
@@ -22,11 +23,11 @@ import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionDisclaimer
 
 class NotificationPermission(
     private val sharedPreferences: SharedPreferences,
-) : PermissionData {
+) : PermissionData() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override val permission: String = Manifest.permission.POST_NOTIFICATIONS
-    override var permissionState: PermissionData.State? by mutableStateOf(null)
+    override var permissionState: State? by mutableStateOf(null)
 
     override val disclaimer: PermissionDisclaimer = PermissionDisclaimer(
         humanReadablePermissionName = "Értesítések",
@@ -35,23 +36,23 @@ class NotificationPermission(
     )
 
     override fun requestPermission(
-        activity: Activity,
+        context: Context,
         launcher: ManagedActivityResultLauncher<String, Boolean>
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            sharedPreferences.put(cacheKey(), false)
-
             when(permissionState) {
-                PermissionData.State.Granted -> {
+                State.Granted -> {
                     // do not request
                 }
-                PermissionData.State.Denied -> launcher.launch(permission)
-                PermissionData.State.NotRequested -> launcher.launch(permission)
-                PermissionData.State.PermanentlyDenied -> activity.openSettings()
+                State.Denied -> launcher.launch(permission)
+                State.NotRequested -> launcher.launch(permission)
+                State.PermanentlyDenied -> context.openSettings()
                 null -> {
                     // do nothing
                 }
             }
+
+            sharedPreferences.put(cacheKey, false)
         }
     }
 
@@ -71,20 +72,20 @@ class NotificationPermission(
         }
 
         val isFirstTimeAskingPermission =
-            sharedPreferences.get(cacheKey(), true)
+            sharedPreferences.get(cacheKey, true)
 
-        if (hasPermission) PermissionData.State.Granted
+        if (hasPermission) State.Granted
         else {
             if (isFirstTimeAskingPermission) {
-                PermissionData.State.NotRequested
+                State.NotRequested
             } else {
-                if (showRationale) PermissionData.State.Denied
-                else PermissionData.State.PermanentlyDenied
+                if (showRationale) State.Denied
+                else State.PermanentlyDenied
             }
         }
     }
 
-    private fun Activity.openSettings() {
+    private fun Context.openSettings() {
         try {
             val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                 putExtra(Settings.EXTRA_APP_PACKAGE, packageName)

@@ -136,7 +136,7 @@ private fun SharedTransitionScope.provideSharedTransitionScope(content: @Composa
     )
 }
 
-private fun <T: @Serializable NavKey> Scene<NavKey>.checkType(destination: T): Boolean {
+private fun <T : @Serializable NavKey> Scene<NavKey>.checkType(destination: T): Boolean {
     val destinationKey = destination.toString()
 
     return destinationKey == key.toString()

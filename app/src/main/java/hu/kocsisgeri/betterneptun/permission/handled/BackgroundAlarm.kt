@@ -5,25 +5,21 @@ import android.app.Activity
 import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.content.res.Resources
 import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.content.ContextCompat
-import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionDisclaimer
 
 class BackgroundAlarm(
     appName: String,
-): PermissionData {
+): PermissionData() {
 
     override val permission: String = Manifest.permission.SCHEDULE_EXACT_ALARM
-    override var permissionState : PermissionData.State? by mutableStateOf(null)
+    override var permissionState : State? by mutableStateOf(null)
 
     override val disclaimer: PermissionDisclaimer = PermissionDisclaimer(
         humanReadablePermissionName = "Háttérműveletek",
@@ -33,13 +29,13 @@ class BackgroundAlarm(
     )
 
     override fun requestPermission(
-        activity: Activity,
+        context: Context,
         launcher: ManagedActivityResultLauncher<String, Boolean>
     ) {
-        if (permissionState == PermissionData.State.PermanentlyDenied) {
-            activity.startActivity(
+        if (permissionState == State.PermanentlyDenied) {
+            context.startActivity(
                 Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                    Uri.fromParts("package", activity.packageName, null)
+                    Uri.fromParts("package", context.packageName, null)
                 }
             )
         } else {
@@ -54,7 +50,7 @@ class BackgroundAlarm(
     private fun getCurrentPermissionState(activity: Activity) = run {
         val alarmManager = (activity.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
 
-        if (alarmManager.canScheduleExactAlarms()) PermissionData.State.Granted
-        else PermissionData.State.PermanentlyDenied
+        if (alarmManager.canScheduleExactAlarms()) State.Granted
+        else State.PermanentlyDenied
     }
 }

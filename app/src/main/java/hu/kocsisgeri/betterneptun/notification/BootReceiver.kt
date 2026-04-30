@@ -19,16 +19,16 @@ class BootReceiver : BroadcastReceiver(), KoinComponent {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-//            val scheduler = NotificationScheduler(context)
-//
-//            CoroutineScope(Dispatchers.IO).launch {
-//                val events = neptunRepository.events.first()
-//                val delay = settingsRepository.notificationDelay.value
-//
-//                events.forEach { event ->
-//                    scheduler.scheduleNotification(event, delay)
-//                }
-//            }
+            val scheduler = NotificationScheduler(context)
+
+            CoroutineScope(Dispatchers.IO).launch {
+                val events = neptunRepository.events.first()
+                val delay = settingsRepository.notificationDelay.value
+
+                events.forEach { event ->
+                    scheduler.scheduleNotification(event, delay)
+                }
+            }
         }
     }
 }

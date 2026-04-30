@@ -28,20 +28,24 @@ class NotificationScheduler(private val context: Context) {
             putExtra(NotificationReceiver.EXTRA_ID, item.id)
         }
 
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            item.id.toInt(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
         if (alarmManager.canScheduleExactAlarms()) {
-            Timber.tag("Alarm").d("Alarm set for ${item.title} at ${Date(triggerTime)}")
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
-            )
+            if (isAlarmAlreadySet(context, intent, item.id).not()) {
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    item.id.toInt(),
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+                Timber.tag("Alarm").d("Alarm set for ${item.title} at ${Date(triggerTime)}")
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerTime,
+                    pendingIntent
+                )
+            } else {
+                Timber.tag("Alarm").d("Alarm with id: [${item.id}] is already set.")
+            }
         } else {
             Timber.tag("Alarm").d("Alarm could not be set.")
         }
@@ -58,5 +62,16 @@ class NotificationScheduler(private val context: Context) {
         if (pendingIntent != null) {
             alarmManager.cancel(pendingIntent)
         }
+    }
+
+    private fun isAlarmAlreadySet(context: Context, intent: Intent, itemId: Long): Boolean {
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            itemId.toInt(),
+            intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        return pendingIntent != null
     }
 }
