@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "hu.kocsisgeri.betterneptun.ui"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk = Config.compileSdk
 
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        buildConfigField("String", "VERSION_NAME", "\"0.3.4\"")
-        buildConfigField("int", "VERSION_CODE", "1")
+        minSdk = Config.minSdk
+        testInstrumentationRunner = Config.Test.testInstrumentationRunner
+
+        buildConfigField("String", "VERSION_NAME", Config.VERSION_NAME)
+        buildConfigField("String", "VERSION_CODE", "${Config.VERSION_CODE}")
     }
 
     compileOptions {

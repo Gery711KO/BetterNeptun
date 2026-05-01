@@ -9,16 +9,16 @@ plugins {
 android {
     namespace = "hu.kocsisgeri.betterneptun"
 
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk = Config.compileSdk
 
     defaultConfig {
         applicationId = "hu.kocsisgeri.betterneptun"
-        minSdk = libs.versions.minSdk.get().toInt()
-        targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "0.3.4"
+        minSdk = Config.minSdk
+        targetSdk = Config.targetSdk
+        versionCode = Config.VERSION_CODE
+        versionName = Config.VERSION_NAME
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = Config.Test.testInstrumentationRunner
     }
 
     signingConfigs {

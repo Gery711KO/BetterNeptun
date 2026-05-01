@@ -4,11 +4,11 @@ plugins {
 
 android {
     namespace = "hu.kocsisgeri.betterneptun.domain"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk = Config.compileSdk
 
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        minSdk = Config.minSdk
+        testInstrumentationRunner = Config.Test.testInstrumentationRunner
     }
 
     compileOptions {
