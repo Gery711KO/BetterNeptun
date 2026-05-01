@@ -25,4 +25,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit.kotlin.serialization)
     implementation(libs.okhttp)
+
+    implementation(libs.bundles.datastore)
 }

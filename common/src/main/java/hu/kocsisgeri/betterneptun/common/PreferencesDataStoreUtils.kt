@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.data.datasource.utils
+package hu.kocsisgeri.betterneptun.common
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
