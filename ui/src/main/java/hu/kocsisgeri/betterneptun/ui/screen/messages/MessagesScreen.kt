@@ -1,6 +1,11 @@
 package hu.kocsisgeri.betterneptun.ui.screen.messages
 
 import android.content.res.Configuration
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,12 +21,14 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -36,6 +43,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,10 +59,12 @@ import hu.kocsisgeri.betterneptun.common.DateUtils
 import hu.kocsisgeri.betterneptun.domain.model.Message
 import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
 import hu.kocsisgeri.betterneptun.ui.R
+import hu.kocsisgeri.betterneptun.ui.composable.ScrollBar
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
 import hu.kocsisgeri.betterneptun.ui.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDateTime
@@ -86,6 +96,7 @@ fun MessagesContent(
     onLoadMore: () -> Unit,
     onMessageClick: (Message) -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -132,6 +143,24 @@ fun MessagesContent(
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
                 )
             )
+        },
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = listState.canScrollBackward,
+                enter = slideInHorizontally { it } + fadeIn(),
+                exit = fadeOut() + slideOutHorizontally { it },
+            ) {
+                FloatingActionButton(
+                    onClick = { scope.launch { listState.animateScrollToItem(0) } },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.ArrowUpward,
+                        contentDescription = null
+                    )
+                }
+            }
         }
     ) { paddingValues ->
         LazyColumn(
@@ -148,6 +177,11 @@ fun MessagesContent(
             loadingMessage(messages)
             endMessage(messages)
         }
+
+        ScrollBar(
+            modifier = Modifier.padding(paddingValues),
+            state = listState
+        )
     }
 }
 

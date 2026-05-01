@@ -200,7 +200,7 @@ private fun PermissionDisclaimerCarousel(
                 PermissionDisclaimerCard(
                     disclaimer = permission.disclaimer,
                     onRequest = { onLaunchPermissionRequest(permission) },
-                    modifier = Modifier.fillParentMaxWidth()
+                    modifier = Modifier.fillParentMaxSize()
                 )
             }
         }

@@ -1,7 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable
 
 import android.content.res.Configuration
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -187,7 +186,11 @@ fun TimetableContent(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddEventDialog = true }) {
+            FloatingActionButton(
+                onClick = { showAddEventDialog = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_event),
                     contentDescription = "Esemény hozzáadása"
@@ -204,7 +207,6 @@ fun TimetableContent(
         ) {
             TimeTableView(
                 weekData = weekData,
-                modifier = Modifier.fillMaxSize(),
                 weekViewConfig = WeekViewConfig(
                     showCurrentTimeIndicator = true,
                     highlightCurrentDay = true
@@ -219,7 +221,8 @@ fun TimetableContent(
                     onEventClick = { event ->
                         onEventClick(event.id)
                     }
-                )
+                ),
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
