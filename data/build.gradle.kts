@@ -30,6 +30,8 @@ dependencies {
 
     implementation(libs.bundles.androidx.room)
     ksp(libs.androidx.room.compiler)
+
+    implementation(libs.bundles.datastore)
     
     implementation(libs.bundles.koin)
     implementation(libs.bundles.networking)

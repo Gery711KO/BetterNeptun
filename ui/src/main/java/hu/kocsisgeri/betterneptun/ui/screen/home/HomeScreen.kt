@@ -55,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -282,7 +283,6 @@ private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
             text = "Órarend",
             onClick = { onNavigate(TimetableDestination) }
         )
-
         NavButton(
             modifier = Modifier.gridItem(row = 2, column = 1),
             icon = painterResource(id = R.drawable.ic_courses),
@@ -291,20 +291,24 @@ private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
         )
         NavButton(
             modifier = Modifier.gridItem(row = 2, column = 2),
-            icon = painterResource(id = R.drawable.ic_exams),
-            text = "Vizsgák",
-            onClick = { /* TODO */ }
-        )
-        NavButton(
-            modifier = Modifier.gridItem(row = 3, column = 1),
             icon = painterResource(id = R.drawable.ic_semesters),
             text = "Félévek",
             onClick = { onNavigate(SemestersDestination) }
         )
         NavButton(
+            modifier = Modifier.gridItem(row = 3, column = 1),
+            icon = painterResource(id = R.drawable.ic_exams),
+            text = "Vizsgák",
+            isEnabled = false,
+            disabledTag = "Fejlesztés alatt",
+            onClick = { /* TODO */ }
+        )
+        NavButton(
             modifier = Modifier.gridItem(row = 3, column = 2),
             icon = painterResource(id = R.drawable.ic_schedule),
             text = "Időszakok",
+            isEnabled = false,
+            disabledTag = "Fejlesztés alatt",
             onClick = { /* TODO */ }
         )
     }
@@ -628,17 +632,22 @@ fun NextCourseCard(course: NextCourseDetail?) {
 @Composable
 fun NavButton(
     modifier: Modifier = Modifier,
-    icon: androidx.compose.ui.graphics.painter.Painter,
+    icon: Painter,
     text: String,
+    isEnabled: Boolean = true,
+    disabledTag: String? = null,
     onClick: () -> Unit
 ) {
     Card(
         modifier = modifier,
         onClick = onClick,
+        enabled = isEnabled,
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            disabledContentColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+            disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
         )
     ) {
         Column(
@@ -652,15 +661,22 @@ fun NavButton(
                 painter = icon,
                 contentDescription = null,
                 modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.onSecondaryContainer
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = text,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
             )
+            disabledTag?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(
+                        alpha = 0.5f
+                    )
+                )
+            }
         }
     }
 }

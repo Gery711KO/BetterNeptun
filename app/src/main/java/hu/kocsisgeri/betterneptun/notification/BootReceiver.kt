@@ -22,8 +22,10 @@ class BootReceiver : BroadcastReceiver(), KoinComponent {
             val scheduler = NotificationScheduler(context)
 
             CoroutineScope(Dispatchers.IO).launch {
+                // TODO fetch the events from network to handle those as well
+
                 val events = neptunRepository.events.first()
-                val delay = settingsRepository.notificationDelay.value
+                val delay = settingsRepository.notificationDelay.first()
 
                 events.forEach { event ->
                     scheduler.scheduleNotification(event, delay)

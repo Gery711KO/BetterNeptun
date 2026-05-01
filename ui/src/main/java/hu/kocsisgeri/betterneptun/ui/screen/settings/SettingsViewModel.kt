@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.screen.settings
 
+import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.common.ThemeMode
 import hu.kocsisgeri.betterneptun.common.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
@@ -15,17 +16,21 @@ class SettingsViewModel(
 ) : ComposeViewModel() {
 
     val themeMode: StateFlow<ThemeMode> = settingsRepository.storedTheme
-        .stateWhileSubscribed()
+        .stateWhileSubscribed(ThemeMode.AUTO)
 
     val notificationDelay: StateFlow<Int> = settingsRepository.notificationDelay
-        .stateWhileSubscribed()
+        .stateWhileSubscribed(-1)
 
     fun saveTheme(theme: ThemeMode) {
-        settingsRepository.saveTheme(theme)
+        viewModelScope.launchReportingErrors {
+            settingsRepository.saveTheme(theme)
+        }
     }
 
     fun saveNotificationDelay(delay: Int) {
-        settingsRepository.saveNotificationDelay(delay)
+        viewModelScope.launchReportingErrors {
+            settingsRepository.saveNotificationDelay(delay)
+        }
     }
 
     fun logout() {

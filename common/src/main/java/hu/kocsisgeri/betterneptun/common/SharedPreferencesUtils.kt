@@ -3,6 +3,7 @@ package hu.kocsisgeri.betterneptun.common
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import hu.kocsisgeri.betterneptun.common.serialization.Serialization
+import kotlinx.serialization.KSerializer
 
 
 const val PREF_CURRENT_USER = "CURRENT_SAVED_USER"
@@ -22,9 +23,27 @@ inline fun <reified T> SharedPreferences.get(
     }?: defaultValue
 }
 
+fun <T> SharedPreferences.get(
+    key: String,
+    defaultValue: T,
+    serializer: KSerializer<T>
+): T {
+    return getString(
+        key, null
+    )?.let {
+        Serialization.instance.decodeFromString(serializer, it)
+    }?: defaultValue
+}
+
 inline fun <reified T> SharedPreferences.put(key: String, value: T) {
     this.edit {
         putString(key, Serialization.instance.encodeToString(value))
+    }
+}
+
+fun <T> SharedPreferences.put(key: String, value: T, serializer: KSerializer<T>) {
+    this.edit {
+        putString(key, Serialization.instance.encodeToString(serializer, value))
     }
 }
 

@@ -9,7 +9,7 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.Route
 
-class TokenAuthenticator(
+internal class TokenAuthenticator(
     private val tokenStore: AuthStore,
     private val authApiService: AuthApiService,
 ): Authenticator {
@@ -41,7 +41,7 @@ class TokenAuthenticator(
             }
 
             try {
-                val newToken = refreshToken() // mutex-szel védett
+                val newToken = refreshToken()
                 response.request.newBuilder()
                     .header("Authorization", "Bearer $newToken")
                     .build()

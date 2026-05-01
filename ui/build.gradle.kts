@@ -11,8 +11,8 @@ android {
         minSdk = Config.minSdk
         testInstrumentationRunner = Config.Test.testInstrumentationRunner
 
-        buildConfigField("String", "VERSION_NAME", Config.VERSION_NAME)
-        buildConfigField("String", "VERSION_CODE", "${Config.VERSION_CODE}")
+        buildConfigField("String", "VERSION_NAME", "\"${Config.VERSION_NAME}\"")
+        buildConfigField("String", "VERSION_CODE", "\"${Config.VERSION_CODE}\"")
     }
 
     compileOptions {

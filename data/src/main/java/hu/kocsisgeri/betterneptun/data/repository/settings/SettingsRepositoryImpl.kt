@@ -1,54 +1,64 @@
 package hu.kocsisgeri.betterneptun.data.repository.settings
 
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.datastore.preferences.core.stringPreferencesKey
+import hu.kocsisgeri.betterneptun.common.PREF_NOTIFICATION_DELAY
+import hu.kocsisgeri.betterneptun.common.PREF_SAVED_THEME
+import hu.kocsisgeri.betterneptun.common.ThemeMode
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
-import hu.kocsisgeri.betterneptun.common.PREF_SAVED_THEME
-import hu.kocsisgeri.betterneptun.common.PREF_NOTIFICATION_DELAY
-import hu.kocsisgeri.betterneptun.common.ThemeMode
-import hu.kocsisgeri.betterneptun.common.get
-import hu.kocsisgeri.betterneptun.common.put
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.serialization.serializer
 
-class SettingsRepositoryImpl(
-    private val localDataSource: LocalDataSource
+internal class SettingsRepositoryImpl(
+    private val localDataSource: LocalDataSource,
 ): SettingsRepository {
 
-    override val storedTheme = MutableStateFlow(
-        localDataSource.cache.get<ThemeMode>(
-            key = PREF_SAVED_THEME,
-            defaultValue = ThemeMode.AUTO
-        )
+    override val storedTheme = localDataSource.getFromPreferencesDataStore(
+        key = THEME_KEY,
+        defaultValue = ThemeMode.AUTO,
+        serializer = serializer()
     )
 
-    override val notificationDelay = MutableStateFlow(
-        localDataSource.cache.get<Int>(
-            key = PREF_NOTIFICATION_DELAY,
-            defaultValue = 10
-        )
+    override val notificationDelay = localDataSource.getFromPreferencesDataStore(
+        key = NOTIFICATION_DELAY_KEY,
+        defaultValue = 10,
+        serializer = serializer()
     )
 
     init {
-        AppCompatDelegate.setDefaultNightMode(
-            localDataSource.cache.get<ThemeMode>(
-                key = PREF_SAVED_THEME,
-                defaultValue = ThemeMode.AUTO
-            ).mode
-        )
+        MainScope().launch {
+            AppCompatDelegate.setDefaultNightMode(storedTheme.first().mode)
+        }
     }
 
-    override fun saveTheme(themeMode: ThemeMode) {
-        localDataSource.cache.put(PREF_SAVED_THEME, themeMode)
-        storedTheme.value = themeMode
+    override suspend fun saveTheme(themeMode: ThemeMode) {
+        localDataSource.saveToPreferencesDataStore(
+            key = THEME_KEY,
+            value = themeMode,
+            serializer = serializer()
+        )
+
         AppCompatDelegate.setDefaultNightMode(themeMode.mode)
     }
 
-    override fun saveNotificationDelay(delayMinutes: Int) {
-        localDataSource.cache.put(PREF_NOTIFICATION_DELAY, delayMinutes)
-        notificationDelay.value = delayMinutes
+    override suspend fun saveNotificationDelay(delayMinutes: Int) {
+        localDataSource.saveToPreferencesDataStore(
+            key = NOTIFICATION_DELAY_KEY,
+            value = delayMinutes,
+            serializer = serializer()
+        )
     }
 
     override suspend fun purgeLocalData() {
         localDataSource.purge()
+    }
+
+    companion object {
+
+        private val THEME_KEY = stringPreferencesKey(PREF_SAVED_THEME)
+        private val NOTIFICATION_DELAY_KEY = stringPreferencesKey(PREF_NOTIFICATION_DELAY)
     }
 }

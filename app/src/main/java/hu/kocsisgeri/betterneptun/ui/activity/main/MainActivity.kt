@@ -4,9 +4,15 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -17,6 +23,8 @@ import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.checkType
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import hu.kocsisgeri.betterneptun.ui.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
@@ -56,25 +64,62 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            LaunchedEffect(navigator.currentScreen) {
-                Timber.tag("Navigation").d("BackStack: ${navigator.backStack.toList()}")
-            }
-
-            BetterNeptunTheme {
-                Navigator.createNavDisplay(
-                    navigator = navigator,
-                    entryProvider = entryProvider,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
-                )
-            }
+            NonContentExtras()
+            MainContent()
         }
 
-        loginRepository.forceLogOut.onEach {
-            navigator.navigateToInclusive(LoginDestination)
-        }.launchIn(lifecycleScope)
+        handleLogout()
+        handleNotificationScheduling()
+    }
 
+    @Composable
+    private fun NonContentExtras() {
+        LaunchedEffect(navigator.currentScreen) {
+            Timber.tag("Navigation").d("BackStack: ${navigator.backStack.toList()}")
+        }
+    }
+
+    @Composable
+    private fun MainContent() {
+        BetterNeptunTheme {
+            Navigator.DefaultNavDisplay(
+                navigator = navigator,
+                entryProvider = entryProvider,
+                transitionSpec = {
+                    val isFromLogin = initialState.checkType(LoginDestination)
+                    val isToHome = targetState.checkType(HomeDestination)
+                    val isToLogin = targetState.checkType(LoginDestination)
+
+                    if ((isFromLogin && isToHome) || isToLogin) {
+                        fadeIn() togetherWith fadeOut()
+                    } else {
+                        slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
+                    }
+                },
+                popTransitionSpec = {
+                    val isToLogin = targetState.checkType(LoginDestination)
+                    if (isToLogin) {
+                        fadeIn() togetherWith fadeOut()
+                    } else {
+                        slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                    }
+                },
+                predictivePopTransitionSpec = {
+                    val isToLogin = targetState.checkType(LoginDestination)
+                    if (isToLogin) {
+                        fadeIn() togetherWith fadeOut()
+                    } else {
+                        slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            )
+        }
+    }
+
+    private fun handleNotificationScheduling() {
         combine(
             neptunRepository.events,
             settingsRepository.notificationDelay,
@@ -98,6 +143,12 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
             } else {
                 Timber.tag("Alarm").d("Needs permissions")
             }
+        }.launchIn(lifecycleScope)
+    }
+
+    private fun handleLogout() {
+        loginRepository.forceLogOut.onEach {
+            navigator.navigateToInclusive(LoginDestination)
         }.launchIn(lifecycleScope)
     }
 }

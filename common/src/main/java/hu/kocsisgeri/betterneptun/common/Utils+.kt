@@ -16,9 +16,9 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 enum class ThemeMode(val mode: Int) {
-    AUTO(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM), DARK(AppCompatDelegate.MODE_NIGHT_YES), LIGHT(
-        AppCompatDelegate.MODE_NIGHT_NO
-    )
+    AUTO(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM),
+    DARK(AppCompatDelegate.MODE_NIGHT_YES),
+    LIGHT(AppCompatDelegate.MODE_NIGHT_NO)
 }
 
 fun openUrl(url: String?, context: Context) {
@@ -72,11 +72,13 @@ fun LocalDateTime.getTimeLeft(): String {
 }
 
 fun CoroutineScope.launchReportingErrors(
+    handleError: (Throwable) -> Unit = {},
     block: suspend CoroutineScope.() -> Unit
 ) {
     launch(
         context = CoroutineExceptionHandler { _, throwable ->
             Timber.e(throwable)
+            handleError(throwable)
         },
         block = block
     )

@@ -1,5 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
@@ -16,10 +18,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
+import androidx.navigation3.ui.defaultPopTransitionSpec
+import androidx.navigation3.ui.defaultPredictivePopTransitionSpec
+import androidx.navigation3.ui.defaultTransitionSpec
+import androidx.navigationevent.NavigationEvent
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import kotlinx.serialization.Serializable
@@ -48,10 +55,21 @@ interface Navigator {
 
         @OptIn(KoinExperimentalAPI::class)
         @Composable
-        fun createNavDisplay(
+        fun DefaultNavDisplay(
+            modifier: Modifier,
             navigator: Navigator,
             entryProvider: EntryProvider<NavKey>,
-            modifier: Modifier = Modifier,
+            entryDecorators: List<NavEntryDecorator<NavKey>> = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator()
+            ),
+            transitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform =
+                defaultTransitionSpec(),
+            popTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform =
+                defaultPopTransitionSpec(),
+            predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.(
+                @NavigationEvent.SwipeEdge Int
+            ) -> ContentTransform = defaultPredictivePopTransitionSpec(),
         ) {
             SharedTransitionLayout {
                 provideSharedTransitionScope {
@@ -60,37 +78,10 @@ interface Navigator {
                         backStack = navigator.backStack,
                         onBack = { navigator.navigateBack() },
                         entryProvider = entryProvider,
-                        entryDecorators = listOf(
-                            rememberSaveableStateHolderNavEntryDecorator(),
-                            rememberViewModelStoreNavEntryDecorator()
-                        ),
-                        transitionSpec = {
-                            val isFromLogin = initialState.checkType(LoginDestination)
-                            val isToHome = targetState.checkType(HomeDestination)
-                            val isToLogin = targetState.checkType(LoginDestination)
-
-                            if ((isFromLogin && isToHome) || isToLogin) {
-                                fadeIn() togetherWith fadeOut()
-                            } else {
-                                slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
-                            }
-                        },
-                        popTransitionSpec = {
-                            val isToLogin = targetState.checkType(LoginDestination)
-                            if (isToLogin) {
-                                fadeIn() togetherWith fadeOut()
-                            } else {
-                                slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                            }
-                        },
-                        predictivePopTransitionSpec = {
-                            val isToLogin = targetState.checkType(LoginDestination)
-                            if (isToLogin) {
-                                fadeIn() togetherWith fadeOut()
-                            } else {
-                                slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                            }
-                        },
+                        entryDecorators = entryDecorators,
+                        transitionSpec = transitionSpec,
+                        popTransitionSpec = popTransitionSpec,
+                        predictivePopTransitionSpec = predictivePopTransitionSpec,
                         modifier = modifier
                     )
                 }
@@ -136,7 +127,7 @@ private fun SharedTransitionScope.provideSharedTransitionScope(content: @Composa
     )
 }
 
-private fun <T : @Serializable NavKey> Scene<NavKey>.checkType(destination: T): Boolean {
+fun <T : @Serializable NavKey> Scene<NavKey>.checkType(destination: T): Boolean {
     val destinationKey = destination.toString()
 
     return destinationKey == key.toString()

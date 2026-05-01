@@ -11,7 +11,7 @@ import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
 import hu.kocsisgeri.betterneptun.data.model.TermDto
 import hu.kocsisgeri.betterneptun.data.model.UnreadMessagesCountDto
 
-interface NetworkDataSource {
+internal interface NetworkDataSource {
 
     suspend fun getUserInfo(): ApiResponseDto<UserInfoDto>
 

@@ -20,7 +20,6 @@ import hu.kocsisgeri.betterneptun.common.put
 import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionDisclaimer
 
-
 class NotificationPermission(
     private val sharedPreferences: SharedPreferences,
 ) : PermissionData() {
@@ -39,17 +38,16 @@ class NotificationPermission(
         context: Context,
         launcher: ManagedActivityResultLauncher<String, Boolean>
     ) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            when(permissionState) {
-                State.Granted -> {
-                    // do not request
-                }
-                State.Denied -> launcher.launch(permission)
-                State.NotRequested -> launcher.launch(permission)
-                State.PermanentlyDenied -> context.openSettings()
+        sharedPreferences.put(cacheKey, false)
+
+        when (permissionState) {
+            State.Granted -> {
+                // do not request
             }
 
-            sharedPreferences.put(cacheKey, false)
+            State.Denied -> launcher.handleLaunch(context)
+            State.NotRequested -> launcher.handleLaunch(context)
+            State.PermanentlyDenied -> context.openSettings()
         }
     }
 
@@ -68,8 +66,10 @@ class NotificationPermission(
             false
         }
 
-        val isFirstTimeAskingPermission =
-            sharedPreferences.get(cacheKey, true)
+        val isFirstTimeAskingPermission = sharedPreferences.get(
+            key = cacheKey,
+            defaultValue = false
+        )
 
         if (hasPermission) State.Granted
         else {
@@ -79,6 +79,14 @@ class NotificationPermission(
                 if (showRationale) State.Denied
                 else State.PermanentlyDenied
             }
+        }
+    }
+
+    private fun ManagedActivityResultLauncher<String, Boolean>.handleLaunch(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            launch(permission)
+        } else {
+            context.openSettings()
         }
     }
 
