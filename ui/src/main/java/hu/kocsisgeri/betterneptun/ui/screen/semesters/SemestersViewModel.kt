@@ -77,10 +77,7 @@ class SemestersViewModel(
                 ApiResult.Success(LineData(normalSet, comSet))
             }
         }
-    }.onEach {
-        Timber.tag("KURVA").d("$it")
-    }
-        .stateWhileSubscribed(ApiResult.Loading)
+    }.stateWhileSubscribed(ApiResult.Loading)
 
     init {
         viewModelScope.launchReportingErrors {
