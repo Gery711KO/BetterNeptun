@@ -395,9 +395,9 @@ private fun Header(
         Card(
             modifier = Modifier
                 .fillMaxHeight()
-                .aspectRatio(1f)
-                .clickable { onNavigateToScreen(SettingsDestination) },
+                .aspectRatio(1f),
             shape = RoundedCornerShape(20.dp),
+            onClick = { onNavigateToScreen(SettingsDestination) },
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer

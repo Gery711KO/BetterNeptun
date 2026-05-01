@@ -22,7 +22,10 @@ class MessageDetailViewModel(
         _isError.value = null
         viewModelScope.launchReportingErrors {
             try {
-                _messageDetail.value = neptunRepository.getMessageDetail(messageId)
+                val messageDetail = neptunRepository.getMessageDetail(messageId)
+                _messageDetail.value = messageDetail
+
+                neptunRepository.readMessage(messageId, messageDetail)
             } catch (exception: Exception) {
                 _isError.value = "Hiba történt az üzenet betöltése közben.\n Kérlek próbáld újra."
             }

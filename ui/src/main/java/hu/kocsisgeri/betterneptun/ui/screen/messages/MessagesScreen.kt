@@ -3,37 +3,42 @@ package hu.kocsisgeri.betterneptun.ui.screen.messages
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,8 +48,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.common.DateUtils
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.Message
+import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
@@ -60,11 +65,12 @@ fun MessagesScreen(
     navigator: Navigator = koinInject()
 ) {
     val messages by viewModel.listItems.collectAsStateWithLifecycle()
-    
+
     MessagesContent(
         messages = messages,
         onBackClick = navigator::navigateBack,
         onRetryClick = viewModel::refresh,
+        onLoadMore = viewModel::loadMore,
         onMessageClick = { message ->
             navigator.navigateTo(MessageDetailDestination(message.id))
         }
@@ -74,17 +80,34 @@ fun MessagesScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessagesContent(
-    messages: ApiResult<List<Message>>,
+    messages: MessagesPager,
     onRetryClick: () -> Unit,
     onBackClick: () -> Unit,
+    onLoadMore: () -> Unit,
     onMessageClick: (Message) -> Unit
 ) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val listState = rememberLazyListState()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val lastVisibleItemIndex =
+                listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val totalItemsCount = listState.layoutInfo.totalItemsCount
+            lastVisibleItemIndex >= totalItemsCount - 5 && totalItemsCount > 0
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) {
+            onLoadMore()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            CenterAlignedTopAppBar(
+            LargeTopAppBar(
                 title = {
                     Text(
                         text = "Üzenetek",
@@ -104,75 +127,132 @@ fun MessagesContent(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                    scrolledContainerColor = MaterialTheme.colorScheme.background,
                     navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
                 )
             )
         }
     ) { paddingValues ->
-        Box(
+        LazyColumn(
+            state = listState,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(horizontal = 8.dp)
+                .clip(MaterialTheme.shapes.large)
         ) {
-            when (messages) {
-                is ApiResult.Error -> Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+            messages(messages, onMessageClick)
+            errorMessage(messages, onRetryClick)
+            loadingMessage(messages)
+            endMessage(messages)
+        }
+    }
+}
+
+private fun LazyListScope.messages(
+    messages: MessagesPager,
+    onMessageClick: (Message) -> Unit
+) {
+    itemsIndexed(
+        items = messages.messages,
+        key = { _, message -> message.id }
+    ) { index, message ->
+        MessageItem(
+            modifier = Modifier.animateItem(),
+            message = message,
+            onClick = { onMessageClick(message) }
+        )
+    }
+}
+
+private fun LazyListScope.endMessage(messages: MessagesPager) {
+    if (messages.isEndReached) {
+        item(key = "END_ITEM") {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Default.List,
+                    contentDescription = null
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "A lista végére értél, nem lehet több üzenet betölteni.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+    }
+}
+
+private fun LazyListScope.loadingMessage(messages: MessagesPager) {
+    if (messages.isLoadingNextMessages) {
+        item(key = "LOADING_ITEM") {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            ) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Üzenetek betöltése...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+private fun LazyListScope.errorMessage(
+    messages: MessagesPager,
+    onRetryClick: () -> Unit
+) {
+    messages.error?.let {
+        item(key = "ERROR_MESSAGE") {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Warning,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Hiba történt az üzenetek betőltése közben.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = onRetryClick,
+                    shape = MaterialTheme.shapes.medium,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Warning,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Hiba történt az üzenetek betőltése közben.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = onRetryClick,
-                        shape = MaterialTheme.shapes.medium,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        )
-                    ) {
-                        Text("Újra")
-                    }
-                }
-                ApiResult.Loading -> Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Üzenetek betöltése...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                is ApiResult.Success -> LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    items(messages.data) { message ->
-                        MessageItem(
-                            message = message,
-                            onClick = { onMessageClick(message) }
-                        )
-                    }
+                    Text("Újra")
                 }
             }
         }
@@ -182,18 +262,21 @@ fun MessagesContent(
 @Composable
 fun MessageItem(
     message: Message,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     ListItem(
-        modifier = Modifier.clickable(onClick = onClick),
+        modifier = modifier
+            .clip(MaterialTheme.shapes.small)
+            .clickable(onClick = onClick),
         headlineContent = {
             Text(
                 text = message.name,
                 fontFamily = Armata,
                 fontWeight = if (message.isNew) FontWeight.Bold else FontWeight.SemiBold,
                 style = MaterialTheme.typography.bodyLarge,
-                color = if (message.isNew) MaterialTheme.colorScheme.primary 
-                        else MaterialTheme.colorScheme.onSurface,
+                color = if (message.isNew) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -227,15 +310,8 @@ fun MessageItem(
             }
         },
         colors = ListItemDefaults.colors(
-            containerColor = if (message.isNew) 
-                MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.primaryContainer
         )
-    )
-    HorizontalDivider(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        thickness = 0.5.dp,
-        color = MaterialTheme.colorScheme.outlineVariant
     )
 }
 
@@ -245,8 +321,8 @@ fun MessageItem(
 fun MessagesSuccessPreview() {
     BetterNeptunTheme {
         MessagesContent(
-            messages = ApiResult.Success(
-                listOf(
+            messages = MessagesPager(
+                messages = listOf(
                     Message(
                         id = "1",
                         name = "Kovács János",
@@ -268,10 +344,12 @@ fun MessagesSuccessPreview() {
                         date = LocalDateTime.of(2023, 10, 23, 18, 0),
                         isNew = true,
                     )
-                )
+                ),
+                isLoadingNextMessages = false
             ),
             onRetryClick = {},
             onBackClick = {},
+            onLoadMore = {},
             onMessageClick = {}
         )
     }
@@ -283,9 +361,12 @@ fun MessagesSuccessPreview() {
 fun MessagesLoadingPreview() {
     BetterNeptunTheme {
         MessagesContent(
-            messages = ApiResult.Loading,
+            messages = MessagesPager(
+                isLoadingNextMessages = true
+            ),
             onRetryClick = {},
             onBackClick = {},
+            onLoadMore = {},
             onMessageClick = {}
         )
     }
@@ -297,9 +378,13 @@ fun MessagesLoadingPreview() {
 fun MessagesErrorPreview() {
     BetterNeptunTheme {
         MessagesContent(
-            messages = ApiResult.Error("Hiba történt az üzenetek betöltése közben."),
+            messages = MessagesPager(
+                error = "Hiba történt az üzenetek betöltése közben.",
+                isLoadingNextMessages = false
+            ),
             onRetryClick = {},
             onBackClick = {},
+            onLoadMore = {},
             onMessageClick = {}
         )
     }

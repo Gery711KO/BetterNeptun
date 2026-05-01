@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Button
@@ -24,19 +25,17 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -83,23 +82,13 @@ fun MessageDetailContent(
     onBackClick: () -> Unit,
     onRetryClick: () -> Unit
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val context = LocalContext.current
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             if (isError == null && messageDetail != null) {
-                MediumTopAppBar(
-                    title = {
-                        Text(
-                            text = "Üzenet részletei",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontFamily = hu.kocsisgeri.betterneptun.ui.theme.Armata,
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
+                TopAppBar(
+                    title = {},
                     navigationIcon = {
                         IconButton(onClick = onBackClick) {
                             Icon(
@@ -108,10 +97,9 @@ fun MessageDetailContent(
                             )
                         }
                     },
-                    scrollBehavior = scrollBehavior,
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                        scrolledContainerColor = MaterialTheme.colorScheme.background,
                         navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
                         titleContentColor = MaterialTheme.colorScheme.onBackground,
                     )
@@ -129,7 +117,7 @@ fun MessageDetailContent(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                        scrolledContainerColor = MaterialTheme.colorScheme.background,
                         navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
                         titleContentColor = MaterialTheme.colorScheme.onBackground,
                     )
@@ -182,8 +170,9 @@ fun MessageDetailContent(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
                             .padding(horizontal = 16.dp)
+                            .clip(MaterialTheme.shapes.extraLarge)
+                            .verticalScroll(rememberScrollState())
                     ) {
                         // Message Header
                         Card(
@@ -203,7 +192,6 @@ fun MessageDetailContent(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Spacer(modifier = Modifier.height(20.dp))
-
                                 DetailItem(
                                     icon = painterResource(R.drawable.ic_mail),
                                     label = "Küldő",
@@ -215,45 +203,12 @@ fun MessageDetailContent(
                                     label = "Küldés ideje",
                                     value = DateUtils.formatDate(messageDetail.date)
                                 )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Divider(modifier = Modifier.padding(vertical = 16.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
+                                MessageContent(messageDetail)
                             }
                         }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        // Message Content
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = MaterialTheme.shapes.extraLarge,
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        ) {
-                            val rawHtml = messageDetail.posts.firstOrNull()?.htmlText ?: ""
-                            val processedHtml = if (rawHtml.contains("}")) {
-                                rawHtml.split("}").last()
-                            } else {
-                                rawHtml
-                            }
-
-                            HtmlText(
-                                html = processedHtml,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(20.dp),
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                                fontFamily = MaterialTheme.typography.bodyLarge.fontFamily
-                                    ?: Armata,
-                                onUrlClick = { url ->
-                                    when {
-                                        url.contains("http") -> openUrl(url, context)
-                                        url.contains("mailto:") || url.contains("@") -> {
-                                            url.removePrefix("mailto:").trim().sendEmail(context)
-                                        }
-                                    }
-                                }
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(32.dp))
                     }
                 }
 
@@ -271,6 +226,36 @@ fun MessageDetailContent(
             }
         }
     }
+}
+
+@Composable
+private fun MessageContent(
+    messageDetail: MessageDetail,
+) {
+    val context = LocalContext.current
+    val rawHtml = messageDetail.posts.firstOrNull()?.htmlText ?: ""
+    val processedHtml = if (rawHtml.contains("}")) {
+        rawHtml.split("}").last()
+    } else {
+        rawHtml
+    }
+
+    HtmlText(
+        html = processedHtml,
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.onSurface,
+        fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+        fontFamily = MaterialTheme.typography.bodyLarge.fontFamily
+            ?: Armata,
+        onUrlClick = { url ->
+            when {
+                url.contains("http") -> openUrl(url, context)
+                url.contains("mailto:") || url.contains("@") -> {
+                    url.removePrefix("mailto:").trim().sendEmail(context)
+                }
+            }
+        }
+    )
 }
 
 @Composable
@@ -320,6 +305,7 @@ fun MessageDetailContentPreview() {
                 subject = "Vizsga eredmény",
                 sender = "Kovács János",
                 date = LocalDateTime.of(2023,10,25,14,30),
+                hasUnreadPost = false,
                 posts = listOf(
                     MessageDetail.Post(
                         id = "1",

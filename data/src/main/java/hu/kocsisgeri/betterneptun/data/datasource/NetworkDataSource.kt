@@ -6,6 +6,7 @@ import hu.kocsisgeri.betterneptun.data.model.MessageDetailsDto
 import hu.kocsisgeri.betterneptun.data.model.MessageListDto
 import hu.kocsisgeri.betterneptun.data.model.TermDetailDto
 import hu.kocsisgeri.betterneptun.data.model.ExtendedTermDto
+import hu.kocsisgeri.betterneptun.data.model.PostIdsRequestDto
 import hu.kocsisgeri.betterneptun.data.model.SubjectDto
 import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
 import hu.kocsisgeri.betterneptun.data.model.TermDto
@@ -25,6 +26,11 @@ internal interface NetworkDataSource {
     suspend fun getMessageDetails(
         messageId: String,
     ): ApiResponseDto<MessageDetailsDto>
+
+    suspend fun postMessagePostRead(
+        messageId: String,
+        postIds: PostIdsRequestDto
+    )
 
     suspend fun getExtendedTerms(): ApiResponseDto<List<ExtendedTermDto>>
 

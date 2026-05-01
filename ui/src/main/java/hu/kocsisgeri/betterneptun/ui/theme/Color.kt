@@ -15,17 +15,17 @@ val TitleColor = Color(0xFFEEEEEE)
 // Light Theme Colors - Gray focused
 val LightPrimary = Color(0xFF424242)
 val LightOnPrimary = Color(0xFFFFFFFF)
-val LightPrimaryContainer = Color(0xFFE0E0E0)
+val LightPrimaryContainer = Color(0xFFF0F0F0)
 val LightOnPrimaryContainer = Color(0xFF212121)
 
 val LightSecondary = Color(0xFF616161)
 val LightOnSecondary = Color(0xFFFFFFFF)
-val LightSecondaryContainer = Color(0xFFF5F5F5)
+val LightSecondaryContainer = Color(0xFFFAFAFA)
 val LightOnSecondaryContainer = Color(0xFF212121)
 
 val LightTertiary = Color(0xFF757575)
 val LightOnTertiary = Color(0xFFFFFFFF)
-val LightTertiaryContainer = Color(0xFFEEEEEE)
+val LightTertiaryContainer = Color(0xFFF5F5F5)
 val LightOnTertiaryContainer = Color(0xFF212121)
 
 val LightError = Color(0xFFBA1A1A)
@@ -33,11 +33,11 @@ val LightOnError = Color(0xFFFFFFFF)
 val LightErrorContainer = Color(0xFFFFDAD6)
 val LightOnErrorContainer = Color(0xFF410002)
 
-val LightBackground = Color(0xFFF0F0F0) // Slightly darker than FAFAFA
+val LightBackground = Color(0xFFE0E0E0)
 val LightOnBackground = Color(0xFF212121)
-val LightSurface = Color(0xFFF0F0F0)
+val LightSurface = Color(0xFFF5F5F5)
 val LightOnSurface = Color(0xFF212121)
-val LightSurfaceVariant = Color(0xFFE5E5E5) // Slightly darker than E0E0E0
+val LightSurfaceVariant = Color(0xFFFFFFFF)
 val LightOnSurfaceVariant = Color(0xFF424242)
 val LightOutline = Color(0xFF757575)
 

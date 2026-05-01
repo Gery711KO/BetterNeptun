@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -24,12 +25,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.tobiasschuerg.weekview.compose.WeekViewActions
-import de.tobiasschuerg.weekview.compose.WeekViewCompose
 import de.tobiasschuerg.weekview.data.EventConfig
 import de.tobiasschuerg.weekview.data.LocalDateRange
 import de.tobiasschuerg.weekview.data.WeekData
@@ -198,8 +199,10 @@ fun TimetableContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+                .clip(MaterialTheme.shapes.large)
         ) {
-            WeekViewCompose(
+            TimeTableView(
                 weekData = weekData,
                 modifier = Modifier.fillMaxSize(),
                 weekViewConfig = WeekViewConfig(
@@ -232,6 +235,7 @@ private fun TimetableWeekPreview() {
 }
 
 @Preview(showBackground = true, name = "Day View")
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Day View - Dark")
 @Composable
 private fun TimetableDayPreview() {
     BetterNeptunTheme {

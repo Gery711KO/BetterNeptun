@@ -12,6 +12,8 @@ import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.base.ComposeViewModel
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import timber.log.Timber
 
 class SemestersViewModel(
     repo: NeptunRepository
@@ -75,7 +77,10 @@ class SemestersViewModel(
                 ApiResult.Success(LineData(normalSet, comSet))
             }
         }
-    }.stateWhileSubscribed(ApiResult.Loading)
+    }.onEach {
+        Timber.tag("KURVA").d("$it")
+    }
+        .stateWhileSubscribed(ApiResult.Loading)
 
     init {
         viewModelScope.launchReportingErrors {

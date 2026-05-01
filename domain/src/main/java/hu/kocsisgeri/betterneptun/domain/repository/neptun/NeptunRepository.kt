@@ -6,6 +6,7 @@ import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
 import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
 import hu.kocsisgeri.betterneptun.domain.model.Message
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
+import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
 import hu.kocsisgeri.betterneptun.domain.model.Term
 import hu.kocsisgeri.betterneptun.domain.model.Subject
 import kotlinx.coroutines.flow.Flow
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface NeptunRepository {
 
     val events: Flow<List<CalendarItem>>
-    val messages: StateFlow<ApiResult<List<Message>>>
+    val messages: StateFlow<MessagesPager>
     val unreadMessagesCount : StateFlow<Int?>
 
     val extendedTerms : StateFlow<ApiResult<List<ExtendedTerm>>>
@@ -23,9 +24,10 @@ interface NeptunRepository {
     val averages : StateFlow<ApiResult<List<Average>>>
     var currentMessagePage : Int
 
-    suspend fun fetchMessages()
+    suspend fun fetchMessages(isRefresh: Boolean = false)
     suspend fun fetchUnreadMessages()
     suspend fun getMessageDetail(messageId: String): MessageDetail
+    suspend fun readMessage(messageId: String, message: MessageDetail)
 
     suspend fun fetchCalendarData()
 

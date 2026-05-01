@@ -19,6 +19,7 @@ fun MessageDetailsDto.toMessageDomain() = MessageDetail(
     }?.printName ?: "Rendszerüzenet",
     subject = messageData.subject,
     date = posts.last().sendDate,
+    hasUnreadPost = posts.any { it.isRead.not() },
     posts = posts.map {
         MessageDetail.Post(
             id = it.postId,

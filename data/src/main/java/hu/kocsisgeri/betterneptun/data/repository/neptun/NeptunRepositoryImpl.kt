@@ -9,12 +9,15 @@ import hu.kocsisgeri.betterneptun.data.mapper.toExtendedTermDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toSubjectDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toTermDomain
+import hu.kocsisgeri.betterneptun.data.model.PostIdsRequestDto
 import hu.kocsisgeri.betterneptun.data.repository.runApiCall
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.Average
 import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
 import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
 import hu.kocsisgeri.betterneptun.domain.model.Message
+import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
+import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
 import hu.kocsisgeri.betterneptun.domain.model.Subject
 import hu.kocsisgeri.betterneptun.domain.model.Term
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
@@ -22,6 +25,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 
 internal class NeptunRepositoryImpl(
@@ -41,7 +45,7 @@ internal class NeptunRepositoryImpl(
         remote + local
     }
 
-    override val messages = MutableStateFlow<ApiResult<List<Message>>>(ApiResult.Loading)
+    override val messages = MutableStateFlow(MessagesPager())
     override val unreadMessagesCount: MutableStateFlow<Int?> = MutableStateFlow(null)
 
     override val extendedTerms = MutableStateFlow<ApiResult<List<ExtendedTerm>>>(ApiResult.Loading)
@@ -51,19 +55,59 @@ internal class NeptunRepositoryImpl(
     override val terms = MutableStateFlow<ApiResult<List<Term>>>(ApiResult.Loading)
     override val averages = MutableStateFlow<ApiResult<List<Average>>>(ApiResult.Loading)
 
-    override suspend fun fetchMessages() {
-        messages.runApiCall(ioDispatcher) {
-            networkDataSource.getReceivedMessages(
-                firstRow = 0,
-                lastRow = currentMessagePage * 20
-            ).let { response ->
-                response.data.receivedMessages.map {
+    override suspend fun fetchMessages(isRefresh: Boolean) {
+        val pageSize = 20
+        if (isRefresh) {
+            currentMessagePage = 1
+        }
+
+        if (isRefresh.not() && messages.value.isEndReached) return
+
+        val firstRow = (currentMessagePage - 1) * pageSize
+        val lastRow = currentMessagePage * pageSize
+
+        withContext(ioDispatcher) {
+            try {
+                messages.update { pager ->
+                    pager.copy(
+                        messages = if (isRefresh) emptyList() else pager.messages,
+                        isLoadingNextMessages = true,
+                        error = null
+                    )
+                }
+
+                val response = networkDataSource.getReceivedMessages(
+                    firstRow = firstRow,
+                    lastRow = lastRow
+                )
+
+                val newMessages = response.data.receivedMessages.map {
                     it.toMessageDomain()
+                }
+
+                messages.update { pager ->
+                    val currentMessages = pager.messages
+
+                    pager.copy(
+                        messages = if (isRefresh) newMessages else currentMessages + newMessages,
+                        isLoadingNextMessages = false,
+                        isEndReached = newMessages.size < pageSize
+                    )
+                }
+
+                if (newMessages.isNotEmpty()) {
+                    currentMessagePage++
+                }
+            } catch (exception: Exception) {
+                messages.update { pager ->
+                    pager.copy(
+                        error = exception.message ?: "Something went wrong.",
+                        isLoadingNextMessages = false,
+                        isEndReached = false
+                    )
                 }
             }
         }
-
-        currentMessagePage + 1
     }
 
     override suspend fun fetchUnreadMessages() {
@@ -103,6 +147,19 @@ internal class NeptunRepositoryImpl(
         withContext(ioDispatcher) {
             networkDataSource.getMessageDetails(messageId).data.toMessageDomain()
         }
+
+    override suspend fun readMessage(messageId: String, message: MessageDetail) {
+        if (message.hasUnreadPost) {
+            withContext(ioDispatcher) {
+                networkDataSource.postMessagePostRead(
+                    messageId = messageId,
+                    postIds = PostIdsRequestDto(
+                        postIds = message.posts.map { it.id }
+                    )
+                )
+            }
+        }
+    }
 
     override fun purge() {
         remoteEvents.value = emptyList()

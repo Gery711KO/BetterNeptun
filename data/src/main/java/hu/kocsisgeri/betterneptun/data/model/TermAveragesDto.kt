@@ -9,8 +9,8 @@ data class TermAveragesDto(
     val terms: List<Term>,
     val termAveragesByTrainings: List<TermAverage>,
     val creditIndexLabel: String?,
-    val sumAverageLabel: String,
-    val averageLabel: String
+    val sumAverageLabel: String?,
+    val averageLabel: String?
 ) {
 
     @Serializable
