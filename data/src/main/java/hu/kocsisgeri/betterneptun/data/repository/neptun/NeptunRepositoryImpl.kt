@@ -2,6 +2,7 @@ package hu.kocsisgeri.betterneptun.data.repository.neptun
 
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
+import hu.kocsisgeri.betterneptun.data.mapper.toAvatarDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toAverageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toEntity
@@ -12,10 +13,10 @@ import hu.kocsisgeri.betterneptun.data.mapper.toTermDomain
 import hu.kocsisgeri.betterneptun.data.model.PostIdsRequestDto
 import hu.kocsisgeri.betterneptun.data.repository.runApiCall
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.Average
 import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
 import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
-import hu.kocsisgeri.betterneptun.domain.model.Message
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
 import hu.kocsisgeri.betterneptun.domain.model.Subject
@@ -81,8 +82,16 @@ internal class NeptunRepositoryImpl(
                     lastRow = lastRow
                 )
 
+                val avatarsResponse = networkDataSource.getUserAvatars(
+                    userIds = response.data.receivedMessages.mapNotNull { it.senderUserId }
+                )
+
                 val newMessages = response.data.receivedMessages.map {
-                    it.toMessageDomain()
+                    it.toMessageDomain().copy(
+                        senderAvatar = avatarsResponse.data.find { avatar ->
+                            avatar.userId == it.senderUserId
+                        }?.toAvatarDomain() ?: Avatar.SystemAvatar
+                    )
                 }
 
                 messages.update { pager ->

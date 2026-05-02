@@ -2,6 +2,7 @@ package hu.kocsisgeri.betterneptun.data.mapper
 
 import hu.kocsisgeri.betterneptun.data.model.MessageDetailsDto
 import hu.kocsisgeri.betterneptun.data.model.ReceivedMessageDto
+import hu.kocsisgeri.betterneptun.domain.model.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.Message
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 
@@ -11,6 +12,7 @@ fun ReceivedMessageDto.toMessageDomain() = Message(
     subject = subject,
     date = lastPostDate,
     isNew = unreadedPostCount > 0,
+    senderAvatar = Avatar.SystemAvatar
 )
 
 fun MessageDetailsDto.toMessageDomain() = MessageDetail(

@@ -11,6 +11,7 @@ import hu.kocsisgeri.betterneptun.data.model.SubjectDto
 import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
 import hu.kocsisgeri.betterneptun.data.model.TermDto
 import hu.kocsisgeri.betterneptun.data.model.UnreadMessagesCountDto
+import hu.kocsisgeri.betterneptun.data.model.UserAvatarDto
 
 internal interface NetworkDataSource {
 
@@ -22,6 +23,10 @@ internal interface NetworkDataSource {
         firstRow: Int,
         lastRow: Int,
     ): ApiResponseDto<MessageListDto>
+
+    suspend fun getUserAvatars(
+        userIds: List<String>,
+    ): ApiResponseDto<List<UserAvatarDto>>
 
     suspend fun getMessageDetails(
         messageId: String,

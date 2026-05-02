@@ -10,6 +10,7 @@ import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
 import hu.kocsisgeri.betterneptun.data.model.TermDetailDto
 import hu.kocsisgeri.betterneptun.data.model.TermDto
 import hu.kocsisgeri.betterneptun.data.model.UnreadMessagesCountDto
+import hu.kocsisgeri.betterneptun.data.model.UserAvatarDto
 import hu.kocsisgeri.betterneptun.data.model.UserInfoDto
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -31,6 +32,12 @@ interface MainApiService {
         @Query("lastRow") lastRow: Int,
         @Query("filterType") filterType: Int = 0
     ): ApiResponseDto<MessageListDto>
+
+    @GET("General/GetUsersAvatar")
+    suspend fun getUserAvatars(
+        @Query("userIds") userIds: List<String>,
+        @Query("imageSizeType") type: String = "Thumbnail"
+    ): ApiResponseDto<List<UserAvatarDto>>
 
     @GET("Messages/{msgId}/Posts")
     suspend fun getMessageDetails(

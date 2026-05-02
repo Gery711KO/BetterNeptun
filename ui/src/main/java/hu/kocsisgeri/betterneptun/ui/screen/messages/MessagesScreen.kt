@@ -8,7 +8,9 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.rounded.ArrowUpward
@@ -56,9 +59,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.common.DateUtils
+import hu.kocsisgeri.betterneptun.domain.model.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.Message
 import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
 import hu.kocsisgeri.betterneptun.ui.R
+import hu.kocsisgeri.betterneptun.ui.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.composable.ScrollBar
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
@@ -305,9 +310,10 @@ fun MessageItem(
             .clickable(onClick = onClick),
         headlineContent = {
             Text(
+                modifier = Modifier.fillMaxWidth(),
                 text = message.name,
                 fontFamily = Armata,
-                fontWeight = if (message.isNew) FontWeight.Bold else FontWeight.SemiBold,
+                fontWeight = if (message.isNew) FontWeight.ExtraBold else FontWeight.Medium,
                 style = MaterialTheme.typography.bodyLarge,
                 color = if (message.isNew) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.onSurface,
@@ -317,29 +323,46 @@ fun MessageItem(
         },
         supportingContent = {
             Text(
+                modifier = Modifier.fillMaxWidth(),
                 text = message.subject,
                 style = MaterialTheme.typography.bodyMedium,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        leadingContent = {
+            AvatarImage(
+                modifier = Modifier.size(48.dp).clip(CircleShape),
+                avatar = message.senderAvatar
             )
         },
         trailingContent = {
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.Center
+            Box(
+                modifier = Modifier.height(32.dp),
+                contentAlignment = Alignment.TopEnd
             ) {
-                Text(
-                    text = DateUtils.formatDate(message.date),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (message.isNew) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Badge(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(8.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = DateUtils.formatDate(message.date),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = if (message.isNew) {
+                                FontWeight.ExtraBold
+                            } else {
+                                FontWeight.Normal
+                            }
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    if (message.isNew) {
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(9.dp)
+                        )
+                    }
                 }
             }
         },
@@ -363,6 +386,10 @@ fun MessagesSuccessPreview() {
                         subject = "Vizsga eredmény",
                         date = LocalDateTime.of(2023, 10, 25, 14, 30),
                         isNew = true,
+                        senderAvatar = Avatar.MonogramAvatar(
+                            monogram = "KJ",
+                            colorLong = 0xFF000000
+                        )
                     ),
                     Message(
                         id = "2",
@@ -370,13 +397,18 @@ fun MessagesSuccessPreview() {
                         subject = "Kurzusfelvétel",
                         date = LocalDateTime.of(2023, 10, 24, 9, 15),
                         isNew = false,
+                        senderAvatar = Avatar.SystemAvatar
                     ),
                     Message(
                         id = "3",
-                        name = "Dr. Tanár Úr",
+                        name = "Kósa Kálmán",
                         subject = "Elmaradt előadás",
                         date = LocalDateTime.of(2023, 10, 23, 18, 0),
                         isNew = true,
+                        senderAvatar = Avatar.MonogramAvatar(
+                            monogram = "KK",
+                            colorLong = 0xFFFFFFFF
+                        )
                     )
                 ),
                 isLoadingNextMessages = false

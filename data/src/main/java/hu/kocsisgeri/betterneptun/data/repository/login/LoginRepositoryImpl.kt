@@ -10,6 +10,7 @@ import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.common.PREF_CURRENT_USER
 import hu.kocsisgeri.betterneptun.common.PREF_STAY_LOGGED_ID
 import hu.kocsisgeri.betterneptun.data.api.token.AuthStore
+import hu.kocsisgeri.betterneptun.data.mapper.toAvatarDomain
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -43,7 +44,8 @@ internal class LoginRepositoryImpl(
             networkDataSource.getUserInfo().data.let {
                 StudentData(
                     name = it.name,
-                    neptun = it.neptunCode
+                    neptun = it.neptunCode,
+                    avatar = it.userAvatar.toAvatarDomain()
                 )
             }
         }

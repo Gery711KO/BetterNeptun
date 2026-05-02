@@ -48,6 +48,7 @@ dependencies {
 
     implementation(libs.weekView.compose)
     implementation(libs.compose.colorpicker)
+    implementation(libs.coil.compose)
 
     implementation(libs.mpAndroidChart)
 }

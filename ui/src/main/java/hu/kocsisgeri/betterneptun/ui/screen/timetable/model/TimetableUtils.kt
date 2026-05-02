@@ -60,7 +60,7 @@ fun yearMonthsBetween(startDate: LocalDate, endDate: LocalDate): List<YearMonth>
 private val LocalDate.yearMonth: YearMonth
     get() = YearMonth.of(year, month)
 
-private fun isColorDark(color: Int): Boolean {
+fun isColorDark(color: Int): Boolean {
     return ColorUtils.calculateLuminance(color) < 0.5;
 }
 

@@ -53,6 +53,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.painter.Painter
@@ -64,8 +65,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
 import hu.kocsisgeri.betterneptun.ui.R
+import hu.kocsisgeri.betterneptun.ui.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessagesDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
@@ -358,16 +361,23 @@ private fun Header(
                     .padding(horizontal = 20.dp, vertical = 20.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                studentData?.avatar?.let {
+                    AvatarImage(
+                        modifier = Modifier.size(42.dp).clip(CircleShape),
+                        avatar = studentData.avatar
+                    )
+                    Spacer(Modifier.width(12.dp))
+                }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = studentData?.name ?: "",
-                        fontSize = 20.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         text = studentData?.neptun ?: "",
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                     )
@@ -376,15 +386,15 @@ private fun Header(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = unreadMessages.toString(),
-                            fontSize = 18.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             painter = painterResource(id = R.drawable.ic_mail),
                             contentDescription = null,
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(16.dp),
                             tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
@@ -703,7 +713,14 @@ fun HomeScreenPreview() {
         )
 
         HomeContent(
-            studentData = StudentData("Példa János", "ABC123"),
+            studentData = StudentData(
+                name = "Példa János",
+                neptun = "ABC123",
+                avatar = Avatar.MonogramAvatar(
+                    monogram = "PJ",
+                    colorLong = 0xFF4285F4
+                )
+            ),
             unreadMessages = 5,
             currentCourses = listOf(currentCourse),
             nextCourseState = nextCourse,

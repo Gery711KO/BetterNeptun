@@ -49,9 +49,9 @@ android {
         }
         getByName("debug") {
             versionNameSuffix = "-debug"
-            isMinifyEnabled = false
-            isShrinkResources = false
-            isDebuggable = true
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isDebuggable = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
