@@ -56,6 +56,15 @@ internal class NeptunRepositoryImpl(
     override val terms = MutableStateFlow<ApiResult<List<Term>>>(ApiResult.Loading)
     override val averages = MutableStateFlow<ApiResult<List<Average>>>(ApiResult.Loading)
 
+    override suspend fun checkForMessageUpdates() {
+        withContext(ioDispatcher) {
+            fetchUnreadMessages()
+            val newMessages = unreadMessagesCount.value?: 0
+
+            if (newMessages > 0) fetchMessages(isRefresh = true)
+        }
+    }
+
     override suspend fun fetchMessages(isRefresh: Boolean) {
         val pageSize = 20
         if (isRefresh) {
@@ -154,15 +163,28 @@ internal class NeptunRepositoryImpl(
 
     override suspend fun getMessageDetail(messageId: String) =
         withContext(ioDispatcher) {
+            val message = messages.value.messages.find { it.id == messageId }
+
             networkDataSource.getMessageDetails(messageId).data.toMessageDomain().copy(
-                senderAvatar = messages.value.messages.find {
-                    it.id == messageId
-                }?.senderAvatar?: Avatar.SystemAvatar
+                senderAvatar = message?.senderAvatar?: Avatar.SystemAvatar
             )
         }
 
     override suspend fun readMessage(messageId: String, message: MessageDetail) {
         if (message.hasUnreadPost) {
+            val foundMessage = messages.value.messages.find { it.id == messageId }
+
+            messages.update { pager ->
+                pager.copy(
+                    messages = pager.messages.toMutableList().apply {
+                        foundMessage?.let {
+                            val index = indexOf(foundMessage)
+                            if (index != -1) this[index] = foundMessage.copy(isNew = false)
+                        }
+                    }
+                )
+            }
+
             withContext(ioDispatcher) {
                 networkDataSource.postMessagePostRead(
                     messageId = messageId,

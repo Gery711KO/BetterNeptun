@@ -23,8 +23,14 @@ class MessagesViewModel(
     }
 
     fun refresh() {
-        viewModelScope.launchReportingErrors {
-            neptunRepository.fetchMessages(isRefresh = true)
+        if (neptunRepository.messages.value.messages.isEmpty()) {
+            viewModelScope.launchReportingErrors {
+                neptunRepository.fetchMessages(isRefresh = true)
+            }
+        } else {
+            viewModelScope.launchReportingErrors {
+                neptunRepository.checkForMessageUpdates()
+            }
         }
     }
 

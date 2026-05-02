@@ -26,6 +26,7 @@ class MessageDetailViewModel(
                 _messageDetail.value = messageDetail
 
                 neptunRepository.readMessage(messageId, messageDetail)
+                neptunRepository.fetchUnreadMessages()
             } catch (exception: Exception) {
                 _isError.value = "Hiba történt az üzenet betöltése közben.\n Kérlek próbáld újra."
             }

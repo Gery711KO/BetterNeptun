@@ -24,6 +24,7 @@ interface NeptunRepository {
     val averages : StateFlow<ApiResult<List<Average>>>
     var currentMessagePage : Int
 
+    suspend fun checkForMessageUpdates()
     suspend fun fetchMessages(isRefresh: Boolean = false)
     suspend fun fetchUnreadMessages()
     suspend fun getMessageDetail(messageId: String): MessageDetail
