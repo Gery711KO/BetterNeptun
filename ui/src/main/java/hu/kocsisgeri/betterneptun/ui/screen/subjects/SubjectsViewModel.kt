@@ -13,7 +13,7 @@ class SubjectsViewModel(
     val listItems = repo.subjects.stateWhileSubscribed()
 
     init {
-        viewModelScope.launchReportingErrors {
+        if (repo.subjects.value !is ApiResult.Success) viewModelScope.launchReportingErrors {
             repo.fetchExtendedTerms()
 
             repo.extendedTerms.collect {

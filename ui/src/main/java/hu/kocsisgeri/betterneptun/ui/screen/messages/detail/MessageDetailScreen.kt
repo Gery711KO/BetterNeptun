@@ -12,8 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Button
@@ -46,8 +47,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.common.DateUtils
 import hu.kocsisgeri.betterneptun.common.openUrl
 import hu.kocsisgeri.betterneptun.common.sendEmail
+import hu.kocsisgeri.betterneptun.domain.model.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 import hu.kocsisgeri.betterneptun.ui.R
+import hu.kocsisgeri.betterneptun.ui.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.composable.HtmlText
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.theme.Armata
@@ -188,24 +191,16 @@ fun MessageDetailContent(
                                 Text(
                                     text = messageDetail.subject,
                                     style = MaterialTheme.typography.headlineSmall,
-                                    fontFamily = hu.kocsisgeri.betterneptun.ui.theme.Armata,
+                                    fontFamily = Armata,
                                     fontWeight = FontWeight.Bold
                                 )
-                                Spacer(modifier = Modifier.height(20.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
                                 DetailItem(
-                                    icon = painterResource(R.drawable.ic_mail),
-                                    label = "Küldő",
+                                    avatar = messageDetail.senderAvatar,
                                     value = messageDetail.sender
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                DetailItem(
-                                    icon = painterResource(R.drawable.ic_schedule),
-                                    label = "Küldés ideje",
-                                    value = DateUtils.formatDate(messageDetail.date)
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Divider(modifier = Modifier.padding(vertical = 16.dp))
-                                Spacer(modifier = Modifier.height(16.dp))
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
                                 MessageContent(messageDetail)
                             }
                         }
@@ -259,32 +254,17 @@ private fun MessageContent(
 }
 
 @Composable
-fun DetailItem(icon: Painter, label: String, value: String) {
+fun DetailItem(avatar: Avatar, value: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.size(40.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    painter = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-        }
+        AvatarImage(
+            avatar = avatar,
+            modifier = Modifier.size(42.dp).clip(CircleShape)
+        )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
-            )
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleMedium,

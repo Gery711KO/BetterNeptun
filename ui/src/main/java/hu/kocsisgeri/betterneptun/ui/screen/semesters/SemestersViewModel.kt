@@ -80,11 +80,11 @@ class SemestersViewModel(
     }.stateWhileSubscribed(ApiResult.Loading)
 
     init {
-        viewModelScope.launchReportingErrors {
+        if (repo.terms.value !is ApiResult.Success) viewModelScope.launchReportingErrors {
             repo.fetchTerms()
         }
 
-        viewModelScope.launchReportingErrors {
+        if (repo.averages.value !is ApiResult.Success) viewModelScope.launchReportingErrors {
             repo.fetchTermAverages()
         }
     }

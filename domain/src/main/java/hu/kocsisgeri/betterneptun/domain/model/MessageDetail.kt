@@ -7,6 +7,7 @@ data class MessageDetail(
     val subject: String,
     val date: LocalDateTime,
     val hasUnreadPost: Boolean,
+    val senderAvatar: Avatar = Avatar.SystemAvatar,
     val posts: List<Post>,
 ) {
 

@@ -154,7 +154,11 @@ internal class NeptunRepositoryImpl(
 
     override suspend fun getMessageDetail(messageId: String) =
         withContext(ioDispatcher) {
-            networkDataSource.getMessageDetails(messageId).data.toMessageDomain()
+            networkDataSource.getMessageDetails(messageId).data.toMessageDomain().copy(
+                senderAvatar = messages.value.messages.find {
+                    it.id == messageId
+                }?.senderAvatar?: Avatar.SystemAvatar
+            )
         }
 
     override suspend fun readMessage(messageId: String, message: MessageDetail) {
