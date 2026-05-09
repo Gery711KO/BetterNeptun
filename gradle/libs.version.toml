@@ -135,6 +135,9 @@ mockito-kotlin = { group = "com.nhaarman.mockitokotlin2", name = "mockito-kotlin
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 
 [plugins]
+betterneptun-application = { id = "betterneptun.android.application" }
+betterneptun-library = { id = "betterneptun.android.library" }
+
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 android-room = { id = "androidx.room", version.ref = "room" }

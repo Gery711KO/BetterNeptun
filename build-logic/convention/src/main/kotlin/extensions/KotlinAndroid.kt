@@ -5,13 +5,16 @@ import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 // ────────────────────────────────────────────────────────────────────────────────
 // Extension Functions (moved here for single-file convenience)
 // ────────────────────────────────────────────────────────────────────────────────
-internal fun Project.configureAndroidEarly(commonExtension: CommonExtension) {
+internal fun Project.configureAndroidEarly(
+    commonExtension: CommonExtension,
+) {
     commonExtension.apply {
         compileSdk = projectConfigs.compileSdk
 
@@ -21,11 +24,13 @@ internal fun Project.configureAndroidEarly(commonExtension: CommonExtension) {
         if(commonExtension is ApplicationExtension){
             commonExtension.defaultConfig {
                 namespace = projectConfigs.namespace
+                applicationId = projectConfigs.namespace
 
                 targetSdk = projectConfigs.targetSdk
 
                 versionCode = projectConfigs.versionCode
                 versionName = projectConfigs.versionName
+
 
                 buildConfigField(
                     type = "String",
@@ -40,13 +45,11 @@ internal fun Project.configureAndroidEarly(commonExtension: CommonExtension) {
             }
 
             commonExtension.buildFeatures {
-                compose = true
                 buildConfig = true
             }
         }
 
         if(commonExtension is LibraryExtension) {
-            namespace = projectConfigs.namespace + betterNeptunConfig.namespaceSuffix
             commonExtension.defaultConfig {
                 buildConfigField(
                     type = "String",
@@ -61,7 +64,6 @@ internal fun Project.configureAndroidEarly(commonExtension: CommonExtension) {
             }
 
             commonExtension.buildFeatures {
-                compose = true
                 buildConfig = true
             }
         }

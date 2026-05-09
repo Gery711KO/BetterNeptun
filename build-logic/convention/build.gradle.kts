@@ -37,14 +37,4 @@ enum class PluginStack(
         pluginId = "betterneptun.android.library",
         pluginImplementationClass = "AndroidLibraryConventionPlugin"
     ),
-    AndroidFeature(
-        pluginName = "androidFeature",
-        pluginId = "betterneptun.android.feature",
-        pluginImplementationClass = "AndroidFeatureConventionPlugin"
-    ),
-    AndroidRoom(
-        pluginName = "androidRoom",
-        pluginId = "betterneptun.android.room",
-        pluginImplementationClass = "AndroidRoomConventionPlugin"
-    ),
 }

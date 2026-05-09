@@ -1,20 +1,8 @@
 plugins {
-    id("betterneptun.android.application")
-}
-
-betterNeptun {
-    enableCompose = true
-    enableNavigation3 = true
-    enableRoom = true
+    alias(libs.plugins.betterneptun.application)
 }
 
 android {
-    namespace = "hu.kocsisgeri.betterneptun"
-
-    defaultConfig {
-        applicationId = "hu.kocsisgeri.betterneptun"
-    }
-
     signingConfigs {
         getByName("debug") {
             storeFile = project.file("../android-debug.jks")

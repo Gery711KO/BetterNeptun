@@ -1,9 +1,41 @@
 package extensions
 
+val serializationPlugin = "kotlin-serialization"
+
 val composePluginList: List<String> = listOf(
     "kotlin-compose",
-    "kotlin-serialization"
 )
+
+val domainDependencies: List<Dependency>
+    get() = listOf(
+        Dependency(
+            type = ImplType.PROJECT,
+            aliases = listOf(":common")
+        ),
+    )
+
+val dataDependencies: List<Dependency>
+    get() = listOf(
+        Dependency(
+            type = ImplType.PROJECT,
+            aliases = listOf(
+                ":common",
+                ":domain",
+                //":network"
+            )
+        ),
+    )
+
+val featureDependencies: List<Dependency>
+    get() = listOf(
+        Dependency(
+            type = ImplType.PROJECT,
+            aliases = listOf(
+                ":common",
+                ":domain",
+            )
+        ),
+    )
 
 val composeDependencies: List<Dependency>
     get() = listOf(

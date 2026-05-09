@@ -24,9 +24,6 @@ val Project.projectConfigs: ProjectConfiguration
         )
     }
 
-val Project.betterNeptunConfig
-    get() = extensions.getByType<BetterNeptunExtension>()
-
 data class ProjectConfiguration(
     val versionName: String,
     val versionCode: Int,
