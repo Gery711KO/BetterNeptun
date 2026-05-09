@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.util
+package hu.kocsisgeri.betterneptun.ui.core.helper
 
 import android.content.BroadcastReceiver
 import android.content.Context

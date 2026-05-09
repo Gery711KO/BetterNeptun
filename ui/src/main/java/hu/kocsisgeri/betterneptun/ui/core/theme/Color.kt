@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.theme
+package hu.kocsisgeri.betterneptun.ui.core.theme
 
 import androidx.compose.ui.graphics.Color
 

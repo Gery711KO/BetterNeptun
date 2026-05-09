@@ -1,5 +1,6 @@
-package hu.kocsisgeri.betterneptun.ui.composable
+package hu.kocsisgeri.betterneptun.ui.core.composable
 
+import android.util.Base64
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.size
@@ -22,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import hu.kocsisgeri.betterneptun.domain.model.Avatar
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.isColorDark
-import hu.kocsisgeri.betterneptun.ui.util.decodeBase64ToBitmap
 
 @Composable
 fun AvatarImage(
@@ -109,5 +109,14 @@ private fun Base64ImageDisplay(
             contentDescription = "Avatar",
             modifier = modifier
         )
+    }
+}
+
+private fun decodeBase64ToBitmap(base64String: String): ByteArray? {
+    return try {
+        // A Base64 string dekódolása bájtokká
+        Base64.decode(base64String, Base64.DEFAULT)
+    } catch (e: Exception) {
+        null
     }
 }

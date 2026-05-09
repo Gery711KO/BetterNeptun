@@ -37,8 +37,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
 import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.screen.messages.detail.DetailItem
-import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
+import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import java.time.LocalDateTime
 import java.time.format.TextStyle
 import java.util.Locale
@@ -200,7 +200,7 @@ private fun DetailItem(icon: Painter, label: String, value: String) {
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleMedium,
-                fontFamily = hu.kocsisgeri.betterneptun.ui.theme.Armata,
+                fontFamily = Armata,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 fontWeight = FontWeight.Bold
             )

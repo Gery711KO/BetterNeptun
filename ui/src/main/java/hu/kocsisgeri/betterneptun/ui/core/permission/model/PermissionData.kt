@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.permission.model
+package hu.kocsisgeri.betterneptun.ui.core.permission.model
 
 import android.app.Activity
 import android.content.Context

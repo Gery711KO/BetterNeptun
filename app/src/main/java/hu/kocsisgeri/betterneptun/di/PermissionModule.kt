@@ -5,8 +5,8 @@ import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.permission.PermissionHandlerImpl
 import hu.kocsisgeri.betterneptun.permission.handled.BackgroundAlarm
 import hu.kocsisgeri.betterneptun.permission.handled.NotificationPermission
-import hu.kocsisgeri.betterneptun.ui.permission.PermissionHandler
-import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
+import hu.kocsisgeri.betterneptun.ui.core.permission.PermissionHandler
+import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import org.koin.dsl.bind
 import org.koin.dsl.module
 

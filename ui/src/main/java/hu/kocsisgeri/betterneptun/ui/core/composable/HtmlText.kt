@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.composable
+package hu.kocsisgeri.betterneptun.ui.core.composable
 
 import android.graphics.Typeface
 import android.text.Html
@@ -22,7 +22,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
-import hu.kocsisgeri.betterneptun.ui.theme.Armata
+import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
 
 @Composable
 fun HtmlText(

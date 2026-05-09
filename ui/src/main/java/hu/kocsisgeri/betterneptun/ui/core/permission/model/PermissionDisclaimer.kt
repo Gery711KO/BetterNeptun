@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.permission.model
+package hu.kocsisgeri.betterneptun.ui.core.permission.model
 
 data class PermissionDisclaimer(
     val humanReadablePermissionName: String,

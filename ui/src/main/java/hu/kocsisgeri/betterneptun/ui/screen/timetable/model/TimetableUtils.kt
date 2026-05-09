@@ -5,8 +5,8 @@ import androidx.core.graphics.ColorUtils
 import de.tobiasschuerg.weekview.data.Event
 import de.tobiasschuerg.weekview.util.TimeSpan
 import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
-import hu.kocsisgeri.betterneptun.ui.theme.Black
-import hu.kocsisgeri.betterneptun.ui.theme.White
+import hu.kocsisgeri.betterneptun.ui.core.theme.Black
+import hu.kocsisgeri.betterneptun.ui.core.theme.White
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth

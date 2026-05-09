@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.navigation.destination
+package hu.kocsisgeri.betterneptun.ui.destination
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable

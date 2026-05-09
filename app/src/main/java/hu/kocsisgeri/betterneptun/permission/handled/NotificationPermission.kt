@@ -17,8 +17,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import hu.kocsisgeri.betterneptun.common.get
 import hu.kocsisgeri.betterneptun.common.put
-import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
-import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionDisclaimer
+import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
+import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
 
 class NotificationPermission(
     private val sharedPreferences: SharedPreferences,

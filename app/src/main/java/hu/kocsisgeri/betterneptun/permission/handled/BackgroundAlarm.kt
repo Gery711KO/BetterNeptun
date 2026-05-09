@@ -11,8 +11,8 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
-import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionDisclaimer
+import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
+import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
 
 class BackgroundAlarm(
     appName: String,

@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.permission
+package hu.kocsisgeri.betterneptun.ui.core.permission
 
 import android.content.Context
 import androidx.activity.compose.ManagedActivityResultLauncher
@@ -9,7 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
+import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 
 @Composable
 fun rememberPermissionLauncher(permissionHandler: PermissionHandler): PermissionHandler.Launcher {

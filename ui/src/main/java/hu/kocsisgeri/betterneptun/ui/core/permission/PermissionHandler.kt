@@ -1,7 +1,7 @@
-package hu.kocsisgeri.betterneptun.ui.permission
+package hu.kocsisgeri.betterneptun.ui.core.permission
 
 import android.app.Activity
-import hu.kocsisgeri.betterneptun.ui.permission.model.PermissionData
+import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 

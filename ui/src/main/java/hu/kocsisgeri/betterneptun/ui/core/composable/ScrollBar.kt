@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.composable
+package hu.kocsisgeri.betterneptun.ui.core.composable
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState

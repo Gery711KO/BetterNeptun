@@ -1,14 +1,9 @@
-package hu.kocsisgeri.betterneptun.ui.navigation
+package hu.kocsisgeri.betterneptun.ui.core
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -27,8 +22,6 @@ import androidx.navigation3.ui.defaultPopTransitionSpec
 import androidx.navigation3.ui.defaultPredictivePopTransitionSpec
 import androidx.navigation3.ui.defaultTransitionSpec
 import androidx.navigationevent.NavigationEvent
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import kotlinx.serialization.Serializable
 import org.koin.compose.navigation3.EntryProvider
 import org.koin.core.annotation.KoinExperimentalAPI

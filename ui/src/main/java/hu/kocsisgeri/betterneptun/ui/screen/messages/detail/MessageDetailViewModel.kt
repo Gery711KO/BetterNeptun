@@ -1,7 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.screen.messages.detail
 
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.ui.base.ComposeViewModel
+import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import kotlinx.coroutines.flow.map
 
 class MessageDetailViewModel(
