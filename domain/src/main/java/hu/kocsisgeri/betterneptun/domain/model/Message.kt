@@ -8,5 +8,6 @@ data class Message(
     val subject: String,
     val date: LocalDateTime,
     val isNew : Boolean,
-    val senderAvatar: Avatar
+    val senderAvatar: Avatar,
+    val messageDetail: MessageDetail? = null
 )

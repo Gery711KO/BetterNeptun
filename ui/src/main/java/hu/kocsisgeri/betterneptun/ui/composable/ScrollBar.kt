@@ -46,11 +46,11 @@ fun ScrollBar(
         )
     }
 ) {
-    var height by remember { mutableIntStateOf(0) }
+    var offsetY by remember { mutableIntStateOf(0) }
     var progress by remember { mutableFloatStateOf(0f) }
     var showThumb by remember { mutableStateOf(true) }
 
-    val animatedHeight by animateIntAsState(height)
+    val animatedOffsetY by animateIntAsState(offsetY)
     val animatedAlpha by animateFloatAsState(
         targetValue = if (showThumb) 1f else 0f,
         animationSpec = tween(500)
@@ -98,12 +98,12 @@ fun ScrollBar(
         val trackHeight = constraints.maxHeight
         val thumbHeight = placeable.height
 
-        height = lerp(start = 0, stop = trackHeight - thumbHeight, fraction = progress)
+        offsetY = lerp(start = 0, stop = trackHeight - thumbHeight, fraction = progress)
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             placeable.placeRelative(
                 x = constraints.maxWidth - placeable.width,
-                y = animatedHeight
+                y = animatedOffsetY
             )
         }
     }

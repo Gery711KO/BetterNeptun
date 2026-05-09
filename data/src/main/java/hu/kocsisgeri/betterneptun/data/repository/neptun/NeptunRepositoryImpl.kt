@@ -17,16 +17,22 @@ import hu.kocsisgeri.betterneptun.domain.model.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.Average
 import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
 import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
+import hu.kocsisgeri.betterneptun.domain.model.Message
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
 import hu.kocsisgeri.betterneptun.domain.model.Subject
 import hu.kocsisgeri.betterneptun.domain.model.Term
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 
 internal class NeptunRepositoryImpl(
@@ -95,11 +101,18 @@ internal class NeptunRepositoryImpl(
                     userIds = response.data.receivedMessages.mapNotNull { it.senderUserId }
                 )
 
-                val newMessages = response.data.receivedMessages.map {
-                    it.toMessageDomain().copy(
-                        senderAvatar = avatarsResponse.data.find { avatar ->
-                            avatar.userId == it.senderUserId
-                        }?.toAvatarDomain() ?: Avatar.SystemAvatar
+                val details = response.data.receivedMessages.map {
+                    async { it.messageId to getMessageDetail(it.messageId) }
+                }.awaitAll()
+
+                val newMessages = response.data.receivedMessages.map { message ->
+                    val senderAvatar = avatarsResponse.data.find { avatar ->
+                        avatar.userId == message.senderUserId
+                    }?.toAvatarDomain() ?: Avatar.SystemAvatar
+
+                    message.toMessageDomain().copy(
+                        senderAvatar = senderAvatar,
+                        messageDetail = details.find { it.first == message.messageId }?.second
                     )
                 }
 
@@ -163,11 +176,7 @@ internal class NeptunRepositoryImpl(
 
     override suspend fun getMessageDetail(messageId: String) =
         withContext(ioDispatcher) {
-            val message = messages.value.messages.find { it.id == messageId }
-
-            networkDataSource.getMessageDetails(messageId).data.toMessageDomain().copy(
-                senderAvatar = message?.senderAvatar?: Avatar.SystemAvatar
-            )
+            networkDataSource.getMessageDetails(messageId).data.toMessageDomain()
         }
 
     override suspend fun readMessage(messageId: String, message: MessageDetail) {
