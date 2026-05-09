@@ -7,11 +7,11 @@ plugins {
 
 android {
     namespace = "hu.kocsisgeri.betterneptun.data"
-    compileSdk = Config.compileSdk
+    compileSdk = ProjectConfig.compileSdk
 
     defaultConfig {
-        minSdk = Config.minSdk
-        testInstrumentationRunner = Config.Test.testInstrumentationRunner
+        minSdk = ProjectConfig.minSdk
+        testInstrumentationRunner = ProjectConfig.Test.testInstrumentationRunner
     }
 
     compileOptions {
@@ -25,8 +25,8 @@ room {
 }
 
 dependencies {
-    implementation(project(":domain"))
-    implementation(project(":common"))
+    implementation(projects.domain)
+    implementation(projects.common)
 
     implementation(libs.bundles.androidx.room)
     ksp(libs.androidx.room.compiler)

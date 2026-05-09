@@ -5,11 +5,11 @@ plugins {
 
 android {
     namespace = "hu.kocsisgeri.betterneptun.common"
-    compileSdk = Config.compileSdk
+    compileSdk = ProjectConfig.compileSdk
 
     defaultConfig {
-        minSdk = Config.minSdk
-        testInstrumentationRunner = Config.Test.testInstrumentationRunner
+        minSdk = ProjectConfig.minSdk
+        testInstrumentationRunner = ProjectConfig.Test.testInstrumentationRunner
     }
 
     compileOptions {

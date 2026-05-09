@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "hu.kocsisgeri.betterneptun.ui"
-    compileSdk = Config.compileSdk
+    compileSdk = ProjectConfig.compileSdk
 
     defaultConfig {
-        minSdk = Config.minSdk
-        testInstrumentationRunner = Config.Test.testInstrumentationRunner
+        minSdk = ProjectConfig.minSdk
+        testInstrumentationRunner = ProjectConfig.Test.testInstrumentationRunner
 
-        buildConfigField("String", "VERSION_NAME", "\"${Config.VERSION_NAME}\"")
-        buildConfigField("String", "VERSION_CODE", "\"${Config.VERSION_CODE}\"")
+        buildConfigField("String", "VERSION_NAME", "\"${ProjectConfig.VERSION_NAME}\"")
+        buildConfigField("String", "VERSION_CODE", "\"${ProjectConfig.VERSION_CODE}\"")
     }
 
     compileOptions {
@@ -27,8 +27,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":domain"))
-    implementation(project(":common"))
+    implementation(projects.domain)
+    implementation(projects.common)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)

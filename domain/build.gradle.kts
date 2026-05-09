@@ -4,11 +4,11 @@ plugins {
 
 android {
     namespace = "hu.kocsisgeri.betterneptun.domain"
-    compileSdk = Config.compileSdk
+    compileSdk = ProjectConfig.compileSdk
 
     defaultConfig {
-        minSdk = Config.minSdk
-        testInstrumentationRunner = Config.Test.testInstrumentationRunner
+        minSdk = ProjectConfig.minSdk
+        testInstrumentationRunner = ProjectConfig.Test.testInstrumentationRunner
     }
 
     compileOptions {
@@ -18,7 +18,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":common"))
+    implementation(projects.common)
     implementation(libs.bundles.koin)
     implementation(libs.androidx.core.ktx)
 }
