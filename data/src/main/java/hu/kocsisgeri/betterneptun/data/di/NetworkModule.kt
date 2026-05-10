@@ -18,11 +18,8 @@ val networkModule = module {
     factory { new(::TokenAuthenticator) }
     factory { new(::TokenInterceptor) }
 
-
-    single {
-        HttpLoggingInterceptor().apply {
-            setLevel(HttpLoggingInterceptor.Level.BODY)
-        }
+    factory {
+        HttpLoggingInterceptor().apply { setLevel(HttpLoggingInterceptor.Level.BODY) }
     }
 
     single(named("AuthClient")) {

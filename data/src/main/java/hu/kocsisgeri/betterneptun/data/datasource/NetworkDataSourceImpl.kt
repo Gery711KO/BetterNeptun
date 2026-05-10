@@ -1,6 +1,9 @@
 package hu.kocsisgeri.betterneptun.data.datasource
 
 import hu.kocsisgeri.betterneptun.data.api.MainApiService
+import hu.kocsisgeri.betterneptun.data.model.ApiResponseDto
+import hu.kocsisgeri.betterneptun.data.model.PostIdsRequestDto
+import hu.kocsisgeri.betterneptun.data.model.UserAvatarDto
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
@@ -29,10 +32,23 @@ internal class NetworkDataSourceImpl(
         )
     }
 
+    override suspend fun getUserAvatars(userIds: List<String>) = withContext(ioDispatcher) {
+        api.getUserAvatars(userIds)
+    }
+
     override suspend fun getMessageDetails(messageId: String) =
         withContext(ioDispatcher) {
             api.getMessageDetails(messageId, messageId)
         }
+
+    override suspend fun postMessagePostRead(
+        messageId: String,
+        postIds: PostIdsRequestDto
+    ) {
+        withContext(ioDispatcher) {
+            api.postMessagePostRead(messageId, postIds)
+        }
+    }
 
     override suspend fun getExtendedTerms() =
         withContext(ioDispatcher) {

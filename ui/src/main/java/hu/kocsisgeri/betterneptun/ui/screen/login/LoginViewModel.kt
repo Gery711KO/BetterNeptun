@@ -1,17 +1,15 @@
 package hu.kocsisgeri.betterneptun.ui.screen.login
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import hu.kocsisgeri.betterneptun.common.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
+import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
-import hu.kocsisgeri.betterneptun.common.launchReportingErrors
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 
-class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel() {
+class LoginViewModel(private val loginRepository: LoginRepository) : ComposeViewModel() {
 
     private val neptunCode = MutableStateFlow<String?>(null)
     private val password = MutableStateFlow<String?>(null)
@@ -30,11 +28,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
             stayLoggedIn = stayLoggedIn,
             isButtonEnabled = neptunCode.isNullOrEmpty().not() && password.isNullOrEmpty().not()
         )
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000L),
-        initialValue = null
-    )
+    }.stateWhileSubscribed(default = null)
 
     init {
         viewModelScope.launchReportingErrors {

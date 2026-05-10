@@ -17,7 +17,7 @@ data class UserInfoDto(
     data class Avatar(
         val avatarType: Int,
         val image: String?,
-        val fallbackColorCodeInHexa: String,
+        val fallbackColorCodeInHexa: String?,
         val printName: String,
     )
 }

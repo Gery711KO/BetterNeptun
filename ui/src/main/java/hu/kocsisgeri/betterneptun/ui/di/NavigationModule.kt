@@ -1,14 +1,14 @@
 package hu.kocsisgeri.betterneptun.ui.di
 
-import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessagesDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
+import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.destination.HomeDestination
+import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
+import hu.kocsisgeri.betterneptun.ui.destination.MessageDetailDestination
+import hu.kocsisgeri.betterneptun.ui.destination.MessagesDestination
+import hu.kocsisgeri.betterneptun.ui.destination.SemestersDestination
+import hu.kocsisgeri.betterneptun.ui.destination.SettingsDestination
+import hu.kocsisgeri.betterneptun.ui.destination.SubjectsDestination
+import hu.kocsisgeri.betterneptun.ui.destination.TimetableDestination
 import hu.kocsisgeri.betterneptun.ui.screen.home.HomeScreen
 import hu.kocsisgeri.betterneptun.ui.screen.login.LoginScreen
 import hu.kocsisgeri.betterneptun.ui.screen.messages.MessagesScreen

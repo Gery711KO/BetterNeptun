@@ -1,26 +1,38 @@
 package hu.kocsisgeri.betterneptun.data.repository.neptun
 
-import android.graphics.Color
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
+import hu.kocsisgeri.betterneptun.data.mapper.toAvatarDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toAverageDomain
+import hu.kocsisgeri.betterneptun.data.mapper.toDomain
+import hu.kocsisgeri.betterneptun.data.mapper.toEntity
 import hu.kocsisgeri.betterneptun.data.mapper.toExtendedTermDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
-import hu.kocsisgeri.betterneptun.data.mapper.toMessageEntity
 import hu.kocsisgeri.betterneptun.data.mapper.toSubjectDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toTermDomain
+import hu.kocsisgeri.betterneptun.data.model.PostIdsRequestDto
 import hu.kocsisgeri.betterneptun.data.repository.runApiCall
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.Average
-import hu.kocsisgeri.betterneptun.domain.model.CalendarEntity
+import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
 import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
+import hu.kocsisgeri.betterneptun.domain.model.Message
+import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
+import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
 import hu.kocsisgeri.betterneptun.domain.model.Subject
 import hu.kocsisgeri.betterneptun.domain.model.Term
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 
 internal class NeptunRepositoryImpl(
@@ -31,11 +43,16 @@ internal class NeptunRepositoryImpl(
 
     override var currentMessagePage = 1
 
-    override val events = MutableStateFlow<List<CalendarEntity.Event>>(listOf())
-
-    override val messages = localDataSource.appDatabase.messages.getData().map { list ->
-        list.map { it.toMessageDomain() }
+    private val remoteEvents = MutableStateFlow<List<CalendarItem.Event>>(listOf())
+    private val localEvents = localDataSource.localEvents.getData().map { list ->
+        list.map { it.toDomain() }
     }
+
+    override val events = combine(remoteEvents, localEvents) { remote, local ->
+        remote + local
+    }
+
+    override val messages = MutableStateFlow(MessagesPager())
     override val unreadMessagesCount: MutableStateFlow<Int?> = MutableStateFlow(null)
 
     override val extendedTerms = MutableStateFlow<ApiResult<List<ExtendedTerm>>>(ApiResult.Loading)
@@ -45,16 +62,80 @@ internal class NeptunRepositoryImpl(
     override val terms = MutableStateFlow<ApiResult<List<Term>>>(ApiResult.Loading)
     override val averages = MutableStateFlow<ApiResult<List<Average>>>(ApiResult.Loading)
 
-    override suspend fun fetchMessages() {
+    override suspend fun checkForMessageUpdates() {
         withContext(ioDispatcher) {
-            networkDataSource.getReceivedMessages(
-                firstRow = 0,
-                lastRow = 20
-            ).let {
-                it.data.receivedMessages.map { message ->
-                    message.toMessageEntity()
-                }.forEach { entity ->
-                    localDataSource.appDatabase.messages.insertOne(entity)
+            fetchUnreadMessages()
+            val newMessages = unreadMessagesCount.value?: 0
+
+            if (newMessages > 0) fetchMessages(isRefresh = true)
+        }
+    }
+
+    override suspend fun fetchMessages(isRefresh: Boolean) {
+        val pageSize = 20
+        if (isRefresh) {
+            currentMessagePage = 1
+        }
+
+        if (isRefresh.not() && messages.value.isEndReached) return
+
+        val firstRow = (currentMessagePage - 1) * pageSize
+        val lastRow = currentMessagePage * pageSize
+
+        withContext(ioDispatcher) {
+            try {
+                messages.update { pager ->
+                    pager.copy(
+                        messages = if (isRefresh) emptyList() else pager.messages,
+                        isLoadingNextMessages = true,
+                        error = null
+                    )
+                }
+
+                val response = networkDataSource.getReceivedMessages(
+                    firstRow = firstRow,
+                    lastRow = lastRow
+                )
+
+                val avatarsResponse = networkDataSource.getUserAvatars(
+                    userIds = response.data.receivedMessages.mapNotNull { it.senderUserId }
+                )
+
+                val details = response.data.receivedMessages.map {
+                    async { it.messageId to getMessageDetail(it.messageId) }
+                }.awaitAll()
+
+                val newMessages = response.data.receivedMessages.map { message ->
+                    val senderAvatar = avatarsResponse.data.find { avatar ->
+                        avatar.userId == message.senderUserId
+                    }?.toAvatarDomain() ?: Avatar.SystemAvatar
+
+                    message.toMessageDomain().copy(
+                        senderAvatar = senderAvatar,
+                        messageDetail = details.find { it.first == message.messageId }?.second
+                    )
+                }
+
+                messages.update { pager ->
+                    val currentMessages = pager.messages
+
+                    pager.copy(
+                        messages = if (isRefresh) newMessages else currentMessages + newMessages,
+                        isLoadingNextMessages = false,
+                        isEndReached = newMessages.size < pageSize
+                    )
+                }
+
+                if (newMessages.isNotEmpty()) {
+                    currentMessagePage++
+                }
+            } catch (exception: Exception) {
+                messages.update { pager ->
+                    pager.copy(
+                        error = exception.message ?: "Something went wrong.",
+                        isLoadingNextMessages = false,
+                        isEndReached = false
+                    )
                 }
             }
         }
@@ -98,8 +179,34 @@ internal class NeptunRepositoryImpl(
             networkDataSource.getMessageDetails(messageId).data.toMessageDomain()
         }
 
+    override suspend fun readMessage(messageId: String, message: MessageDetail) {
+        if (message.hasUnreadPost) {
+            val foundMessage = messages.value.messages.find { it.id == messageId }
+
+            messages.update { pager ->
+                pager.copy(
+                    messages = pager.messages.toMutableList().apply {
+                        foundMessage?.let {
+                            val index = indexOf(foundMessage)
+                            if (index != -1) this[index] = foundMessage.copy(isNew = false)
+                        }
+                    }
+                )
+            }
+
+            withContext(ioDispatcher) {
+                networkDataSource.postMessagePostRead(
+                    messageId = messageId,
+                    postIds = PostIdsRequestDto(
+                        postIds = message.posts.map { it.id }
+                    )
+                )
+            }
+        }
+    }
+
     override fun purge() {
-        events.value = emptyList()
+        remoteEvents.value = emptyList()
         unreadMessagesCount.value = null
         extendedTerms.value = ApiResult.Loading
         subjects.value = ApiResult.Loading
@@ -108,22 +215,16 @@ internal class NeptunRepositoryImpl(
         currentMessagePage = 1
     }
 
-    override suspend fun randomiseCalendarColors() {
-//        withContext(ioDispatcher) {
-//            getRandomizedColoredEvents()?.let {
-//                events.tryEmit(it)
-//                CourseRepository.courses.tryEmit(it)
-//            }
-//        }
+    override suspend fun addLocalEvent(event: CalendarItem.LocalEvent) {
+        withContext(ioDispatcher) {
+            localDataSource.localEvents.insertOne(event.toEntity())
+        }
     }
 
-    override suspend fun setEventColor(event: CalendarEntity.Event?, color: Int) {
-//        withContext(ioDispatcher) {
-//            setEventColorAsync(event, color)?.let {
-//                events.tryEmit(it)
-//                CourseRepository.courses.tryEmit(it)
-//            }
-//        }
+    override suspend fun deleteLocalEvent(eventId: Long) {
+        withContext(ioDispatcher) {
+            localDataSource.localEvents.deleteById(eventId)
+        }
     }
 
     override suspend fun fetchCalendarData() {
@@ -179,43 +280,9 @@ internal class NeptunRepositoryImpl(
 //                            )
 //                        })
 //                        HomeState.courses.tryEmit(event)
-//                        events.tryEmit(event)
+//                        remoteEvents.tryEmit(event)
 //                    }
 //                }
 //            }
-    }
-
-    private suspend fun getRandomColor(title: String?, colorMap: MutableMap<String?, Int>): Int {
-        val colors = localDataSource.appDatabase.colors.getData().firstOrNull()
-        val current = colors?.firstOrNull { it.title == title }
-
-        val random = IntRange(0, 255)
-
-        val baseColor = Color.BLACK;
-
-        val baseRed = Color.red(baseColor);
-        val baseGreen = Color.green(baseColor);
-        val baseBlue = Color.blue(baseColor);
-
-        val red = (baseRed + random.random()) / 2;
-        val green = (baseGreen + random.random()) / 2;
-        val blue = (baseBlue + random.random()) / 2;
-
-        return if (colors.isNullOrEmpty()) {
-            return if (colorMap.containsKey(title)) {
-                colorMap[title]!!
-            } else {
-                colorMap[title] = Color.rgb(red, green, blue)
-                colorMap[title]!!
-            }
-        } else {
-            if (current != null) {
-                colorMap[title] = current.colorInt
-                colorMap[title]!!
-            } else {
-                colorMap[title] = Color.rgb(red, green, blue)
-                colorMap[title]!!
-            }
-        }
     }
 }

@@ -1,20 +1,19 @@
 package hu.kocsisgeri.betterneptun.ui.screen.subjects
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import hu.kocsisgeri.betterneptun.common.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import hu.kocsisgeri.betterneptun.common.launchReportingErrors
+import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 
 class SubjectsViewModel(
     repo: NeptunRepository
-) : ViewModel() {
-    private val markBookDataFlow = repo.subjects
-    val listItems = markBookDataFlow.asLiveData()
+) : ComposeViewModel() {
+
+    val listItems = repo.subjects.stateWhileSubscribed()
 
     init {
-        viewModelScope.launchReportingErrors {
+        if (repo.subjects.value !is ApiResult.Success) viewModelScope.launchReportingErrors {
             repo.fetchExtendedTerms()
 
             repo.extendedTerms.collect {

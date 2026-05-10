@@ -17,10 +17,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.rounded.Done
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -29,10 +28,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,23 +42,37 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.Subject
-import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.core.Navigator
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectsScreen(
     viewModel: SubjectsViewModel = koinViewModel(),
     navigator: Navigator = koinInject()
 ) {
-    val subjectsState by viewModel.listItems.observeAsState()
+    val subjectsState by viewModel.listItems.collectAsStateWithLifecycle()
 
+    SubjectsContent(
+        subjectsState = subjectsState,
+        onBackClick = { navigator.navigateBack() }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SubjectsContent(
+    subjectsState: ApiResult<List<Subject>>?,
+    onBackClick: () -> Unit
+) {
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 title = {
                     Text(
                         text = "Kurzusok",
@@ -69,7 +82,7 @@ fun SubjectsScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.navigateBack() }) {
+                    IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Vissza"
@@ -78,7 +91,7 @@ fun SubjectsScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
                     navigationIconContentColor = MaterialTheme.colorScheme.onBackground
                 )
@@ -97,6 +110,7 @@ fun SubjectsScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
+
                 is ApiResult.Success -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -108,6 +122,7 @@ fun SubjectsScreen(
                         }
                     }
                 }
+
                 is ApiResult.Error -> {
                     Text(
                         text = "Hiba történt az adatok betöltésekor",
@@ -115,6 +130,7 @@ fun SubjectsScreen(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
+
                 null -> {}
             }
         }
@@ -126,7 +142,7 @@ fun SubjectItem(subject: Subject) {
     var expanded by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
 
-    ElevatedCard(
+    Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.elevatedCardColors(
@@ -234,5 +250,79 @@ fun DetailItem(label: String, value: String) {
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.End
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SubjectsScreenSuccessPreview() {
+    BetterNeptunTheme {
+        SubjectsContent(
+            subjectsState = ApiResult.Success(
+                listOf(
+                    Subject(
+                        subjectId = "1",
+                        subjectCode = "GKNB_INTM001",
+                        subjectCredit = 5,
+                        subjectName = "Programozás I.",
+                        subjectRequirement = "Vizsga",
+                        termId = "2023/24/1",
+                        isCompleted = true
+                    ),
+                    Subject(
+                        subjectId = "2",
+                        subjectCode = "GKNB_INTM002",
+                        subjectCredit = 3,
+                        subjectName = "Diszkrét matematika",
+                        subjectRequirement = "Aláírás",
+                        termId = "2023/24/1",
+                        isCompleted = false
+                    )
+                )
+            ),
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SubjectsScreenLoadingPreview() {
+    BetterNeptunTheme {
+        SubjectsContent(
+            subjectsState = ApiResult.Loading,
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SubjectsScreenErrorPreview() {
+    BetterNeptunTheme {
+        SubjectsContent(
+            subjectsState = ApiResult.Error("Valami hiba történt"),
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SubjectItemPreview() {
+    BetterNeptunTheme {
+        Box(modifier = Modifier.padding(16.dp)) {
+            SubjectItem(
+                subject = Subject(
+                    subjectId = "1",
+                    subjectCode = "GKNB_INTM001",
+                    subjectCredit = 5,
+                    subjectName = "Programozás I.",
+                    subjectRequirement = "Vizsga",
+                    termId = "2023/24/1",
+                    isCompleted = true
+                )
+            )
+        }
     }
 }

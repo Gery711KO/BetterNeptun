@@ -16,10 +16,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -30,29 +30,59 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import hu.kocsisgeri.betterneptun.ui.BuildConfig
-import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import hu.kocsisgeri.betterneptun.common.ThemeMode
+import hu.kocsisgeri.betterneptun.ui.BuildConfig
+import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
+import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel(),
     navigator: Navigator = koinInject(),
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val notificationDelay by viewModel.notificationDelay.collectAsStateWithLifecycle()
+
+    SettingsContent(
+        themeMode = themeMode,
+        notificationDelay = notificationDelay,
+        onThemeChange = viewModel::saveTheme,
+        onNotificationDelayChange = viewModel::saveNotificationDelay,
+        onLogout = {
+            viewModel.logout()
+            navigator.navigateToInclusive(LoginDestination)
+        },
+        onBackClick = navigator::navigateBack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsContent(
+    themeMode: ThemeMode,
+    notificationDelay: Int,
+    onThemeChange: (ThemeMode) -> Unit,
+    onNotificationDelayChange: (Int) -> Unit,
+    onLogout: () -> Unit,
+    onBackClick: () -> Unit,
+) {
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            CenterAlignedTopAppBar(
+            LargeTopAppBar(
                 title = {
                     Text(
                         text = "Beállítások",
@@ -62,8 +92,9 @@ fun SettingsScreen(
                         )
                     )
                 },
+                scrollBehavior = scrollBehavior,
                 navigationIcon = {
-                    IconButton(onClick = navigator::navigateBack) {
+                    IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Vissza"
@@ -71,7 +102,8 @@ fun SettingsScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 )
@@ -81,10 +113,12 @@ fun SettingsScreen(
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .padding(paddingValues)
                 .fillMaxSize()
+                .padding(top = paddingValues.calculateTopPadding())
+                .padding(horizontal = 16.dp)
+                .clip(MaterialTheme.shapes.large)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                .padding(bottom = paddingValues.calculateBottomPadding()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             SettingsSectionLabel(label = "Megjelenés")
@@ -100,17 +134,17 @@ fun SettingsScreen(
                     ThemeOption(
                         label = "Automatikus",
                         selected = themeMode == ThemeMode.AUTO,
-                        onClick = { viewModel.saveTheme(ThemeMode.AUTO) }
+                        onClick = { onThemeChange(ThemeMode.AUTO) }
                     )
                     ThemeOption(
                         label = "Világos mód",
                         selected = themeMode == ThemeMode.LIGHT,
-                        onClick = { viewModel.saveTheme(ThemeMode.LIGHT) }
+                        onClick = { onThemeChange(ThemeMode.LIGHT) }
                     )
                     ThemeOption(
                         label = "Sötét mód",
                         selected = themeMode == ThemeMode.DARK,
-                        onClick = { viewModel.saveTheme(ThemeMode.DARK) }
+                        onClick = { onThemeChange(ThemeMode.DARK) }
                     )
                 }
             }
@@ -124,9 +158,32 @@ fun SettingsScreen(
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    InfoRow(label = "Legkorábbi óra", value = "8:00")
-                    InfoRow(label = "Legkésőbbi óra", value = "22:00")
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    DelayOption(
+                        label = "Nincs értesítés",
+                        selected = notificationDelay == -1,
+                        onClick = { onNotificationDelayChange(-1) }
+                    )
+                    DelayOption(
+                        label = "5 perccel előtte",
+                        selected = notificationDelay == 5,
+                        onClick = { onNotificationDelayChange(5) }
+                    )
+                    DelayOption(
+                        label = "10 perccel előtte",
+                        selected = notificationDelay == 10,
+                        onClick = { onNotificationDelayChange(10) }
+                    )
+                    DelayOption(
+                        label = "15 perccel előtte",
+                        selected = notificationDelay == 15,
+                        onClick = { onNotificationDelayChange(15) }
+                    )
+                    DelayOption(
+                        label = "30 perccel előtte",
+                        selected = notificationDelay == 30,
+                        onClick = { onNotificationDelayChange(30) }
+                    )
                 }
             }
 
@@ -149,12 +206,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            LogoutButton(
-                onClick = {
-                    viewModel.logout()
-                    navigator.navigateToInclusive(LoginDestination)
-                }
-            )
+            LogoutButton(onClick = onLogout)
 
             Spacer(modifier = Modifier.height(100.dp))
         }
@@ -171,6 +223,42 @@ fun SettingsSectionLabel(label: String) {
             .padding(top = 24.dp, bottom = 8.dp),
         color = MaterialTheme.colorScheme.onBackground
     )
+}
+
+@Composable
+fun DelayOption(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+            ),
+            color = if (selected) {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        )
+        RadioButton(
+            selected = selected,
+            onClick = null,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.primary,
+                unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        )
+    }
 }
 
 @Composable
@@ -259,5 +347,35 @@ fun LogoutButton(onClick: () -> Unit) {
                 textAlign = TextAlign.Center
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsPreviewLight() {
+    BetterNeptunTheme(darkTheme = false) {
+        SettingsContent(
+            themeMode = ThemeMode.AUTO,
+            notificationDelay = 15,
+            onThemeChange = {},
+            onNotificationDelayChange = {},
+            onLogout = {},
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsPreviewDark() {
+    BetterNeptunTheme(darkTheme = true) {
+        SettingsContent(
+            themeMode = ThemeMode.DARK,
+            notificationDelay = 30,
+            onThemeChange = {},
+            onNotificationDelayChange = {},
+            onLogout = {},
+            onBackClick = {}
+        )
     }
 }
