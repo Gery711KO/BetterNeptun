@@ -2,10 +2,13 @@ package extensions
 
 import androidx.room.gradle.RoomExtension
 import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Project
+import org.gradle.api.logging.LogLevel
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.getByType
 
 internal const val BETTER_NEPTUN_EXTENSION_NAME = "betterNeptun"
@@ -15,24 +18,12 @@ class BetterNeptunApplicationExtension(
 ) {
     fun setup() {
         with(project) {
-            extensions.getByType(ApplicationExtension::class).apply {
-                buildFeatures { compose = true }
+            val projects = rootProject.subprojects.mapNotNull { subProject ->
+                if (subProject.path.contains("app")) null
+                else subProject.path
             }
-            dependencies {
-                pluginManager.applyPluginFromLibs(libs to listOf(serializationPlugin))
-                implementDependency(
-                    libs = libs,
-                    dependency = Dependency(
-                        type = ImplType.PROJECT,
-                        aliases = listOf(
-                            ":common",
-                            ":data",
-                            ":domain",
-                            ":ui"
-                        )
-                    )
-                )
-            }
+            setupProjects(projects)
+            setupSerialization()
             setupKoin()
             setupCompose()
             setupNavigation3()
@@ -54,11 +45,9 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         namespaceSuffix: String,
     ) {
         with(project) {
-            extensions.getByType(LibraryExtension::class).apply {
-                namespace = projectConfigs.namespace + ".$namespaceSuffix"
-                buildFeatures { compose = true }
-            }
-            pluginManager.applyPluginFromLibs(libs to listOf(serializationPlugin))
+            setNamespace(namespaceSuffix)
+            setupSerialization()
+
             dependencies {
                 implementDependencies(libs = libs, dependencyList = featureDependencies)
             }
@@ -73,10 +62,8 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         namespaceSuffix: String,
     ) {
         with(project) {
-            extensions.getByType(LibraryExtension::class).apply {
-                namespace = projectConfigs.namespace + ".$namespaceSuffix"
-            }
-            pluginManager.applyPluginFromLibs(libs to listOf(serializationPlugin))
+            setNamespace(namespaceSuffix)
+            setupSerialization()
             setupKoin()
             dependencies {
                 implementDependencies(libs = libs, dependencyList = domainDependencies)
@@ -90,11 +77,10 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         useRoom: Boolean = false,
     ) {
         with(project) {
-            extensions.getByType(LibraryExtension::class).apply {
-                namespace = projectConfigs.namespace + ".$namespaceSuffix"
-            }
-            pluginManager.applyPluginFromLibs(libs to listOf(serializationPlugin))
             if (useRoom) setupRoom()
+
+            setNamespace(namespaceSuffix)
+            setupSerialization()
             setupKoin()
             dependencies {
                 implementDependencies(libs = libs, dependencyList = dataDependencies)
@@ -108,12 +94,10 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         useNavigation3: Boolean = false,
     ) {
         with(project) {
-            extensions.getByType(LibraryExtension::class).apply {
-                namespace = projectConfigs.namespace + ".$namespaceSuffix"
-            }
+            setNamespace(namespaceSuffix)
+            setupSerialization()
             setupKoin()
 
-            pluginManager.applyPluginFromLibs(libs to listOf(serializationPlugin))
             if (useCompose) setupCompose()
             if (useNavigation3) setupNavigation3()
         }
@@ -122,6 +106,12 @@ class BetterNeptunLibraryExtension(private val project: Project) {
 
 private fun Project.setupCompose() {
     pluginManager.applyPluginFromLibs(libs to composePluginList)
+    extensions.findByType(ApplicationExtension::class)?.apply {
+        buildFeatures { compose = true }
+    }
+    extensions.findByType(LibraryExtension::class)?.apply {
+        buildFeatures { compose = true }
+    }
     dependencies {
         implementDependencies(libs = libs, dependencyList = composeDependencies)
     }
@@ -152,5 +142,27 @@ private fun Project.setupRoom() {
 private fun Project.setupKoin() {
     dependencies {
         implementDependencies(libs = libs, dependencyList = koinDependency)
+    }
+}
+
+private fun Project.setupProjects(projectPaths: List<String>) {
+    dependencies {
+        implementDependency(
+            libs = libs,
+            dependency = Dependency(
+                type = ImplType.PROJECT,
+                aliases = projectPaths
+            )
+        )
+    }
+}
+
+private fun Project.setupSerialization() {
+    pluginManager.applyPluginFromLibs(libs to listOf(serializationPlugin))
+}
+
+private fun Project.setNamespace(namespaceSuffix: String) {
+    extensions.getByType(LibraryExtension::class).apply {
+        namespace = projectConfigs.namespace + ".$namespaceSuffix"
     }
 }
