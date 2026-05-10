@@ -75,8 +75,6 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         ) { allowedModules ->
             if (useRoom) setupRoom()
             if (useAutoProjectConfiguration) includeProjects(getAllowedProjects(allowedModules))
-
-            includeProjects(getAllowedProjects(allowedModules))
         }
     }
 

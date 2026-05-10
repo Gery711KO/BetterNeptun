@@ -13,13 +13,12 @@ import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.getByType
 
-const val BETTER_NEPTUN_EXTENSION_NAME = "betterNeptun"
+internal const val BETTER_NEPTUN_EXTENSION_NAME = "betterNeptun"
 
 val filteredModules = ProjectModule.entries
     .filter { it.isParentModule }
     .map { it.path }
     .plus(":app")
-
 
 fun Project.setupCompose() {
     pluginManager.applyPluginFromLibs(libs to composePluginList)

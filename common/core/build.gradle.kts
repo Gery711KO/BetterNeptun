@@ -3,7 +3,7 @@ plugins {
 }
 
 betterNeptun {
-    setupCommonDependencies("common")
+    setupCommonDependencies("common.core")
 }
 
 dependencies {
