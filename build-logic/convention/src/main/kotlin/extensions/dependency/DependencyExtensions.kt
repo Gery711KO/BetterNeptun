@@ -1,20 +1,10 @@
-package extensions
+package extensions.dependency
 
 import org.gradle.api.artifacts.VersionCatalog
-import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
 import org.gradle.api.plugins.PluginManager
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.project
 import kotlin.jvm.optionals.getOrElse
-
-/**
- * Safely retrieves a version from the catalog or throws a descriptive error.
- */
-internal fun VersionCatalog.getVersion(alias: String): String {
-    return findVersion(alias).getOrElse {
-        throw IllegalStateException("Version alias '$alias' not found in catalog '${this.name}'")
-    }.toString()
-}
 
 /**
  * Applies plugins from the catalog. Throws if any plugin is missing.
@@ -44,12 +34,12 @@ internal fun DependencyHandlerScope.implementDependency(
     dependency: Dependency
 ) {
     when (dependency.type) {
-        ImplType.BUNDLE -> implement(libs, dependency.config, dependency.aliases, isBundle = true)
-        ImplType.DEPENDENCY -> implement(libs, dependency.config, dependency.aliases)
-        ImplType.PROJECT -> dependency.aliases.forEach { alias ->
+        Dependency.Type.BUNDLE -> implement(libs, dependency.config, dependency.aliases, isBundle = true)
+        Dependency.Type.DEPENDENCY -> implement(libs, dependency.config, dependency.aliases)
+        Dependency.Type.PROJECT -> dependency.aliases.forEach { alias ->
             add(dependency.config, project(alias))
         }
-        ImplType.PLATFORM -> implement(libs, dependency.config, dependency.aliases, isPlatform = true)
+        Dependency.Type.PLATFORM -> implement(libs, dependency.config, dependency.aliases, isPlatform = true)
     }
 }
 
@@ -88,11 +78,3 @@ private fun DependencyHandlerScope.implement(
         }
     }
 }
-
-data class Dependency(
-    val type: ImplType = ImplType.DEPENDENCY,
-    val config: String = IMPLEMENTATION_CONFIGURATION_NAME,
-    val aliases: List<String>
-)
-
-enum class ImplType { BUNDLE, DEPENDENCY, PROJECT, PLATFORM }

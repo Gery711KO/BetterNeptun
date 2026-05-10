@@ -9,8 +9,8 @@ import hu.kocsisgeri.betterneptun.common.delete
 import hu.kocsisgeri.betterneptun.common.get
 import hu.kocsisgeri.betterneptun.common.put
 import hu.kocsisgeri.betterneptun.common.serialization.Serialization
-import hu.kocsisgeri.betterneptun.data.dao.AppDatabase
-import hu.kocsisgeri.betterneptun.data.dao.LocalEventDao
+import hu.kocsisgeri.database.room.AppDatabase
+import hu.kocsisgeri.database.room.LocalEventDao
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

@@ -1,22 +1,14 @@
 import com.android.build.api.dsl.LibraryExtension
-import extensions.BETTER_NEPTUN_EXTENSION_NAME
-import extensions.BetterNeptunLibraryExtension
-import extensions.Dependency
-import extensions.ImplType
-import extensions.implementDependency
-import extensions.libs
+import extensions.config.libs
+import extensions.dependency.Dependency
+import extensions.dependency.implementDependency
+import extensions.gradle.BETTER_NEPTUN_EXTENSION_NAME
+import extensions.gradle.BetterNeptunLibraryExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 
-class AndroidLibraryConventionPlugin : AndroidBaseConventionPlugin(
-    extension = {
-        extensions.add(
-            BETTER_NEPTUN_EXTENSION_NAME,
-            BetterNeptunLibraryExtension(project)
-        )
-    }
-) {
+class AndroidLibraryConventionPlugin : AndroidBaseConventionPlugin() {
 
     override val Project.commonExtension: LibraryExtension
         get() = extensions.getByType(LibraryExtension::class)
@@ -27,11 +19,16 @@ class AndroidLibraryConventionPlugin : AndroidBaseConventionPlugin(
                 apply("com.android.library")
             }
 
+            extensions.add(
+                BETTER_NEPTUN_EXTENSION_NAME,
+                BetterNeptunLibraryExtension(target)
+            )
+
             dependencies {
                 implementDependency(
                     libs = libs,
                     dependency = Dependency(
-                        type = ImplType.DEPENDENCY,
+                        type = Dependency.Type.DEPENDENCY,
                         aliases = listOf("timber")
                     )
                 )

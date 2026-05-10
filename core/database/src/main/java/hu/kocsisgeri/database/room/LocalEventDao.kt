@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.data.dao
+package hu.kocsisgeri.database.room
 
 import androidx.room.Dao
 import androidx.room.Insert

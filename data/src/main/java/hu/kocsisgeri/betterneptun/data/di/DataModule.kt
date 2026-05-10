@@ -7,7 +7,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import hu.kocsisgeri.betterneptun.data.api.token.AuthStore
-import hu.kocsisgeri.betterneptun.data.dao.AppDatabase
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSourceImpl
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
@@ -18,6 +17,7 @@ import hu.kocsisgeri.betterneptun.data.repository.settings.SettingsRepositoryImp
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
+import hu.kocsisgeri.database.room.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.module.dsl.new
 import org.koin.dsl.module

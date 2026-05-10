@@ -156,6 +156,7 @@ compose = [
     "androidx-compose-material3",
     "androidx-compose-material",
     "androidx-compose-material-iconsExtended",
+    "google-material"
 ]
 
 navigation3 = [

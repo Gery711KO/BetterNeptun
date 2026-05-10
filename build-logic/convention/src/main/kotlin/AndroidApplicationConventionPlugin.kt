@@ -1,22 +1,14 @@
 import com.android.build.api.dsl.ApplicationExtension
-import extensions.BETTER_NEPTUN_EXTENSION_NAME
-import extensions.BetterNeptunApplicationExtension
-import extensions.Dependency
-import extensions.ImplType
-import extensions.implementDependency
-import extensions.libs
+import extensions.config.libs
+import extensions.dependency.Dependency
+import extensions.dependency.implementDependency
+import extensions.gradle.BETTER_NEPTUN_EXTENSION_NAME
+import extensions.gradle.BetterNeptunApplicationExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 
-class AndroidApplicationConventionPlugin: AndroidBaseConventionPlugin(
-    extension = {
-        extensions.add(
-            BETTER_NEPTUN_EXTENSION_NAME,
-            BetterNeptunApplicationExtension(project)
-        )
-    }
-) {
+class AndroidApplicationConventionPlugin: AndroidBaseConventionPlugin() {
     override val Project.commonExtension: ApplicationExtension
         get() = extensions.getByType(ApplicationExtension::class)
 
@@ -26,11 +18,16 @@ class AndroidApplicationConventionPlugin: AndroidBaseConventionPlugin(
                 apply("com.android.application")
             }
 
+            extensions.add(
+                BETTER_NEPTUN_EXTENSION_NAME,
+                BetterNeptunApplicationExtension(target),
+            )
+
             dependencies {
                 implementDependency(
                     libs = libs,
                     dependency = Dependency(
-                        type = ImplType.DEPENDENCY,
+                        type = Dependency.Type.DEPENDENCY,
                         aliases = listOf(
                             "timber",
                             "androidx-core-ktx",
