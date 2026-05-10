@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google {
             content {
@@ -11,6 +12,8 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -25,12 +28,18 @@ dependencyResolutionManagement {
         create("libs") {
             from(files("gradle/libs.version.toml"))
         }
+        create("config") {
+            from(files("gradle/config.version.toml"))
+        }
     }
 }
 
 rootProject.name = "BetterNeptun"
 include(":app")
-include(":common")
+
+include(":core:database")
+include(":common:core")
+
 include(":domain")
 include(":data")
 include(":ui")
