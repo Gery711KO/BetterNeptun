@@ -40,7 +40,7 @@ internal class NeptunRepositoryImpl(
     override var currentMessagePage = 1
 
     private val remoteEvents = MutableStateFlow<List<CalendarItem.Event>>(listOf())
-    private val localEvents = localDataSource.localEvents.getData().map { list ->
+    private val localEvents = localDataSource.localEventsDb.getData().map { list ->
         list.map { it.toDomain() }
     }
 
@@ -213,13 +213,13 @@ internal class NeptunRepositoryImpl(
 
     override suspend fun addLocalEvent(event: CalendarItem.LocalEvent) {
         withContext(ioDispatcher) {
-            localDataSource.localEvents.insertOne(event.toEntity())
+            localDataSource.localEventsDb.insertOne(event.toEntity())
         }
     }
 
     override suspend fun deleteLocalEvent(eventId: Long) {
         withContext(ioDispatcher) {
-            localDataSource.localEvents.deleteById(eventId)
+            localDataSource.localEventsDb.deleteById(eventId)
         }
     }
 

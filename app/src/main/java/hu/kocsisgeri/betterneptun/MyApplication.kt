@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun
 
 import android.app.Application
+import hu.kocsisgeri.betterneptun.core.database.di.databaseModule
 import hu.kocsisgeri.betterneptun.data.di.dataModule
 import hu.kocsisgeri.betterneptun.core.network.di.networkModule
 import hu.kocsisgeri.betterneptun.di.notificationModule
@@ -34,6 +35,7 @@ open class MyApplication : Application() {
     companion object {
         internal val koinModules = listOf(
             networkModule,
+            databaseModule,
             dataModule,
             domainModule,
             navigationModule,

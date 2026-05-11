@@ -7,13 +7,13 @@ import androidx.room.TypeConverters
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-@Database(entities = [LocalEventEntity::class], version = 1)
+@Database(entities = [RoomLocalEventEntity::class], version = 1)
 @TypeConverters(Converters::class)
-abstract class AppDatabase : RoomDatabase() {
-    abstract val localEvents: LocalEventDao
+internal abstract class AppDatabase : RoomDatabase() {
+    abstract val localEvents: RoomLocalEventDao
 }
 
-class Converters {
+internal class Converters {
     @TypeConverter
     fun fromTimestamp(value: Long?): LocalDateTime? {
         return value?.let {

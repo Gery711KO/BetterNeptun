@@ -1,12 +1,10 @@
 package hu.kocsisgeri.betterneptun.data.di
 
-import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import androidx.room.Room
-import hu.kocsisgeri.betterneptun.core.database.room.AppDatabase
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSourceImpl
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
@@ -29,15 +27,10 @@ private const val SHARED_DATA = "Better_Neptun_Persistence"
 private const val PREFERENCES_DATASTORE_KEY = "pref_store_key"
 
 val dataModule = module {
-    single {
-        get<Context>().getSharedPreferences(SHARED_DATA, Context.MODE_PRIVATE)
-    }
-
-    single { get<Context>().dataStore }
-
     single { Dispatchers.IO }
 
-    single<AppDatabase> { provideDataBase(application = get()) }
+    single { get<Context>().sharedPreferences }
+    single { get<Context>().dataStore }
 
     single<NetworkDataSource> { new(::NetworkDataSourceImpl) }
     single<LocalDataSource> { new(::LocalDataSourceImpl) }
@@ -50,10 +43,6 @@ val dataModule = module {
     single<LogoutHandler> { new(::LogoutHandlerImpl) }
 }
 
-private fun provideDataBase(application: Application): AppDatabase {
-    return Room.databaseBuilder(application, AppDatabase::class.java, "mainDB")
-        .fallbackToDestructiveMigration(false)
-        .build()
-}
-
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = PREFERENCES_DATASTORE_KEY)
+private val Context.sharedPreferences: SharedPreferences
+    get() = getSharedPreferences(SHARED_DATA, Context.MODE_PRIVATE)

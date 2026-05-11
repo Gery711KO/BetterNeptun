@@ -1,6 +1,6 @@
 package hu.kocsisgeri.betterneptun.data.mapper
 
-import hu.kocsisgeri.betterneptun.core.database.room.LocalEventEntity
+import hu.kocsisgeri.betterneptun.core.database.localevents.model.LocalEventEntity
 import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
 
 fun LocalEventEntity.toDomain() = CalendarItem.LocalEvent(

@@ -9,8 +9,7 @@ import hu.kocsisgeri.betterneptun.data.util.delete
 import hu.kocsisgeri.betterneptun.data.util.get
 import hu.kocsisgeri.betterneptun.data.util.put
 import hu.kocsisgeri.betterneptun.common.utils.serialization.Serialization
-import hu.kocsisgeri.betterneptun.core.database.room.AppDatabase
-import hu.kocsisgeri.betterneptun.core.database.room.LocalEventDao
+import hu.kocsisgeri.betterneptun.core.database.localevents.LocalEventsDatabase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -18,13 +17,11 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
 
 internal class LocalDataSourceImpl(
-    roomDataBase: AppDatabase,
+    override val localEventsDb: LocalEventsDatabase,
     private val cache: SharedPreferences,
     private val dataStore: DataStore<Preferences>,
     private val ioDispatcher: CoroutineDispatcher,
 ) : LocalDataSource {
-
-    override val localEvents: LocalEventDao = roomDataBase.localEvents
 
     override fun <T> saveToSharedPreferences(
         key: String,
@@ -89,7 +86,7 @@ internal class LocalDataSourceImpl(
         withContext(ioDispatcher) {
             cache.edit { clear() }
             dataStore.edit { it.clear() }
-            localEvents.deleteAll()
+            localEventsDb.deleteAll()
         }
     }
 }

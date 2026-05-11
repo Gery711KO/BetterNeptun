@@ -1,13 +1,13 @@
 package hu.kocsisgeri.betterneptun.data.datasource
 
 import androidx.datastore.preferences.core.Preferences
-import hu.kocsisgeri.betterneptun.core.database.room.LocalEventDao
+import hu.kocsisgeri.betterneptun.core.database.localevents.LocalEventsDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.KSerializer
 
 internal interface LocalDataSource {
 
-    val localEvents: LocalEventDao
+    val localEventsDb: LocalEventsDatabase
 
     fun <T> saveToSharedPreferences(
         key: String,
