@@ -9,7 +9,6 @@ interface LoginRepository {
 
     val studentData: StateFlow<ApiResult<StudentData>>
     val shouldAutoLogin: SharedFlow<Boolean>
-    val forceLogOut: SharedFlow<Unit>
 
     suspend fun login(neptunCode: String, password: String)
     suspend fun silentLogin()

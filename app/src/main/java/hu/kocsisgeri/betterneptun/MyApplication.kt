@@ -2,7 +2,7 @@ package hu.kocsisgeri.betterneptun
 
 import android.app.Application
 import hu.kocsisgeri.betterneptun.data.di.dataModule
-import hu.kocsisgeri.betterneptun.data.di.networkModule
+import hu.kocsisgeri.betterneptun.core.network.di.networkModule
 import hu.kocsisgeri.betterneptun.di.notificationModule
 import hu.kocsisgeri.betterneptun.domain.di.domainModule
 import hu.kocsisgeri.betterneptun.ui.di.appModule

@@ -2,9 +2,8 @@ package hu.kocsisgeri.betterneptun.data.repository.settings
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.datastore.preferences.core.stringPreferencesKey
-import hu.kocsisgeri.betterneptun.common.PREF_NOTIFICATION_DELAY
-import hu.kocsisgeri.betterneptun.common.PREF_SAVED_THEME
-import hu.kocsisgeri.betterneptun.common.ThemeMode
+import hu.kocsisgeri.betterneptun.common.utils.ThemeMode
+import hu.kocsisgeri.betterneptun.data.datasource.LocalCacheKeys
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import kotlinx.coroutines.MainScope
@@ -58,7 +57,10 @@ internal class SettingsRepositoryImpl(
 
     companion object {
 
-        private val THEME_KEY = stringPreferencesKey(PREF_SAVED_THEME)
-        private val NOTIFICATION_DELAY_KEY = stringPreferencesKey(PREF_NOTIFICATION_DELAY)
+        private val THEME_KEY =
+            stringPreferencesKey(LocalCacheKeys.SAVED_THEME)
+
+        private val NOTIFICATION_DELAY_KEY =
+            stringPreferencesKey(LocalCacheKeys.NOTIFICATION_DELAY)
     }
 }

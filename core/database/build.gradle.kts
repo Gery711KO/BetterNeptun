@@ -3,8 +3,5 @@ plugins {
 }
 
 betterNeptun {
-    setupCoreDependencies(
-        namespaceSuffix = "core.database",
-        useRoom = true
-    )
+    setupCoreDependencies(useRoom = true)
 }

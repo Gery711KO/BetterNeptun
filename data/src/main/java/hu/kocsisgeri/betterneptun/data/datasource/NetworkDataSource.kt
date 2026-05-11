@@ -1,17 +1,17 @@
 package hu.kocsisgeri.betterneptun.data.datasource
 
-import hu.kocsisgeri.betterneptun.data.model.UserInfoDto
-import hu.kocsisgeri.betterneptun.data.model.ApiResponseDto
-import hu.kocsisgeri.betterneptun.data.model.MessageDetailsDto
-import hu.kocsisgeri.betterneptun.data.model.MessageListDto
-import hu.kocsisgeri.betterneptun.data.model.TermDetailDto
-import hu.kocsisgeri.betterneptun.data.model.ExtendedTermDto
-import hu.kocsisgeri.betterneptun.data.model.PostIdsRequestDto
-import hu.kocsisgeri.betterneptun.data.model.SubjectDto
-import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
-import hu.kocsisgeri.betterneptun.data.model.TermDto
-import hu.kocsisgeri.betterneptun.data.model.UnreadMessagesCountDto
-import hu.kocsisgeri.betterneptun.data.model.UserAvatarDto
+import hu.kocsisgeri.betterneptun.core.network.model.UserInfoDto
+import hu.kocsisgeri.betterneptun.core.network.model.ApiResponseDto
+import hu.kocsisgeri.betterneptun.core.network.model.MessageDetailsDto
+import hu.kocsisgeri.betterneptun.core.network.model.MessageListDto
+import hu.kocsisgeri.betterneptun.core.network.model.TermDetailDto
+import hu.kocsisgeri.betterneptun.core.network.model.ExtendedTermDto
+import hu.kocsisgeri.betterneptun.core.network.model.PostIdsRequestDto
+import hu.kocsisgeri.betterneptun.core.network.model.SubjectDto
+import hu.kocsisgeri.betterneptun.core.network.model.TermAveragesDto
+import hu.kocsisgeri.betterneptun.core.network.model.TermDto
+import hu.kocsisgeri.betterneptun.core.network.model.UnreadMessagesCountDto
+import hu.kocsisgeri.betterneptun.core.network.model.UserAvatarDto
 
 internal interface NetworkDataSource {
 

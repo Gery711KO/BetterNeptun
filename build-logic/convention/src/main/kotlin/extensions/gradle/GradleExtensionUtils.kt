@@ -65,8 +65,17 @@ fun Project.setupSerialization() {
     pluginManager.applyPluginFromLibs(libs to listOf(serializationPlugin))
 }
 
-fun Project.setNamespace(namespaceSuffix: String) {
+fun Project.setNamespace() {
     extensions.getByType(LibraryExtension::class).apply {
-        namespace = projectConfigs.namespace + ".$namespaceSuffix"
+        namespace = projectConfigs.namespace
+            .plus(".")
+            .plus(
+                projectDir.path
+                    .split("BetterNeptun\\")
+                    .last()
+                    .split("\\")
+                    .joinToString(".") { it }
+            )
+
     }
 }

@@ -1,6 +1,6 @@
 package hu.kocsisgeri.betterneptun.domain.repository.settings
 
-import hu.kocsisgeri.betterneptun.common.ThemeMode
+import hu.kocsisgeri.betterneptun.common.utils.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {

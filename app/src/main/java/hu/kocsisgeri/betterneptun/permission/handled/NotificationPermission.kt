@@ -15,8 +15,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
-import hu.kocsisgeri.betterneptun.common.get
-import hu.kocsisgeri.betterneptun.common.put
+import hu.kocsisgeri.betterneptun.data.util.get
+import hu.kocsisgeri.betterneptun.data.util.put
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
 

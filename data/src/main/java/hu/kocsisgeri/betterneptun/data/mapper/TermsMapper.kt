@@ -1,8 +1,8 @@
 package hu.kocsisgeri.betterneptun.data.mapper
 
-import hu.kocsisgeri.betterneptun.data.model.ExtendedTermDto
-import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
-import hu.kocsisgeri.betterneptun.data.model.TermDto
+import hu.kocsisgeri.betterneptun.core.network.model.ExtendedTermDto
+import hu.kocsisgeri.betterneptun.core.network.model.TermAveragesDto
+import hu.kocsisgeri.betterneptun.core.network.model.TermDto
 import hu.kocsisgeri.betterneptun.domain.model.Average
 import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
 import hu.kocsisgeri.betterneptun.domain.model.Term

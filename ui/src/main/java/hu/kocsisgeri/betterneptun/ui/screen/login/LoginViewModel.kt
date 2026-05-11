@@ -1,7 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.screen.login
 
 import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.common.launchReportingErrors
+import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel

@@ -1,7 +1,7 @@
 package hu.kocsisgeri.betterneptun.data.datasource
 
 import androidx.datastore.preferences.core.Preferences
-import hu.kocsisgeri.database.room.LocalEventDao
+import hu.kocsisgeri.betterneptun.core.database.room.LocalEventDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.KSerializer
 

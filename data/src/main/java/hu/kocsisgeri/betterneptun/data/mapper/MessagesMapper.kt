@@ -1,7 +1,7 @@
 package hu.kocsisgeri.betterneptun.data.mapper
 
-import hu.kocsisgeri.betterneptun.data.model.MessageDetailsDto
-import hu.kocsisgeri.betterneptun.data.model.ReceivedMessageDto
+import hu.kocsisgeri.betterneptun.core.network.model.MessageDetailsDto
+import hu.kocsisgeri.betterneptun.core.network.model.ReceivedMessageDto
 import hu.kocsisgeri.betterneptun.domain.model.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.Message
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail

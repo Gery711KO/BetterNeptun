@@ -3,5 +3,5 @@ plugins {
 }
 
 betterNeptun {
-    setupDomainLayer("domain")
+    setupDomainLayer()
 }

@@ -18,9 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.NavKey
-import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
+import hu.kocsisgeri.betterneptun.domain.token.LogoutHandler
 import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.checkType
@@ -45,9 +45,10 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
 
     override val scope: Scope by activityRetainedScope()
 
-    private val loginRepository: LoginRepository by inject()
     private val neptunRepository: NeptunRepository by inject()
     private val settingsRepository: SettingsRepository by inject()
+
+    private val logoutHandler: LogoutHandler by inject()
 
     private val navigator: Navigator by inject()
     private val entryProvider by entryProvider<NavKey>()
@@ -147,7 +148,7 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
     }
 
     private fun handleLogout() {
-        loginRepository.forceLogOut.onEach {
+        logoutHandler.shouldForceLogout.onEach {
             navigator.navigateToInclusive(LoginDestination)
         }.launchIn(lifecycleScope)
     }

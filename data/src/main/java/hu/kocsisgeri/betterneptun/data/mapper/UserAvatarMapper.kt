@@ -1,7 +1,7 @@
 package hu.kocsisgeri.betterneptun.data.mapper
 
-import hu.kocsisgeri.betterneptun.data.model.UserAvatarDto
-import hu.kocsisgeri.betterneptun.data.model.UserInfoDto
+import hu.kocsisgeri.betterneptun.core.network.model.UserAvatarDto
+import hu.kocsisgeri.betterneptun.core.network.model.UserInfoDto
 import hu.kocsisgeri.betterneptun.domain.model.Avatar
 
 val format = HexFormat { number { prefix = "0x" } }

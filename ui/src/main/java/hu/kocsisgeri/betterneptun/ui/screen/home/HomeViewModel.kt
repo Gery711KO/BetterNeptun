@@ -1,9 +1,9 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
 import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.common.getCourseDateString
-import hu.kocsisgeri.betterneptun.common.getTimeLeft
-import hu.kocsisgeri.betterneptun.common.launchReportingErrors
+import hu.kocsisgeri.betterneptun.common.utils.getCourseDateString
+import hu.kocsisgeri.betterneptun.common.utils.getTimeLeft
+import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository

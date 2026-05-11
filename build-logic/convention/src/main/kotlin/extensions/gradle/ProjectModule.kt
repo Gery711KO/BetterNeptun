@@ -10,15 +10,15 @@ enum class ProjectModule(
         isParentModule = true,
         allowedProjectDependencies = emptyList()
     ),
-    Core(
-        path = ":core",
-        isParentModule = true,
-        allowedProjectDependencies = emptyList()
-    ),
     Domain(
         path = ":domain",
         isParentModule = false,
         listOf(Common)
+    ),
+    Core(
+        path = ":core",
+        isParentModule = true,
+        allowedProjectDependencies = listOf(Common, Domain)
     ),
     Data(
         path = ":data",

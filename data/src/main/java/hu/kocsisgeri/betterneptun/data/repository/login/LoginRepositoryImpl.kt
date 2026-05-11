@@ -2,24 +2,20 @@ package hu.kocsisgeri.betterneptun.data.repository.login
 
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
-import hu.kocsisgeri.betterneptun.data.model.AuthenticationRequestDto
-import hu.kocsisgeri.betterneptun.data.repository.runApiCall
+import hu.kocsisgeri.betterneptun.core.network.model.AuthenticationRequestDto
+import hu.kocsisgeri.betterneptun.data.datasource.LocalCacheKeys
+import hu.kocsisgeri.betterneptun.data.util.runApiCall
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.StudentData
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
-import hu.kocsisgeri.betterneptun.common.PREF_CURRENT_USER
-import hu.kocsisgeri.betterneptun.common.PREF_STAY_LOGGED_ID
-import hu.kocsisgeri.betterneptun.data.api.token.AuthStore
 import hu.kocsisgeri.betterneptun.data.mapper.toAvatarDomain
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.serialization.serializer
 
 internal class LoginRepositoryImpl(
-    authStore: AuthStore,
     private val localDataSource: LocalDataSource,
     private val networkDataSource: NetworkDataSource,
     private val ioDispatcher: CoroutineDispatcher,
@@ -27,12 +23,11 @@ internal class LoginRepositoryImpl(
 
     override val studentData = MutableStateFlow<ApiResult<StudentData>>(ApiResult.Loading)
     override val shouldAutoLogin = MutableSharedFlow<Boolean>(1, 1)
-    override val forceLogOut: SharedFlow<Unit> = authStore.forceLogout
 
     init {
         shouldAutoLogin.tryEmit(
             localDataSource.getFromSharedPreferences(
-                key = PREF_STAY_LOGGED_ID,
+                key = LocalCacheKeys.STAY_LOGGED_ID,
                 defaultValue = false,
                 serializer = serializer()
             )
@@ -53,7 +48,7 @@ internal class LoginRepositoryImpl(
 
     override suspend fun silentLogin() {
         val currentUser = localDataSource.getFromSharedPreferences<AuthenticationRequestDto?>(
-            key = PREF_CURRENT_USER,
+            key = LocalCacheKeys.CURRENT_USER,
             defaultValue = null,
             serializer = serializer()
         )
@@ -67,7 +62,7 @@ internal class LoginRepositoryImpl(
 
     override fun saveCurrentUser(neptunCode: String, password: String) {
         localDataSource.saveToSharedPreferences(
-            key = PREF_CURRENT_USER,
+            key = LocalCacheKeys.CURRENT_USER,
             value = AuthenticationRequestDto(
                 userName = neptunCode,
                 password = password
@@ -78,7 +73,7 @@ internal class LoginRepositoryImpl(
 
     override fun saveAutoLoginPreference(shouldAutoLogin: Boolean) {
         localDataSource.saveToSharedPreferences(
-            key = PREF_STAY_LOGGED_ID,
+            key = LocalCacheKeys.STAY_LOGGED_ID,
             value = shouldAutoLogin,
             serializer = serializer()
         )

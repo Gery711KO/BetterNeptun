@@ -10,29 +10,25 @@ import hu.kocsisgeri.betterneptun.data.mapper.toExtendedTermDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toSubjectDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toTermDomain
-import hu.kocsisgeri.betterneptun.data.model.PostIdsRequestDto
-import hu.kocsisgeri.betterneptun.data.repository.runApiCall
+import hu.kocsisgeri.betterneptun.core.network.model.PostIdsRequestDto
+import hu.kocsisgeri.betterneptun.data.util.runApiCall
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.Average
 import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
 import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
-import hu.kocsisgeri.betterneptun.domain.model.Message
 import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
 import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
 import hu.kocsisgeri.betterneptun.domain.model.Subject
 import hu.kocsisgeri.betterneptun.domain.model.Term
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 
 internal class NeptunRepositoryImpl(

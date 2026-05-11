@@ -3,7 +3,7 @@ package hu.kocsisgeri.betterneptun.ui.screen.timetable
 import androidx.annotation.DrawableRes
 import androidx.lifecycle.viewModelScope
 import de.tobiasschuerg.weekview.data.LocalDateRange
-import hu.kocsisgeri.betterneptun.common.launchReportingErrors
+import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.R
