@@ -13,7 +13,7 @@ enum class ProjectModule(
     Domain(
         path = ":domain",
         isParentModule = false,
-        listOf(Common)
+        allowedProjectDependencies = emptyList()
     ),
     Core(
         path = ":core",

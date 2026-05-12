@@ -9,6 +9,5 @@ betterNeptun {
         api(libs.kotlinx.serialization.json)
         api(libs.retrofit.kotlin.serialization)
         api(libs.okhttp)
-        api(libs.bundles.datastore)
     }
 }

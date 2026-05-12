@@ -1,8 +1,8 @@
 package hu.kocsisgeri.betterneptun.ui.screen.settings
 
 import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.common.utils.ThemeMode
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
+import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import hu.kocsisgeri.betterneptun.domain.usecase.LogOutUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel

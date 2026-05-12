@@ -3,7 +3,6 @@ package hu.kocsisgeri.betterneptun.common.utils
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatDelegate
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -14,12 +13,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 import androidx.core.net.toUri
-
-enum class ThemeMode(val mode: Int) {
-    AUTO(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM),
-    DARK(AppCompatDelegate.MODE_NIGHT_YES),
-    LIGHT(AppCompatDelegate.MODE_NIGHT_NO)
-}
 
 fun openUrl(url: String?, context: Context) {
     url?.let {

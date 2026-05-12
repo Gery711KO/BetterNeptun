@@ -1,10 +1,5 @@
 package hu.kocsisgeri.betterneptun.data.di
 
-import android.content.Context
-import android.content.SharedPreferences
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSourceImpl
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
@@ -23,14 +18,8 @@ import kotlinx.coroutines.Dispatchers
 import org.koin.core.module.dsl.new
 import org.koin.dsl.module
 
-private const val SHARED_DATA = "Better_Neptun_Persistence"
-private const val PREFERENCES_DATASTORE_KEY = "pref_store_key"
-
 val dataModule = module {
     single { Dispatchers.IO }
-
-    single { get<Context>().sharedPreferences }
-    single { get<Context>().dataStore }
 
     single<NetworkDataSource> { new(::NetworkDataSourceImpl) }
     single<LocalDataSource> { new(::LocalDataSourceImpl) }
@@ -42,7 +31,3 @@ val dataModule = module {
     single<TokenManager> { new(::TokenManagerImpl) }
     single<LogoutHandler> { new(::LogoutHandlerImpl) }
 }
-
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = PREFERENCES_DATASTORE_KEY)
-private val Context.sharedPreferences: SharedPreferences
-    get() = getSharedPreferences(SHARED_DATA, Context.MODE_PRIVATE)

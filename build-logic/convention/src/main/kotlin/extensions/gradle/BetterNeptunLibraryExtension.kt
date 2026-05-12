@@ -5,6 +5,7 @@ import extensions.dependency.Dependency
 import extensions.dependency.implementDependencies
 import extensions.dependency.implementDependency
 import org.gradle.api.Project
+import org.gradle.api.tasks.GradleBuild
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.dependencies
 
@@ -37,9 +38,13 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         }
     }
 
-    fun setupDomainLayer() {
+    fun setupDomainLayer(
+        dependencies: DependencyHandlerScope.() -> Unit = {}
+    ) {
         project.baseLayerSetup(ProjectModule.Domain) { allowedModules ->
             includeProjects(getAllowedProjects(allowedModules))
+
+            dependencies { dependencies() }
         }
     }
 
@@ -130,17 +135,15 @@ class BetterNeptunLibraryExtension(private val project: Project) {
             it.path + if (it.isParentModule) ":*" else ""
         }
 
+        val allowedDependenciesJoined = allowedDeps.joinToString { it }
+
         val dependencies = configurations
             .asSequence()
-            .flatMap { it.dependencies.map { it.toString() } }
-            .distinct()
-            .filter { it.contains("project") }
-            .filter {
-                it.contains(
-                    if (currentLayer.contains(":")) currentLayer.split(":")[0]
-                    else currentLayer
-                ).not()
+            .flatMap {  config ->
+                config.dependencies.map { it.toString() }
             }
+            .distinct()
+            .filter { it.contains("project") && it.contains(currentLayer).not() }
             .map {
                 it.removePrefix("project '").removeSuffix("'").let { project ->
                     val split = project.split(":")
@@ -150,7 +153,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
                     ProjectDependency(
                         group = group,
                         module = module,
-                        isAllowed = allowedDeps.joinToString { it }.contains(group)
+                        isAllowed = allowedDependenciesJoined.contains(group)
                     )
                 }
             }.toList()
@@ -177,8 +180,19 @@ class BetterNeptunLibraryExtension(private val project: Project) {
             }
         }
 
-        tasks.getByName("preBuild") {
-            dependsOn("verifyCleanArchitecture")
+        val syncHookTask = tasks.matching {
+            it.name == "prepareKotlinBuildScriptModel"
+        }
+
+        if (syncHookTask.isEmpty()) {
+            tasks.register("prepareKotlinBuildScriptModel") {
+                group = "ide"
+                dependsOn("verifyCleanArchitecture")
+            }
+        } else {
+            syncHookTask.configureEach {
+                dependsOn("verifyCleanArchitecture")
+            }
         }
     }
 

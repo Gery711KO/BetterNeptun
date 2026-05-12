@@ -2,9 +2,9 @@ package hu.kocsisgeri.betterneptun.data.repository.settings
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.datastore.preferences.core.stringPreferencesKey
-import hu.kocsisgeri.betterneptun.common.utils.ThemeMode
 import hu.kocsisgeri.betterneptun.data.datasource.LocalCacheKeys
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
+import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.first
