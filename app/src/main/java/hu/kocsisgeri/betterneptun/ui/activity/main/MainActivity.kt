@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.NavKey
+import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import hu.kocsisgeri.betterneptun.domain.token.LogoutHandler
@@ -71,6 +73,7 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
 
         handleLogout()
         handleNotificationScheduling()
+        handleThemeChange()
     }
 
     @Composable
@@ -151,5 +154,17 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
         logoutHandler.shouldForceLogout.onEach {
             navigator.navigateToInclusive(LoginDestination)
         }.launchIn(lifecycleScope)
+    }
+
+    private fun handleThemeChange() {
+        settingsRepository.storedTheme.onEach {
+            AppCompatDelegate.setDefaultNightMode(it.toAppCompatMode())
+        }.launchIn(lifecycleScope)
+    }
+
+    private fun ThemeMode.toAppCompatMode() = when(this) {
+        ThemeMode.AUTO -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        ThemeMode.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+        ThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
     }
 }

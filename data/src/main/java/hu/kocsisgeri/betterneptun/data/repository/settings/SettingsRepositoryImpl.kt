@@ -1,14 +1,10 @@
 package hu.kocsisgeri.betterneptun.data.repository.settings
 
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.datastore.preferences.core.stringPreferencesKey
 import hu.kocsisgeri.betterneptun.data.datasource.LocalCacheKeys
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.serialization.serializer
 
 internal class SettingsRepositoryImpl(
@@ -27,20 +23,12 @@ internal class SettingsRepositoryImpl(
         serializer = serializer()
     )
 
-    init {
-        MainScope().launch {
-            AppCompatDelegate.setDefaultNightMode(storedTheme.first().mode)
-        }
-    }
-
     override suspend fun saveTheme(themeMode: ThemeMode) {
         localDataSource.saveToPreferencesDataStore(
             key = THEME_KEY,
             value = themeMode,
             serializer = serializer()
         )
-
-        AppCompatDelegate.setDefaultNightMode(themeMode.mode)
     }
 
     override suspend fun saveNotificationDelay(delayMinutes: Int) {
