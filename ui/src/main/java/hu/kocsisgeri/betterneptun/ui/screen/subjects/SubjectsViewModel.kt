@@ -9,6 +9,7 @@ import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.model.SubjectsScreenUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 
@@ -53,19 +54,13 @@ class SubjectsViewModel(
         if (neptunRepository.subjects.value !is ApiResult.Success) {
             viewModelScope.launchReportingErrors {
                 neptunRepository.fetchTerms()
+            }
+        }
 
-                neptunRepository.terms.first().let {
-                    when (it) {
-                        is ApiResult.Error -> {
-                            // TODO handle error
-                        }
-                        ApiResult.Loading -> {
-                            // TODO handle loading
-                        }
-                        is ApiResult.Success -> it.data.asReversed().firstOrNull()?.id?.let { termId ->
-                            selectedTerm.value = termId
-                        }
-                    }
+        viewModelScope.launchReportingErrors {
+            neptunRepository.terms.filterIsInstance<ApiResult.Success<List<Term>>>().first().let {
+                it.data.asReversed().firstOrNull()?.id?.let { termId ->
+                    selectedTerm.value = termId
                 }
             }
         }

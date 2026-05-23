@@ -24,4 +24,18 @@
     <string name="login_input_neptun_code">login_input_neptun_code</string>
     <string name="login_input_password">login_input_password</string>
     <string name="login_submit">login_submit</string>
+
+    <string name="settings_logout_button_description">settings_logout_button_description</string>
+    <string name="settings_logout_button_title">settings_logout_button_title</string>
+    <string name="settings_section_information">settings_section_information</string>
+    <string name="settings_section_information_version">settings_section_information_version</string>
+    <string name="settings_section_language">settings_section_language</string>
+    <string name="settings_section_theme">settings_section_theme</string>
+    <string name="settings_section_theme_dark">settings_section_theme_dark</string>
+    <string name="settings_section_theme_light">settings_section_theme_light</string>
+    <string name="settings_section_theme_system">settings_section_theme_system</string>
+    <string name="settings_section_timetable">settings_section_timetable</string>
+    <string name="settings_section_timetable_minutes">settings_section_timetable_minutes</string>
+    <string name="settings_section_timetable_none">settings_section_timetable_none</string>
+    <string name="settings_title">settings_title</string>
 </resources>

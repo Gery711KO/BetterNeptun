@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 
-class InitializerImpl(private val initializables: List<Initializable>): Initializer {
+internal class InitializerImpl(private val initializables: List<Initializable>): Initializer {
     private val _isInitialized = MutableStateFlow(false)
     override val isInitialized = _isInitialized.asStateFlow()
 

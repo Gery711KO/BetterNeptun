@@ -94,7 +94,7 @@ fun SettingsContent(
             LargeTopAppBar(
                 title = {
                     Text(
-                        text = "Beállítások",
+                        text = localized(R.string.settings_title),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 24.sp
@@ -130,7 +130,7 @@ fun SettingsContent(
                 .padding(bottom = paddingValues.calculateBottomPadding()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SettingsSectionLabel(label = "Nyelv")
+            SettingsSectionLabel(label = localized(R.string.settings_section_language))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -148,7 +148,7 @@ fun SettingsContent(
                 }
             }
 
-            SettingsSectionLabel(label = "Megjelenés")
+            SettingsSectionLabel(label = localized(R.string.settings_section_theme),)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -159,24 +159,24 @@ fun SettingsContent(
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     RadioOption(
-                        label = "Automatikus",
+                        label = localized(R.string.settings_section_theme_system),
                         selected = themeMode == ThemeMode.AUTO,
                         onClick = { onThemeChange(ThemeMode.AUTO) }
                     )
                     RadioOption(
-                        label = "Világos mód",
+                        label = localized(R.string.settings_section_theme_light),
                         selected = themeMode == ThemeMode.LIGHT,
                         onClick = { onThemeChange(ThemeMode.LIGHT) }
                     )
                     RadioOption(
-                        label = "Sötét mód",
+                        label = localized(R.string.settings_section_theme_dark),
                         selected = themeMode == ThemeMode.DARK,
                         onClick = { onThemeChange(ThemeMode.DARK) }
                     )
                 }
             }
 
-            SettingsSectionLabel(label = "Naptár")
+            SettingsSectionLabel(label = localized(R.string.settings_section_timetable))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -187,34 +187,34 @@ fun SettingsContent(
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     RadioOption(
-                        label = "Nincs értesítés",
+                        label = localized(R.string.settings_section_timetable_none),
                         selected = notificationDelay == -1,
                         onClick = { onNotificationDelayChange(-1) }
                     )
                     RadioOption(
-                        label = "5 perccel előtte",
+                        label = localized(R.string.settings_section_timetable_minutes, 5.toString()),
                         selected = notificationDelay == 5,
                         onClick = { onNotificationDelayChange(5) }
                     )
                     RadioOption(
-                        label = "10 perccel előtte",
+                        label = localized(R.string.settings_section_timetable_minutes, 10.toString()),
                         selected = notificationDelay == 10,
                         onClick = { onNotificationDelayChange(10) }
                     )
                     RadioOption(
-                        label = "15 perccel előtte",
+                        label = localized(R.string.settings_section_timetable_minutes, 15.toString()),
                         selected = notificationDelay == 15,
                         onClick = { onNotificationDelayChange(15) }
                     )
                     RadioOption(
-                        label = "30 perccel előtte",
+                        label = localized(R.string.settings_section_timetable_minutes, 30.toString()),
                         selected = notificationDelay == 30,
                         onClick = { onNotificationDelayChange(30) }
                     )
                 }
             }
 
-            SettingsSectionLabel(label = "Információk")
+            SettingsSectionLabel(label = localized(R.string.settings_section_information))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -225,7 +225,7 @@ fun SettingsContent(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     InfoRow(
-                        label = "Verzió",
+                        label = localized(R.string.settings_section_information_version),
                         value = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
                     )
                 }
@@ -329,11 +329,11 @@ fun LogoutButton(onClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Kilépés",
+                text = localized(R.string.settings_logout_button_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             )
             Text(
-                text = "Minden elmentett adat törlése és kijelentkezés",
+                text = localized(R.string.settings_logout_button_description),
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                 textAlign = TextAlign.Center
             )
