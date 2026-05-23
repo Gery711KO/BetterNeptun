@@ -1,7 +1,7 @@
 package hu.kocsisgeri.betterneptun.data.mapper
 
-import hu.kocsisgeri.betterneptun.core.network.model.SubjectDto
-import hu.kocsisgeri.betterneptun.domain.model.Subject
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.SubjectDto
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
 
 fun List<SubjectDto>.toSubjectDomain() = map {
     Subject(

@@ -1,7 +1,7 @@
 package hu.kocsisgeri.betterneptun.domain.repository.login
 
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 

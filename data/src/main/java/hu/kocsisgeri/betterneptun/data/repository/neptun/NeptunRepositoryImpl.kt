@@ -6,21 +6,19 @@ import hu.kocsisgeri.betterneptun.data.mapper.toAvatarDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toAverageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toEntity
-import hu.kocsisgeri.betterneptun.data.mapper.toExtendedTermDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toSubjectDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toTermDomain
-import hu.kocsisgeri.betterneptun.core.network.model.PostIdsRequestDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.PostIdsRequestDto
 import hu.kocsisgeri.betterneptun.data.util.runApiCall
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.Avatar
-import hu.kocsisgeri.betterneptun.domain.model.Average
-import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
-import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
-import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
-import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
-import hu.kocsisgeri.betterneptun.domain.model.Subject
-import hu.kocsisgeri.betterneptun.domain.model.Term
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Average
+import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
+import hu.kocsisgeri.betterneptun.domain.model.neptun.MessageDetail
+import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Term
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
@@ -51,7 +49,6 @@ internal class NeptunRepositoryImpl(
     override val messages = MutableStateFlow(MessagesPager())
     override val unreadMessagesCount: MutableStateFlow<Int?> = MutableStateFlow(null)
 
-    override val extendedTerms = MutableStateFlow<ApiResult<List<ExtendedTerm>>>(ApiResult.Loading)
     override val subjects =
         MutableStateFlow<ApiResult<List<Subject>>>(ApiResult.Loading)
 
@@ -143,12 +140,6 @@ internal class NeptunRepositoryImpl(
         }
     }
 
-    override suspend fun fetchExtendedTerms() {
-        extendedTerms.runApiCall(ioDispatcher) {
-            networkDataSource.getExtendedTerms().data.toExtendedTermDomain()
-        }
-    }
-
     override suspend fun fetchSubjects(termId: String) {
         subjects.runApiCall(ioDispatcher) {
             networkDataSource.getTakenSubjects(termId).data.toSubjectDomain()
@@ -204,7 +195,6 @@ internal class NeptunRepositoryImpl(
     override fun purge() {
         remoteEvents.value = emptyList()
         unreadMessagesCount.value = null
-        extendedTerms.value = ApiResult.Loading
         subjects.value = ApiResult.Loading
         terms.value = ApiResult.Loading
         averages.value = ApiResult.Loading

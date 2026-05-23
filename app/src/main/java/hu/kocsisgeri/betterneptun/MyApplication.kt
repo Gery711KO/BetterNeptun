@@ -2,13 +2,13 @@ package hu.kocsisgeri.betterneptun
 
 import android.app.Application
 import hu.kocsisgeri.betterneptun.core.database.di.databaseModule
-import hu.kocsisgeri.betterneptun.data.di.dataModule
 import hu.kocsisgeri.betterneptun.core.network.di.networkModule
-import hu.kocsisgeri.betterneptun.di.notificationModule
-import hu.kocsisgeri.betterneptun.domain.di.domainModule
-import hu.kocsisgeri.betterneptun.ui.di.appModule
-import hu.kocsisgeri.betterneptun.ui.di.navigationModule
+import hu.kocsisgeri.betterneptun.data.di.dataModule
+import hu.kocsisgeri.betterneptun.di.appModule
 import hu.kocsisgeri.betterneptun.di.permissionModule
+import hu.kocsisgeri.betterneptun.domain.di.domainModule
+import hu.kocsisgeri.betterneptun.ui.di.navigationModule
+import hu.kocsisgeri.betterneptun.ui.di.uiModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 import timber.log.Timber
@@ -39,9 +39,9 @@ open class MyApplication : Application() {
             dataModule,
             domainModule,
             navigationModule,
-            appModule,
+            uiModule,
             permissionModule,
-            notificationModule,
+            appModule,
         )
     }
 }

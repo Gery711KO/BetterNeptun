@@ -14,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -22,15 +23,19 @@ import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
+import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
 import hu.kocsisgeri.betterneptun.domain.token.LogoutHandler
+import hu.kocsisgeri.betterneptun.initialization.InitializerImpl
 import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.checkType
-import hu.kocsisgeri.betterneptun.ui.destination.HomeDestination
-import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
+import hu.kocsisgeri.betterneptun.ui.core.helper.LocalLocalizer
 import hu.kocsisgeri.betterneptun.ui.core.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.destination.HomeDestination
+import hu.kocsisgeri.betterneptun.ui.destination.LoadingDestination
+import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -47,6 +52,8 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
 
     override val scope: Scope by activityRetainedScope()
 
+    private val initializer: InitializerImpl by inject()
+
     private val neptunRepository: NeptunRepository by inject()
     private val settingsRepository: SettingsRepository by inject()
 
@@ -62,9 +69,12 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
         permissionHandler.getPermissions(this)
     }
 
+    private val localizationService: LocalizationService by inject()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
             NonContentExtras()
@@ -86,40 +96,43 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
     @Composable
     private fun MainContent() {
         BetterNeptunTheme {
-            Navigator.DefaultNavDisplay(
-                navigator = navigator,
-                entryProvider = entryProvider,
-                transitionSpec = {
-                    val isFromLogin = initialState.checkType(LoginDestination)
-                    val isToHome = targetState.checkType(HomeDestination)
-                    val isToLogin = targetState.checkType(LoginDestination)
+            CompositionLocalProvider(LocalLocalizer providesComputed { localizationService }) {
+                Navigator.DefaultNavDisplay(
+                    navigator = navigator,
+                    entryProvider = entryProvider,
+                    transitionSpec = {
+                        val isFromLoading = initialState.checkType(LoadingDestination)
+                        val isFromLogin = initialState.checkType(LoginDestination)
+                        val isToHome = targetState.checkType(HomeDestination)
+                        val isToLogin = targetState.checkType(LoginDestination)
 
-                    if ((isFromLogin && isToHome) || isToLogin) {
-                        fadeIn() togetherWith fadeOut()
-                    } else {
-                        slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
-                    }
-                },
-                popTransitionSpec = {
-                    val isToLogin = targetState.checkType(LoginDestination)
-                    if (isToLogin) {
-                        fadeIn() togetherWith fadeOut()
-                    } else {
-                        slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                    }
-                },
-                predictivePopTransitionSpec = {
-                    val isToLogin = targetState.checkType(LoginDestination)
-                    if (isToLogin) {
-                        fadeIn() togetherWith fadeOut()
-                    } else {
-                        slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            )
+                        if ((isFromLogin && isToHome) || isToLogin || isFromLoading) {
+                            fadeIn() togetherWith fadeOut()
+                        } else {
+                            slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
+                        }
+                    },
+                    popTransitionSpec = {
+                        val isToLogin = targetState.checkType(LoginDestination)
+                        if (isToLogin) {
+                            fadeIn() togetherWith fadeOut()
+                        } else {
+                            slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                        }
+                    },
+                    predictivePopTransitionSpec = {
+                        val isToLogin = targetState.checkType(LoginDestination)
+                        if (isToLogin) {
+                            fadeIn() togetherWith fadeOut()
+                        } else {
+                            slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                )
+            }
         }
     }
 
@@ -162,7 +175,7 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
         }.launchIn(lifecycleScope)
     }
 
-    private fun ThemeMode.toAppCompatMode() = when(this) {
+    private fun ThemeMode.toAppCompatMode() = when (this) {
         ThemeMode.AUTO -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         ThemeMode.DARK -> AppCompatDelegate.MODE_NIGHT_YES
         ThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO

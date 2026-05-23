@@ -1,8 +1,8 @@
 package hu.kocsisgeri.betterneptun.core.network.api
 
-import hu.kocsisgeri.betterneptun.core.network.model.ApiResponseDto
-import hu.kocsisgeri.betterneptun.core.network.model.AuthenticationRequestDto
-import hu.kocsisgeri.betterneptun.core.network.model.AuthenticationResponseDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.ApiResponseDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.AuthenticationRequestDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.AuthenticationResponseDto
 import retrofit2.http.Body
 import retrofit2.http.POST
 

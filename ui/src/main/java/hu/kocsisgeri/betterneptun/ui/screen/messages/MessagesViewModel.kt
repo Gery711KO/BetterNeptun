@@ -2,8 +2,7 @@ package hu.kocsisgeri.betterneptun.ui.screen.messages
 
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
+import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import kotlinx.coroutines.flow.map

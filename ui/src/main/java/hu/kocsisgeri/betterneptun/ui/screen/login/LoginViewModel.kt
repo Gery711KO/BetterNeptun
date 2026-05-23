@@ -2,7 +2,7 @@ package hu.kocsisgeri.betterneptun.ui.screen.login
 
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
@@ -69,9 +69,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ComposeView
                 return@launchReportingErrors
             }
 
-            if (stayLoggedIn.value) {
-                loginRepository.saveCurrentUser(neptunCode, password)
-            }
+            loginRepository.saveCurrentUser(neptunCode, password)
 
             forcedState.emit(LoginState.Loading)
 

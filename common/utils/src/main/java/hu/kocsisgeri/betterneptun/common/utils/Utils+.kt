@@ -3,16 +3,11 @@ package hu.kocsisgeri.betterneptun.common.utils
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
-import kotlin.math.ceil
-import kotlin.math.roundToInt
-import androidx.core.net.toUri
 
 fun openUrl(url: String?, context: Context) {
     url?.let {
@@ -39,30 +34,6 @@ fun String.sendEmail(context: Context) {
         Intent.createChooser(emailIntent, "Send email..."),
         Bundle.EMPTY
     )
-}
-
-fun LocalDateTime.getCourseDateString(): String {
-    val diff =
-        this.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
-    val hours = TimeUnit.MILLISECONDS.toHours(diff * 1000)
-    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-    val minutes = ceil(seconds / 60f).roundToInt()
-    val days = hours / 24f
-    return when {
-        minutes < 60 -> "$minutes perc múlva"
-        hours <= hour -> "$hours óra múlva"
-        days < 1 -> "Holnap"
-        days > 1 -> "${ceil(days).roundToInt()} nap múlva"
-        else -> "${ceil(days).roundToInt()} nap múlva"
-    }
-}
-
-fun LocalDateTime.getTimeLeft(): String {
-    val diff =
-        this.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
-    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-    val minutes = ceil(seconds / 60f).roundToInt()
-    return "$minutes perc"
 }
 
 fun CoroutineScope.launchReportingErrors(

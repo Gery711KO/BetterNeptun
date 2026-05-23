@@ -4,7 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
+import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import timber.log.Timber
 import java.time.ZoneId
 import java.util.Date

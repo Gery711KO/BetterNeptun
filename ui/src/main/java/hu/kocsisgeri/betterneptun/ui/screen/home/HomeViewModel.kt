@@ -1,18 +1,19 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
 import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.common.utils.getCourseDateString
-import hu.kocsisgeri.betterneptun.common.utils.getTimeLeft
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
+import hu.kocsisgeri.betterneptun.ui.core.helper.ClockTickReceiver
+import hu.kocsisgeri.betterneptun.ui.core.helper.getCourseDateString
+import hu.kocsisgeri.betterneptun.ui.core.helper.getTimeLeft
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.getPercent
-import hu.kocsisgeri.betterneptun.ui.core.helper.ClockTickReceiver
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,6 +25,7 @@ import java.time.LocalDateTime
 class HomeViewModel(
     private val clockTickReceiver: ClockTickReceiver,
     private val neptunRepository: NeptunRepository,
+    private val localizationService: LocalizationService,
     loginRepository: LoginRepository,
 ) : ComposeViewModel() {
 
@@ -34,12 +36,14 @@ class HomeViewModel(
             it.startTime.isBefore(LocalDateTime.now()) && it.endTime.isAfter(LocalDateTime.now())
         }
     }.map { currentCourses ->
-        currentCourses.map { item  ->
+        currentCourses.map { item ->
             CurrentCourseDetail(
                 title = item.title,
                 location = item.location,
                 progress = item.getPercent(),
-                remainingTime = item.endTime.getTimeLeft(),
+                remainingTime = item.endTime.getTimeLeft { id, args ->
+                    localizationService.localized(id, *args)
+                },
                 color = item.color
             )
         }
@@ -55,7 +59,9 @@ class HomeViewModel(
                 startTime = event.startTime,
                 endTime = event.endTime,
                 color = event.color,
-                timeUntilEvent = event.startTime.getCourseDateString()
+                timeUntilEvent = event.startTime.getCourseDateString { id, args ->
+                    localizationService.localized(id, *args)
+                }
             )
         }
     }.repeatEveryMinute().stateWhileSubscribed(null)

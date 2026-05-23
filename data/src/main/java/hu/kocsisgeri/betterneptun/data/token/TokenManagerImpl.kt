@@ -1,7 +1,7 @@
 package hu.kocsisgeri.betterneptun.data.token
 
 import hu.kocsisgeri.betterneptun.core.network.api.AuthApiService
-import hu.kocsisgeri.betterneptun.core.network.model.AuthenticationRequestDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.AuthenticationRequestDto
 import hu.kocsisgeri.betterneptun.data.datasource.LocalCacheKeys
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.domain.token.TokenManager

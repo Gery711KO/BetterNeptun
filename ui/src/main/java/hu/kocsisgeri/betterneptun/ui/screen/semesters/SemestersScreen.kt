@@ -43,7 +43,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.DefaultAxisValueFormatter
 import com.github.mikephil.charting.formatter.LargeValueFormatter
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import org.koin.androidx.compose.koinViewModel

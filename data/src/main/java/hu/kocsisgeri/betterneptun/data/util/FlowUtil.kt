@@ -1,6 +1,6 @@
 package hu.kocsisgeri.betterneptun.data.util
 
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext

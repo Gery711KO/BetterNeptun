@@ -39,8 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
+import hu.kocsisgeri.betterneptun.domain.model.localization.Language
 import hu.kocsisgeri.betterneptun.ui.BuildConfig
+import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.core.helper.localized
 import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import org.koin.androidx.compose.koinViewModel
@@ -52,13 +55,16 @@ fun SettingsScreen(
     navigator: Navigator = koinInject(),
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val languages by viewModel.languages.collectAsStateWithLifecycle()
     val notificationDelay by viewModel.notificationDelay.collectAsStateWithLifecycle()
 
     SettingsContent(
         themeMode = themeMode,
         notificationDelay = notificationDelay,
+        languages = languages,
         onThemeChange = viewModel::saveTheme,
         onNotificationDelayChange = viewModel::saveNotificationDelay,
+        onLanguageChange = viewModel::changeLanguage,
         onLogout = {
             viewModel.logout()
             navigator.navigateToInclusive(LoginDestination)
@@ -71,13 +77,16 @@ fun SettingsScreen(
 @Composable
 fun SettingsContent(
     themeMode: ThemeMode,
+    languages: List<Language>,
     notificationDelay: Int,
     onThemeChange: (ThemeMode) -> Unit,
     onNotificationDelayChange: (Int) -> Unit,
+    onLanguageChange: (Language) -> Unit,
     onLogout: () -> Unit,
     onBackClick: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scrollState = rememberScrollState()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -117,10 +126,28 @@ fun SettingsContent(
                 .padding(top = paddingValues.calculateTopPadding())
                 .padding(horizontal = 16.dp)
                 .clip(MaterialTheme.shapes.large)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(bottom = paddingValues.calculateBottomPadding()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            SettingsSectionLabel(label = "Nyelv")
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                languages.forEach { language ->
+                    RadioOption(
+                        label = localized(language.localizationKey),
+                        selected = language.isSelected,
+                        onClick = { onLanguageChange(language) }
+                    )
+                }
+            }
+
             SettingsSectionLabel(label = "Megjelenés")
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -131,17 +158,17 @@ fun SettingsContent(
                 )
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    ThemeOption(
+                    RadioOption(
                         label = "Automatikus",
                         selected = themeMode == ThemeMode.AUTO,
                         onClick = { onThemeChange(ThemeMode.AUTO) }
                     )
-                    ThemeOption(
+                    RadioOption(
                         label = "Világos mód",
                         selected = themeMode == ThemeMode.LIGHT,
                         onClick = { onThemeChange(ThemeMode.LIGHT) }
                     )
-                    ThemeOption(
+                    RadioOption(
                         label = "Sötét mód",
                         selected = themeMode == ThemeMode.DARK,
                         onClick = { onThemeChange(ThemeMode.DARK) }
@@ -159,27 +186,27 @@ fun SettingsContent(
                 )
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    DelayOption(
+                    RadioOption(
                         label = "Nincs értesítés",
                         selected = notificationDelay == -1,
                         onClick = { onNotificationDelayChange(-1) }
                     )
-                    DelayOption(
+                    RadioOption(
                         label = "5 perccel előtte",
                         selected = notificationDelay == 5,
                         onClick = { onNotificationDelayChange(5) }
                     )
-                    DelayOption(
+                    RadioOption(
                         label = "10 perccel előtte",
                         selected = notificationDelay == 10,
                         onClick = { onNotificationDelayChange(10) }
                     )
-                    DelayOption(
+                    RadioOption(
                         label = "15 perccel előtte",
                         selected = notificationDelay == 15,
                         onClick = { onNotificationDelayChange(15) }
                     )
-                    DelayOption(
+                    RadioOption(
                         label = "30 perccel előtte",
                         selected = notificationDelay == 30,
                         onClick = { onNotificationDelayChange(30) }
@@ -226,43 +253,7 @@ fun SettingsSectionLabel(label: String) {
 }
 
 @Composable
-fun DelayOption(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
-            ),
-            color = if (selected) {
-                MaterialTheme.colorScheme.onSurface
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            }
-        )
-        RadioButton(
-            selected = selected,
-            onClick = null,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary,
-                unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-    }
-}
-
-@Composable
-fun ThemeOption(
+fun RadioOption(
     label: String,
     selected: Boolean,
     onClick: () -> Unit
@@ -356,11 +347,21 @@ fun SettingsPreviewLight() {
     BetterNeptunTheme(darkTheme = false) {
         SettingsContent(
             themeMode = ThemeMode.AUTO,
+            languages = listOf(
+                Language.DEFAULT,
+                Language(
+                    key = "en",
+                    localizationKey = "language_en",
+                    isSelected = false,
+                    isDefault = false
+                )
+            ),
             notificationDelay = 15,
             onThemeChange = {},
             onNotificationDelayChange = {},
             onLogout = {},
-            onBackClick = {}
+            onBackClick = {},
+            onLanguageChange = {}
         )
     }
 }
@@ -371,11 +372,21 @@ fun SettingsPreviewDark() {
     BetterNeptunTheme(darkTheme = true) {
         SettingsContent(
             themeMode = ThemeMode.DARK,
+            languages = listOf(
+                Language.DEFAULT,
+                Language(
+                    key = "en",
+                    localizationKey = "language_en",
+                    isSelected = false,
+                    isDefault = false
+                )
+            ),
             notificationDelay = 30,
             onThemeChange = {},
             onNotificationDelayChange = {},
             onLogout = {},
-            onBackClick = {}
+            onBackClick = {},
+            onLanguageChange = {}
         )
     }
 }

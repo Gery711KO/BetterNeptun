@@ -2,11 +2,11 @@ package hu.kocsisgeri.betterneptun.data.repository.login
 
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
-import hu.kocsisgeri.betterneptun.core.network.model.AuthenticationRequestDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.AuthenticationRequestDto
 import hu.kocsisgeri.betterneptun.data.datasource.LocalCacheKeys
 import hu.kocsisgeri.betterneptun.data.util.runApiCall
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.data.mapper.toAvatarDomain
 import kotlinx.coroutines.CoroutineDispatcher

@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.core.helper.localized
 import hu.kocsisgeri.betterneptun.ui.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.isLoading
@@ -147,7 +148,7 @@ private fun LoginContent(
                 contentPadding = PaddingValues(vertical = 12.dp)
             ) {
                 Text(
-                    text = "Belépés",
+                    text = localized(R.string.login_submit),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -198,7 +199,7 @@ private fun LoginContent(
                                     neptunCode = it
                                     onNeptunCodeChange(it)
                                 },
-                                label = { Text("Neptun kód") },
+                                label = { Text(localized(R.string.login_input_neptun_code)) },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                                 modifier = Modifier.fillMaxWidth(),
@@ -223,7 +224,7 @@ private fun LoginContent(
                                     password = it
                                     onPasswordChange(it)
                                 },
-                                label = { Text("Jelszó") },
+                                label = { Text(localized(R.string.login_input_password)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(
@@ -278,7 +279,7 @@ private fun LoginContent(
                                     )
                                 )
                                 Text(
-                                    text = "Maradjak belépve",
+                                    text = localized(R.string.login_checkbox_stay_loggedin),
                                     color = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.padding(start = 8.dp)
                                 )

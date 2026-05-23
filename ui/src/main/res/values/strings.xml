@@ -1,3 +1,27 @@
 <resources>
     <string name="app_name">OE Neptun</string>
+
+    <string name="home_label_underdevelopment">home_label_underdevelopment</string>
+    <string name="home_ongoing_course">home_ongoing_course</string>
+    <string name="home_ongoing_course_minutes">home_ongoing_course_minutes</string>
+    <string name="home_menu_courses">home_menu_courses</string>
+    <string name="home_menu_exams">home_menu_exams</string>
+    <string name="home_menu_messages">home_menu_messages</string>
+    <string name="home_menu_periods">home_menu_periods</string>
+    <string name="home_menu_semesters">home_menu_semesters</string>
+    <string name="home_menu_timetable">home_menu_timetable</string>
+    <string name="home_next_course">home_next_course</string>
+    <string name="home_next_course_days">home_next_course_days</string>
+    <string name="home_next_course_hours">home_next_course_hours</string>
+    <string name="home_next_course_minutes">home_next_course_minutes</string>
+    <string name="home_next_course_tomorrow">home_next_course_tomorrow</string>
+    <string name="home_permission_permit">home_permission_permit</string>
+
+    <string name="language_hu">language_hu</string>
+    <string name="language_en">language_en</string>
+
+    <string name="login_checkbox_stay_loggedin">login_checkbox_stay_loggedin</string>
+    <string name="login_input_neptun_code">login_input_neptun_code</string>
+    <string name="login_input_password">login_input_password</string>
+    <string name="login_submit">login_submit</string>
 </resources>

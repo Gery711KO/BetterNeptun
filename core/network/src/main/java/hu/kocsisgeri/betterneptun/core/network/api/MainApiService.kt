@@ -1,17 +1,16 @@
 package hu.kocsisgeri.betterneptun.core.network.api
 
-import hu.kocsisgeri.betterneptun.core.network.model.ApiResponseDto
-import hu.kocsisgeri.betterneptun.core.network.model.ExtendedTermDto
-import hu.kocsisgeri.betterneptun.core.network.model.MessageDetailsDto
-import hu.kocsisgeri.betterneptun.core.network.model.MessageListDto
-import hu.kocsisgeri.betterneptun.core.network.model.PostIdsRequestDto
-import hu.kocsisgeri.betterneptun.core.network.model.SubjectDto
-import hu.kocsisgeri.betterneptun.core.network.model.TermAveragesDto
-import hu.kocsisgeri.betterneptun.core.network.model.TermDetailDto
-import hu.kocsisgeri.betterneptun.core.network.model.TermDto
-import hu.kocsisgeri.betterneptun.core.network.model.UnreadMessagesCountDto
-import hu.kocsisgeri.betterneptun.core.network.model.UserAvatarDto
-import hu.kocsisgeri.betterneptun.core.network.model.UserInfoDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.ApiResponseDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.MessageDetailsDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.MessageListDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.PostIdsRequestDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.SubjectDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.TermAveragesDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.TermDetailDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.TermDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.UnreadMessagesCountDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.UserAvatarDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.UserInfoDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -50,9 +49,6 @@ interface MainApiService {
         @Path("messageId") messageId: String,
         @Body postIds: PostIdsRequestDto
     )
-
-    @GET("RegistrySheet/GetStudentTrainingTermData")
-    suspend fun getExtendedTerms(): ApiResponseDto<List<ExtendedTermDto>>
 
     @GET("Advancement/GetStudentTrainingTermData")
     suspend fun getTermDetails(

@@ -11,6 +11,7 @@ object Serialization {
 
     val instance = Json {
         ignoreUnknownKeys = true
+        explicitNulls = true
         serializersModule = SerializersModule {
             contextual(LocalDateTime::class, LocalDateTimeUtcSerializer)
         }

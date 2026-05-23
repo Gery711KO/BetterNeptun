@@ -34,7 +34,7 @@ import de.tobiasschuerg.weekview.data.EventConfig
 import de.tobiasschuerg.weekview.data.LocalDateRange
 import de.tobiasschuerg.weekview.data.WeekData
 import de.tobiasschuerg.weekview.data.WeekViewConfig
-import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
+import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.AddEventDialog

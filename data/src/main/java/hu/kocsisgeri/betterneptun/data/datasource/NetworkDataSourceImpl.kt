@@ -1,7 +1,7 @@
 package hu.kocsisgeri.betterneptun.data.datasource
 
 import hu.kocsisgeri.betterneptun.core.network.api.MainApiService
-import hu.kocsisgeri.betterneptun.core.network.model.PostIdsRequestDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.PostIdsRequestDto
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
@@ -47,11 +47,6 @@ internal class NetworkDataSourceImpl(
             api.postMessagePostRead(messageId, postIds)
         }
     }
-
-    override suspend fun getExtendedTerms() =
-        withContext(ioDispatcher) {
-            api.getExtendedTerms()
-        }
 
     override suspend fun getTermDetails(termId: String) =
         withContext(ioDispatcher) {

@@ -1,14 +1,12 @@
 package hu.kocsisgeri.betterneptun.domain.repository.neptun
 
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.Average
-import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
-import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
-import hu.kocsisgeri.betterneptun.domain.model.Message
-import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
-import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
-import hu.kocsisgeri.betterneptun.domain.model.Term
-import hu.kocsisgeri.betterneptun.domain.model.Subject
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Average
+import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
+import hu.kocsisgeri.betterneptun.domain.model.neptun.MessageDetail
+import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Term
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -18,7 +16,6 @@ interface NeptunRepository {
     val messages: StateFlow<MessagesPager>
     val unreadMessagesCount : StateFlow<Int?>
 
-    val extendedTerms : StateFlow<ApiResult<List<ExtendedTerm>>>
     val subjects: StateFlow<ApiResult<List<Subject>>>
     val terms : StateFlow<ApiResult<List<Term>>>
     val averages : StateFlow<ApiResult<List<Average>>>
@@ -32,7 +29,6 @@ interface NeptunRepository {
 
     suspend fun fetchCalendarData()
 
-    suspend fun fetchExtendedTerms()
     suspend fun fetchSubjects(termId: String)
 
     suspend fun fetchTerms()

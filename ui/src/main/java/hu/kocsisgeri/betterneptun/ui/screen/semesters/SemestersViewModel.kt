@@ -8,12 +8,10 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import timber.log.Timber
 
 class SemestersViewModel(
     repo: NeptunRepository

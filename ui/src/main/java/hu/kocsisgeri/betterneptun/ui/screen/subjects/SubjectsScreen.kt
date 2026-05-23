@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,6 +22,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,9 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.Subject
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.screen.subjects.model.SubjectsScreenUiModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -56,18 +59,20 @@ fun SubjectsScreen(
     viewModel: SubjectsViewModel = koinViewModel(),
     navigator: Navigator = koinInject()
 ) {
-    val subjectsState by viewModel.listItems.collectAsStateWithLifecycle()
+    val subjectsState by viewModel.state.collectAsStateWithLifecycle()
 
     SubjectsContent(
         subjectsState = subjectsState,
-        onBackClick = { navigator.navigateBack() }
+        onSelectTerm = viewModel::selectTerm,
+        onBackClick = navigator::navigateBack,
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectsContent(
-    subjectsState: ApiResult<List<Subject>>?,
+    subjectsState: SubjectsScreenUiModel?,
+    onSelectTerm: (String) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -99,41 +104,92 @@ fun SubjectsContent(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            when (val state = subjectsState) {
-                is ApiResult.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-
-                is ApiResult.Success -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(state.data) { subject ->
-                            SubjectItem(subject = subject)
-                        }
-                    }
-                }
-
-                is ApiResult.Error -> {
-                    Text(
-                        text = "Hiba történt az adatok betöltésekor",
-                        modifier = Modifier.align(Alignment.Center),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-
-                null -> {}
+        subjectsState?.let {
+            Column (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                FilterItems(
+                    selectedTermId = subjectsState.selectedTermId,
+                    filterItems = subjectsState.filterBar,
+                    onSelectTerm = onSelectTerm
+                )
+                SubjectsList(
+                    listState = subjectsState.listItems
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun FilterItems(
+    selectedTermId: String,
+    filterItems: ApiResult<List<SubjectsScreenUiModel.FilterItem>>?,
+    onSelectTerm: (String) -> Unit
+) {
+    when (filterItems) {
+        is ApiResult.Error -> Unit
+        ApiResult.Loading -> Unit
+        is ApiResult.Success<List<SubjectsScreenUiModel.FilterItem>> -> {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(filterItems.data.asReversed()) { item ->
+                    FilterChip(
+                        selected = item.id == selectedTermId,
+                        onClick = { onSelectTerm(item.id) },
+                        label = {
+                            Text(
+                                text = item.name,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    )
+                }
+            }
+        }
+
+        null -> Unit
+    }
+}
+
+@Composable
+private fun SubjectsList(listState: ApiResult<List<Subject>>?) {
+    when (listState) {
+        is ApiResult.Loading -> {
+            Box(Modifier.fillMaxSize()) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+        }
+
+        is ApiResult.Success -> {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(listState.data) { subject ->
+                    SubjectItem(subject = subject)
+                }
+            }
+        }
+
+        is ApiResult.Error -> {
+            Box(Modifier.fillMaxSize()) {
+                Text(
+                    text = "Hiba történt az adatok betöltésekor",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
+        }
+
+        null -> {}
     }
 }
 
@@ -258,28 +314,44 @@ fun DetailItem(label: String, value: String) {
 private fun SubjectsScreenSuccessPreview() {
     BetterNeptunTheme {
         SubjectsContent(
-            subjectsState = ApiResult.Success(
-                listOf(
-                    Subject(
-                        subjectId = "1",
-                        subjectCode = "GKNB_INTM001",
-                        subjectCredit = 5,
-                        subjectName = "Programozás I.",
-                        subjectRequirement = "Vizsga",
-                        termId = "2023/24/1",
-                        isCompleted = true
-                    ),
-                    Subject(
-                        subjectId = "2",
-                        subjectCode = "GKNB_INTM002",
-                        subjectCredit = 3,
-                        subjectName = "Diszkrét matematika",
-                        subjectRequirement = "Aláírás",
-                        termId = "2023/24/1",
-                        isCompleted = false
+            subjectsState = SubjectsScreenUiModel(
+                selectedTermId = "1",
+                filterBar = ApiResult.Success(
+                    listOf(
+                        SubjectsScreenUiModel.FilterItem(
+                            id = "1",
+                            name = "2023/24/1",
+                        ),
+                        SubjectsScreenUiModel.FilterItem(
+                            id = "2",
+                            name = "2023/24/2",
+                        )
+                    )
+                ),
+                listItems = ApiResult.Success(
+                    listOf(
+                        Subject(
+                            subjectId = "1",
+                            subjectCode = "GKNB_INTM001",
+                            subjectCredit = 5,
+                            subjectName = "Programozás I.",
+                            subjectRequirement = "Vizsga",
+                            termId = "2023/24/1",
+                            isCompleted = true
+                        ),
+                        Subject(
+                            subjectId = "2",
+                            subjectCode = "GKNB_INTM002",
+                            subjectCredit = 3,
+                            subjectName = "Diszkrét matematika",
+                            subjectRequirement = "Aláírás",
+                            termId = "2023/24/1",
+                            isCompleted = false
+                        )
                     )
                 )
             ),
+            onSelectTerm = {},
             onBackClick = {}
         )
     }
@@ -290,7 +362,12 @@ private fun SubjectsScreenSuccessPreview() {
 private fun SubjectsScreenLoadingPreview() {
     BetterNeptunTheme {
         SubjectsContent(
-            subjectsState = ApiResult.Loading,
+            subjectsState = SubjectsScreenUiModel(
+                selectedTermId = "1",
+                filterBar = ApiResult.Loading,
+                listItems = ApiResult.Loading
+            ),
+            onSelectTerm = {},
             onBackClick = {}
         )
     }
@@ -301,7 +378,12 @@ private fun SubjectsScreenLoadingPreview() {
 private fun SubjectsScreenErrorPreview() {
     BetterNeptunTheme {
         SubjectsContent(
-            subjectsState = ApiResult.Error("Valami hiba történt"),
+            subjectsState = SubjectsScreenUiModel(
+                selectedTermId = "1",
+                filterBar = ApiResult.Error("Hiba"),
+                listItems = ApiResult.Error("Hiba")
+            ),
+            onSelectTerm = {},
             onBackClick = {}
         )
     }
