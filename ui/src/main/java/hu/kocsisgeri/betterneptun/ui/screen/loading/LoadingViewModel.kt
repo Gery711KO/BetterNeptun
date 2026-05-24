@@ -4,18 +4,16 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.initializable.Initializer
-import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
-import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
+import hu.kocsisgeri.betterneptun.domain.usecase.login.SilentLoginUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
-import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 
 class LoadingViewModel(
     private val initializer: Initializer,
-    loginRepository: LoginRepository,
+    silentLoginUseCase: SilentLoginUseCase,
 ) : ComposeViewModel() {
 
     private val _nextDestination = MutableStateFlow<NavKey?>(null)
@@ -35,33 +33,22 @@ class LoadingViewModel(
     init {
         initialize()
 
-        viewModelScope.launchReportingErrors {
-            loginRepository.studentData.collect { result ->
+        silentLoginUseCase(
+            onLaunch = { launchBlock ->
+                viewModelScope.launchReportingErrors(block = launchBlock)
+            },
+            onResult = { result ->
                 when (result) {
-                    is ApiResult.Error -> {
-                        // TODO
-                    }
-
-                    is ApiResult.Loading -> {
-                        // TODO
-                    }
-
-                    is ApiResult.Success -> {
+                    SilentLoginUseCase.Result.Loading -> Unit
+                    SilentLoginUseCase.Result.NavigateToHome -> {
                         _nextDestination.value = HomeDestination
                     }
+                    SilentLoginUseCase.Result.NavigateToLogin -> {
+                        _nextDestination.value = LoginDestination
+                    }
                 }
             }
-        }
-
-        viewModelScope.launchReportingErrors {
-            loginRepository.shouldAutoLogin.collect { autoLogin ->
-                if (autoLogin) {
-                    loginRepository.silentLogin()
-                } else {
-                    _nextDestination.value = LoginDestination
-                }
-            }
-        }
+        )
     }
 
     fun initialize() {

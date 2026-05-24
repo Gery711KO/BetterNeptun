@@ -1,12 +1,11 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
-import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
-import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
+import hu.kocsisgeri.betterneptun.domain.usecase.home.FetchUnreadMessagesUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.home.GetCurrentCoursesUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.home.GetNextCourseUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.home.GetStudentDataUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.core.helper.ClockTickReceiver
 import hu.kocsisgeri.betterneptun.ui.core.helper.getCourseDateString
@@ -14,80 +13,61 @@ import hu.kocsisgeri.betterneptun.ui.core.helper.getTimeLeft
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.getPercent
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import java.time.LocalDateTime
 
 class HomeViewModel(
     private val clockTickReceiver: ClockTickReceiver,
-    private val neptunRepository: NeptunRepository,
     private val localizationService: LocalizationService,
-    loginRepository: LoginRepository,
+    private val fetchUnreadMessagesUseCase: FetchUnreadMessagesUseCase,
+    getCurrentCoursesUseCase: GetCurrentCoursesUseCase,
+    getNextCourseUseCase: GetNextCourseUseCase,
+    getStudentDataUseCase: GetStudentDataUseCase,
 ) : ComposeViewModel() {
 
+    val refresher = MutableSharedFlow<Unit>(0, 10)
     val refreshProgress = MutableSharedFlow<ApiResult<Unit>>(1, 50)
 
-    val currentCourses = neptunRepository.events.map { list ->
-        list.sortedBy { it.startTime }.filter {
-            it.startTime.isBefore(LocalDateTime.now()) && it.endTime.isAfter(LocalDateTime.now())
-        }
-    }.map { currentCourses ->
-        currentCourses.map { item ->
-            CurrentCourseDetail(
-                title = item.title,
-                location = item.location,
-                progress = item.getPercent(),
-                remainingTime = item.endTime.getTimeLeft { id, args ->
-                    localizationService.localized(id, *args)
-                },
-                color = item.color
-            )
-        }
+    val currentCourses = getCurrentCoursesUseCase { item ->
+        CurrentCourseDetail(
+            title = item.title,
+            location = item.location,
+            progress = item.getPercent(),
+            remainingTime = item.endTime.getTimeLeft { id, args ->
+                localizationService.localized(id, *args)
+            },
+            color = item.color
+        )
     }.repeatEveryMinute().stateWhileSubscribed(emptyList())
 
-    val nextCourse = neptunRepository.events.map { list ->
-        list.sortedBy { it.startTime }.firstOrNull {
-            it.startTime.isAfter(LocalDateTime.now())
-        }?.let { event ->
-            NextCourseDetail(
-                title = event.title,
-                location = event.location,
-                startTime = event.startTime,
-                endTime = event.endTime,
-                color = event.color,
-                timeUntilEvent = event.startTime.getCourseDateString { id, args ->
-                    localizationService.localized(id, *args)
-                }
-            )
-        }
+    val nextCourse = getNextCourseUseCase { event ->
+        NextCourseDetail(
+            title = event.title,
+            location = event.location,
+            startTime = event.startTime,
+            endTime = event.endTime,
+            color = event.color,
+            timeUntilEvent = event.startTime.getCourseDateString { id, args ->
+                localizationService.localized(id, *args)
+            }
+        )
     }.repeatEveryMinute().stateWhileSubscribed(null)
 
-    val studentData = loginRepository.studentData
-        .filterIsInstance<ApiResult.Success<StudentData>>()
-        .map { it.data }
-        .stateWhileSubscribed(null)
+    val studentData = getStudentDataUseCase().stateWhileSubscribed()
 
-    val unreadMessages = neptunRepository.unreadMessagesCount
-        .stateWhileSubscribed()
+    val unreadMessages = refresher.flatMapLatest {
+        fetchUnreadMessagesUseCase()
+    }.stateWhileSubscribed(null)
 
     init {
         refreshData()
     }
 
     fun refreshData() {
-        viewModelScope.launchReportingErrors {
-            neptunRepository.fetchUnreadMessages()
-        }
+        refresher.tryEmit(Unit)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun <T> Flow<T>.repeatEveryMinute(): Flow<T> {
-        return clockTickReceiver.minuteTickFlow.flatMapLatest {
-            this // Itt indul újra az eredeti Flow-d
-        }
-    }
+    fun <T> Flow<T>.repeatEveryMinute(): Flow<T> =
+        clockTickReceiver.minuteTickFlow.flatMapLatest { this }
 }

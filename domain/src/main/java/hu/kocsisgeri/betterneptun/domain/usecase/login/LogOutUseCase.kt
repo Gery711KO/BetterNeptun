@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.domain.usecase
+package hu.kocsisgeri.betterneptun.domain.usecase.login
 
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
@@ -9,6 +9,7 @@ class LogOutUseCase(
     private val neptunRepository: NeptunRepository,
     private val settingsRepository: SettingsRepository,
 ) {
+
     suspend operator fun invoke() {
         loginRepository.purge()
         neptunRepository.purge()

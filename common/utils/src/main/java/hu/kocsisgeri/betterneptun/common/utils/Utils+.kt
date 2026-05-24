@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -39,12 +40,10 @@ fun String.sendEmail(context: Context) {
 fun CoroutineScope.launchReportingErrors(
     handleError: (Throwable) -> Unit = {},
     block: suspend CoroutineScope.() -> Unit
-) {
-    launch(
-        context = CoroutineExceptionHandler { _, throwable ->
-            Timber.e(throwable)
-            handleError(throwable)
-        },
-        block = block
-    )
-}
+) = launch(
+    context = CoroutineExceptionHandler { _, throwable ->
+        Timber.e(throwable)
+        handleError(throwable)
+    },
+    block = block
+)
