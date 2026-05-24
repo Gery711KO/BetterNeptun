@@ -15,6 +15,11 @@ enum class ProjectModule(
         isParentModule = false,
         allowedProjectDependencies = emptyList()
     ),
+    Localization(
+        path = ":localization",
+        isParentModule = false,
+        allowedProjectDependencies = listOf(Common, Domain)
+    ),
     Core(
         path = ":core",
         isParentModule = true,
@@ -28,6 +33,6 @@ enum class ProjectModule(
     Ui(
         path = ":ui",
         isParentModule = false,
-        allowedProjectDependencies = listOf(Common, Domain)
+        allowedProjectDependencies = listOf(Common, Domain, Localization)
     )
 }

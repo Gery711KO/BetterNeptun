@@ -1,11 +1,9 @@
-import extensions.config.projectConfigs
-
 plugins {
     alias(libs.plugins.betterneptun.library)
 }
 
 betterNeptun {
-    setupCoreDependencies {
+    setupCoreLayer {
         implementation(libs.bundles.networking)
     }
 }

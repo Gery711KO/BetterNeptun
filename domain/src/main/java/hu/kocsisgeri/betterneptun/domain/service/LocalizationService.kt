@@ -9,7 +9,7 @@ interface LocalizationService: Initializable {
 
     val languages: StateFlow<List<Language>>
 
-    suspend fun changeLanguage(language: Language)
+    suspend fun changeLanguage(languageKey: String)
 
     fun localized(key: String, vararg args: String): String
     fun localized(@StringRes id: Int, vararg args: String): String

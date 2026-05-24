@@ -3,7 +3,7 @@ plugins {
 }
 
 betterNeptun {
-    setupCoreDependencies(useRoom = true) {
+    setupCoreLayer(useRoom = true) {
         implementation(libs.bundles.datastore)
     }
 }

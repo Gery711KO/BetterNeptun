@@ -1,14 +1,20 @@
-package hu.kocsisgeri.betterneptun.domain.service
+package hu.kocsisgeri.betterneptun.localization
 
 import android.content.Context
 import hu.kocsisgeri.betterneptun.domain.model.localization.Language
 import hu.kocsisgeri.betterneptun.domain.model.localization.LocalizationDictionary
 import hu.kocsisgeri.betterneptun.domain.repository.localization.LocalizationRepository
+import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
+import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 
 internal class LocalizationServiceImpl(
     private val context: Context,
     private val localizationRepository: LocalizationRepository,
+    private val settingsRepository: SettingsRepository,
 ): LocalizationService {
 
     private val allDictionaries = MutableStateFlow(emptyList<LocalizationDictionary>())
@@ -25,6 +31,7 @@ internal class LocalizationServiceImpl(
     override val isInitialized = MutableStateFlow(false)
 
     override suspend fun initialize() {
+        val storedLanguage = settingsRepository.storedLanguage.firstOrNull()
         val availableLanguages = localizationRepository.getLanguages()
 
         languages.value = availableLanguages
@@ -32,20 +39,21 @@ internal class LocalizationServiceImpl(
             localizationRepository.getLocalizationDictionary(language)
         }
 
-        availableLanguages.find { it.isDefault }?.let { defaultLanguage ->
-            changeLanguage(defaultLanguage)
+        (storedLanguage?: availableLanguages.find { it.isDefault }?.key)?.let { language ->
+            changeLanguage(language)
         }
 
         isInitialized.value = currentDictionary.value.localizations.isNotEmpty()
     }
 
-    override suspend fun changeLanguage(language: Language) {
+    override suspend fun changeLanguage(languageKey: String) {
         languages.value = languages.value.map {
-            it.copy(isSelected = it == language)
+            it.copy(isSelected = it.key == languageKey)
         }
-        allDictionaries.value.find { it.language == language.key }?.let { dictionary ->
+        allDictionaries.value.find { it.language == languageKey }?.let { dictionary ->
             currentDictionary.value = dictionary
         }
+        settingsRepository.saveLanguage(languageKey)
     }
 
     override fun localized(id: Int, vararg args: String): String {
@@ -75,4 +83,23 @@ internal class LocalizationServiceImpl(
     override fun hashCode(): Int {
         return currentDictionary.value.hashCode()
     }
+}
+
+internal fun defaultLocalizationService(context: Context) = object: LocalizationService {
+    override val languages: StateFlow<List<Language>> =
+        MutableStateFlow(listOf(Language.DEFAULT))
+
+    override suspend fun changeLanguage(languageKey: String) {}
+
+    override fun localized(key: String, vararg args: String): String {
+        return key
+    }
+
+    override fun localized(id: Int, vararg args: String): String {
+        return context.getString(id)
+    }
+
+    override val isInitialized: StateFlow<Boolean> = MutableStateFlow(true)
+
+    override suspend fun initialize() {}
 }

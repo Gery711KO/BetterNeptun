@@ -66,10 +66,10 @@ import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
-import hu.kocsisgeri.betterneptun.ui.core.helper.localized
 import hu.kocsisgeri.betterneptun.ui.destination.MessagesDestination
 import hu.kocsisgeri.betterneptun.ui.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.destination.SettingsDestination

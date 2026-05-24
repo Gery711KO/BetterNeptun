@@ -14,8 +14,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
@@ -26,10 +26,12 @@ import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
 import hu.kocsisgeri.betterneptun.domain.token.LogoutHandler
+import hu.kocsisgeri.betterneptun.localization.LocalizationProviderScope
+import hu.kocsisgeri.betterneptun.localization.ProvideLocalization
+import hu.kocsisgeri.betterneptun.localization.rememberLocalizationProviderScope
 import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.checkType
-import hu.kocsisgeri.betterneptun.ui.core.helper.LocalLocalizer
 import hu.kocsisgeri.betterneptun.ui.core.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
@@ -95,8 +97,10 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
 
     @Composable
     private fun MainContent() {
+        val localizationProviderScope = rememberLocalizationProviderScope(localizationService)
+
         BetterNeptunTheme {
-            CompositionLocalProvider(LocalLocalizer providesComputed { localizationService }) {
+            localizationProviderScope.ProvideLocalization {
                 Navigator.DefaultNavDisplay(
                     navigator = navigator,
                     entryProvider = entryProvider,

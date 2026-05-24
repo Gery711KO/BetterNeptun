@@ -40,6 +40,7 @@ include(":ui")
 include(":domain")
 include(":data")
 include(":common:utils")
+include(":localization")
 include(":core:database")
 include(":core:network")
 

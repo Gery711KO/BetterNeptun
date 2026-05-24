@@ -5,7 +5,6 @@ import extensions.dependency.Dependency
 import extensions.dependency.implementDependencies
 import extensions.dependency.implementDependency
 import org.gradle.api.Project
-import org.gradle.api.tasks.GradleBuild
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.dependencies
 
@@ -61,7 +60,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         }
     }
 
-    fun setupCommonDependencies(
+    fun setupCommonLayer(
         useRoom: Boolean = false,
         useCompose: Boolean = false,
         useNavigation3: Boolean = false,
@@ -76,13 +75,23 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         }
     }
 
-    fun setupCoreDependencies(
+    fun setupCoreLayer(
         useRoom: Boolean = false,
         dependencies: DependencyHandlerScope.() -> Unit = {},
     ) {
         project.baseLayerSetup(ProjectModule.Core) { allowedModules ->
             if (useRoom) setupRoom()
             includeProjects(getAllowedProjects(allowedModules))
+            dependencies { dependencies() }
+        }
+    }
+
+    fun setupLocalizationLayer(
+        dependencies: DependencyHandlerScope.() -> Unit = {},
+    ) {
+        project.baseLayerSetup(ProjectModule.Localization) { allowedModules ->
+            includeProjects(getAllowedProjects(allowedModules))
+            setupCompose()
             dependencies { dependencies() }
         }
     }

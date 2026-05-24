@@ -7,6 +7,7 @@ import hu.kocsisgeri.betterneptun.data.di.dataModule
 import hu.kocsisgeri.betterneptun.di.appModule
 import hu.kocsisgeri.betterneptun.di.permissionModule
 import hu.kocsisgeri.betterneptun.domain.di.domainModule
+import hu.kocsisgeri.betterneptun.localization.di.localizationModule
 import hu.kocsisgeri.betterneptun.ui.di.navigationModule
 import hu.kocsisgeri.betterneptun.ui.di.uiModule
 import org.koin.android.ext.koin.androidContext
@@ -38,6 +39,7 @@ open class MyApplication : Application() {
             databaseModule,
             dataModule,
             domainModule,
+            localizationModule,
             navigationModule,
             uiModule,
             permissionModule,

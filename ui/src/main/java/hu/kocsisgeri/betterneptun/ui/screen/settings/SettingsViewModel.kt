@@ -40,7 +40,7 @@ class SettingsViewModel(
 
     fun changeLanguage(language: Language) {
         viewModelScope.launchReportingErrors {
-            localizationService.changeLanguage(language)
+            localizationService.changeLanguage(language.key)
         }
     }
 

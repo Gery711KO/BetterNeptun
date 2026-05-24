@@ -40,12 +40,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.model.localization.Language
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.BuildConfig
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
-import hu.kocsisgeri.betterneptun.ui.core.helper.localized
-import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -139,12 +139,14 @@ fun SettingsContent(
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
-                languages.forEach { language ->
-                    RadioOption(
-                        label = localized(language.localizationKey),
-                        selected = language.isSelected,
-                        onClick = { onLanguageChange(language) }
-                    )
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    languages.forEach { language ->
+                        RadioOption(
+                            label = localized(language.localizationKey),
+                            selected = language.isSelected,
+                            onClick = { onLanguageChange(language) }
+                        )
+                    }
                 }
             }
 

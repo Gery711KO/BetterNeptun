@@ -3,7 +3,7 @@ plugins {
 }
 
 betterNeptun {
-    setupCommonDependencies {
+    setupCommonLayer {
         api(libs.androidx.core.ktx)
         api(libs.androidx.appcompat)
         api(libs.kotlinx.serialization.json)

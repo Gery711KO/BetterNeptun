@@ -61,13 +61,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
-import hu.kocsisgeri.betterneptun.ui.core.helper.localized
+import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.isLoading
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
