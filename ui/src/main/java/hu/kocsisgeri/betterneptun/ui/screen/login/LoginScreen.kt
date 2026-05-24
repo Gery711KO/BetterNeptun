@@ -61,12 +61,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.isLoading
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -147,7 +148,7 @@ private fun LoginContent(
                 contentPadding = PaddingValues(vertical = 12.dp)
             ) {
                 Text(
-                    text = "Belépés",
+                    text = localized(R.string.login_submit),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -163,17 +164,17 @@ private fun LoginContent(
                 verticalArrangement = Arrangement.Center
             ) {
                 Column(
-                    modifier = Modifier.animateBounds(lookaheadScope = this@LookaheadScope)
+                    modifier = Modifier.animateBounds(lookaheadScope = this@LookaheadScope),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.oe_logo),
                         contentDescription = null,
                         modifier = Modifier
                             .animateBounds(lookaheadScope = this@LookaheadScope)
-                            .size(120.dp)
                             .then(
-                                if (!isLoading) Modifier.padding(bottom = 16.dp)
-                                else Modifier
+                                if (!isLoading) Modifier.size(120.dp)
+                                else Modifier.size(192.dp)
                             )
 
                     )
@@ -198,7 +199,7 @@ private fun LoginContent(
                                     neptunCode = it
                                     onNeptunCodeChange(it)
                                 },
-                                label = { Text("Neptun kód") },
+                                label = { Text(localized(R.string.login_input_neptun_code)) },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                                 modifier = Modifier.fillMaxWidth(),
@@ -223,7 +224,7 @@ private fun LoginContent(
                                     password = it
                                     onPasswordChange(it)
                                 },
-                                label = { Text("Jelszó") },
+                                label = { Text(localized(R.string.login_input_password)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(
@@ -278,7 +279,7 @@ private fun LoginContent(
                                     )
                                 )
                                 Text(
-                                    text = "Maradjak belépve",
+                                    text = localized(R.string.login_checkbox_stay_loggedin),
                                     color = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.padding(start = 8.dp)
                                 )

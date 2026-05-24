@@ -1,6 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.screen.login.model
 
-import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 
 sealed interface LoginState {
 

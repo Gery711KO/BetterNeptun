@@ -1,20 +1,21 @@
 package hu.kocsisgeri.betterneptun.data.repository.settings
 
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.datastore.preferences.core.stringPreferencesKey
-import hu.kocsisgeri.betterneptun.common.PREF_NOTIFICATION_DELAY
-import hu.kocsisgeri.betterneptun.common.PREF_SAVED_THEME
-import hu.kocsisgeri.betterneptun.common.ThemeMode
+import hu.kocsisgeri.betterneptun.data.datasource.LocalCacheKeys
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
+import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
+import hu.kocsisgeri.betterneptun.domain.model.localization.Language
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.serialization.serializer
 
 internal class SettingsRepositoryImpl(
     private val localDataSource: LocalDataSource,
 ): SettingsRepository {
+    override val storedLanguage = localDataSource.getFromPreferencesDataStore(
+        key = LANGUAGE_KEY,
+        defaultValue = Language.DEFAULT.key,
+        serializer = serializer()
+    )
 
     override val storedTheme = localDataSource.getFromPreferencesDataStore(
         key = THEME_KEY,
@@ -28,20 +29,12 @@ internal class SettingsRepositoryImpl(
         serializer = serializer()
     )
 
-    init {
-        MainScope().launch {
-            AppCompatDelegate.setDefaultNightMode(storedTheme.first().mode)
-        }
-    }
-
     override suspend fun saveTheme(themeMode: ThemeMode) {
         localDataSource.saveToPreferencesDataStore(
             key = THEME_KEY,
             value = themeMode,
             serializer = serializer()
         )
-
-        AppCompatDelegate.setDefaultNightMode(themeMode.mode)
     }
 
     override suspend fun saveNotificationDelay(delayMinutes: Int) {
@@ -52,13 +45,27 @@ internal class SettingsRepositoryImpl(
         )
     }
 
+    override suspend fun saveLanguage(languageKey: String) {
+        localDataSource.saveToPreferencesDataStore(
+            key = LANGUAGE_KEY,
+            value = languageKey,
+            serializer = serializer()
+        )
+    }
+
     override suspend fun purgeLocalData() {
         localDataSource.purge()
     }
 
     companion object {
 
-        private val THEME_KEY = stringPreferencesKey(PREF_SAVED_THEME)
-        private val NOTIFICATION_DELAY_KEY = stringPreferencesKey(PREF_NOTIFICATION_DELAY)
+        private val THEME_KEY =
+            stringPreferencesKey(LocalCacheKeys.SAVED_THEME)
+
+        private val NOTIFICATION_DELAY_KEY =
+            stringPreferencesKey(LocalCacheKeys.NOTIFICATION_DELAY)
+
+        private val LANGUAGE_KEY =
+            stringPreferencesKey(LocalCacheKeys.LANGUAGE)
     }
 }

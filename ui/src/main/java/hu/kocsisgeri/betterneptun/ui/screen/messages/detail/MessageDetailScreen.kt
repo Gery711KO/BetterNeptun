@@ -36,11 +36,11 @@ import androidx.compose.ui.tooling.preview.AndroidUiModes.UI_MODE_NIGHT_YES
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import hu.kocsisgeri.betterneptun.common.openUrl
-import hu.kocsisgeri.betterneptun.common.sendEmail
-import hu.kocsisgeri.betterneptun.domain.model.Avatar
-import hu.kocsisgeri.betterneptun.domain.model.Message
-import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
+import hu.kocsisgeri.betterneptun.common.utils.openUrl
+import hu.kocsisgeri.betterneptun.common.utils.sendEmail
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Message
+import hu.kocsisgeri.betterneptun.domain.model.neptun.MessageDetail
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.composable.HtmlText

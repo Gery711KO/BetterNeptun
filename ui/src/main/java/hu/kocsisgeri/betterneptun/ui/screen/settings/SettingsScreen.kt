@@ -38,11 +38,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import hu.kocsisgeri.betterneptun.common.ThemeMode
+import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
+import hu.kocsisgeri.betterneptun.domain.model.localization.Language
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.BuildConfig
+import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
-import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -52,13 +55,16 @@ fun SettingsScreen(
     navigator: Navigator = koinInject(),
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val languages by viewModel.languages.collectAsStateWithLifecycle()
     val notificationDelay by viewModel.notificationDelay.collectAsStateWithLifecycle()
 
     SettingsContent(
         themeMode = themeMode,
         notificationDelay = notificationDelay,
+        languages = languages,
         onThemeChange = viewModel::saveTheme,
         onNotificationDelayChange = viewModel::saveNotificationDelay,
+        onLanguageChange = viewModel::changeLanguage,
         onLogout = {
             viewModel.logout()
             navigator.navigateToInclusive(LoginDestination)
@@ -71,13 +77,16 @@ fun SettingsScreen(
 @Composable
 fun SettingsContent(
     themeMode: ThemeMode,
+    languages: List<Language>,
     notificationDelay: Int,
     onThemeChange: (ThemeMode) -> Unit,
     onNotificationDelayChange: (Int) -> Unit,
+    onLanguageChange: (Language) -> Unit,
     onLogout: () -> Unit,
     onBackClick: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scrollState = rememberScrollState()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -85,7 +94,7 @@ fun SettingsContent(
             LargeTopAppBar(
                 title = {
                     Text(
-                        text = "Beállítások",
+                        text = localized(R.string.settings_title),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 24.sp
@@ -117,11 +126,11 @@ fun SettingsContent(
                 .padding(top = paddingValues.calculateTopPadding())
                 .padding(horizontal = 16.dp)
                 .clip(MaterialTheme.shapes.large)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(bottom = paddingValues.calculateBottomPadding()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SettingsSectionLabel(label = "Megjelenés")
+            SettingsSectionLabel(label = localized(R.string.settings_section_language))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -131,25 +140,45 @@ fun SettingsContent(
                 )
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    ThemeOption(
-                        label = "Automatikus",
+                    languages.forEach { language ->
+                        RadioOption(
+                            label = localized(language.localizationKey),
+                            selected = language.isSelected,
+                            onClick = { onLanguageChange(language) }
+                        )
+                    }
+                }
+            }
+
+            SettingsSectionLabel(label = localized(R.string.settings_section_theme),)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    RadioOption(
+                        label = localized(R.string.settings_section_theme_system),
                         selected = themeMode == ThemeMode.AUTO,
                         onClick = { onThemeChange(ThemeMode.AUTO) }
                     )
-                    ThemeOption(
-                        label = "Világos mód",
+                    RadioOption(
+                        label = localized(R.string.settings_section_theme_light),
                         selected = themeMode == ThemeMode.LIGHT,
                         onClick = { onThemeChange(ThemeMode.LIGHT) }
                     )
-                    ThemeOption(
-                        label = "Sötét mód",
+                    RadioOption(
+                        label = localized(R.string.settings_section_theme_dark),
                         selected = themeMode == ThemeMode.DARK,
                         onClick = { onThemeChange(ThemeMode.DARK) }
                     )
                 }
             }
 
-            SettingsSectionLabel(label = "Naptár")
+            SettingsSectionLabel(label = localized(R.string.settings_section_timetable))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -159,35 +188,35 @@ fun SettingsContent(
                 )
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    DelayOption(
-                        label = "Nincs értesítés",
+                    RadioOption(
+                        label = localized(R.string.settings_section_timetable_none),
                         selected = notificationDelay == -1,
                         onClick = { onNotificationDelayChange(-1) }
                     )
-                    DelayOption(
-                        label = "5 perccel előtte",
+                    RadioOption(
+                        label = localized(R.string.settings_section_timetable_minutes, 5.toString()),
                         selected = notificationDelay == 5,
                         onClick = { onNotificationDelayChange(5) }
                     )
-                    DelayOption(
-                        label = "10 perccel előtte",
+                    RadioOption(
+                        label = localized(R.string.settings_section_timetable_minutes, 10.toString()),
                         selected = notificationDelay == 10,
                         onClick = { onNotificationDelayChange(10) }
                     )
-                    DelayOption(
-                        label = "15 perccel előtte",
+                    RadioOption(
+                        label = localized(R.string.settings_section_timetable_minutes, 15.toString()),
                         selected = notificationDelay == 15,
                         onClick = { onNotificationDelayChange(15) }
                     )
-                    DelayOption(
-                        label = "30 perccel előtte",
+                    RadioOption(
+                        label = localized(R.string.settings_section_timetable_minutes, 30.toString()),
                         selected = notificationDelay == 30,
                         onClick = { onNotificationDelayChange(30) }
                     )
                 }
             }
 
-            SettingsSectionLabel(label = "Információk")
+            SettingsSectionLabel(label = localized(R.string.settings_section_information))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -198,7 +227,7 @@ fun SettingsContent(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     InfoRow(
-                        label = "Verzió",
+                        label = localized(R.string.settings_section_information_version),
                         value = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
                     )
                 }
@@ -226,43 +255,7 @@ fun SettingsSectionLabel(label: String) {
 }
 
 @Composable
-fun DelayOption(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
-            ),
-            color = if (selected) {
-                MaterialTheme.colorScheme.onSurface
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            }
-        )
-        RadioButton(
-            selected = selected,
-            onClick = null,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary,
-                unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-    }
-}
-
-@Composable
-fun ThemeOption(
+fun RadioOption(
     label: String,
     selected: Boolean,
     onClick: () -> Unit
@@ -338,11 +331,11 @@ fun LogoutButton(onClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Kilépés",
+                text = localized(R.string.settings_logout_button_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             )
             Text(
-                text = "Minden elmentett adat törlése és kijelentkezés",
+                text = localized(R.string.settings_logout_button_description),
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                 textAlign = TextAlign.Center
             )
@@ -356,11 +349,21 @@ fun SettingsPreviewLight() {
     BetterNeptunTheme(darkTheme = false) {
         SettingsContent(
             themeMode = ThemeMode.AUTO,
+            languages = listOf(
+                Language.DEFAULT,
+                Language(
+                    key = "en",
+                    localizationKey = "language_en",
+                    isSelected = false,
+                    isDefault = false
+                )
+            ),
             notificationDelay = 15,
             onThemeChange = {},
             onNotificationDelayChange = {},
             onLogout = {},
-            onBackClick = {}
+            onBackClick = {},
+            onLanguageChange = {}
         )
     }
 }
@@ -371,11 +374,21 @@ fun SettingsPreviewDark() {
     BetterNeptunTheme(darkTheme = true) {
         SettingsContent(
             themeMode = ThemeMode.DARK,
+            languages = listOf(
+                Language.DEFAULT,
+                Language(
+                    key = "en",
+                    localizationKey = "language_en",
+                    isSelected = false,
+                    isDefault = false
+                )
+            ),
             notificationDelay = 30,
             onThemeChange = {},
             onNotificationDelayChange = {},
             onLogout = {},
-            onBackClick = {}
+            onBackClick = {},
+            onLanguageChange = {}
         )
     }
 }

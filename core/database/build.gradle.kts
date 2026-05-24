@@ -3,8 +3,7 @@ plugins {
 }
 
 betterNeptun {
-    setupCoreDependencies(
-        namespaceSuffix = "core.database",
-        useRoom = true
-    )
+    setupCoreLayer(useRoom = true) {
+        implementation(libs.bundles.datastore)
+    }
 }

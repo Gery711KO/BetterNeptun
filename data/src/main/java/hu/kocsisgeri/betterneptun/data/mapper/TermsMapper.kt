@@ -1,15 +1,14 @@
 package hu.kocsisgeri.betterneptun.data.mapper
 
-import hu.kocsisgeri.betterneptun.data.model.ExtendedTermDto
-import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
-import hu.kocsisgeri.betterneptun.data.model.TermDto
-import hu.kocsisgeri.betterneptun.domain.model.Average
-import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
-import hu.kocsisgeri.betterneptun.domain.model.Term
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.TermAveragesDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.TermDto
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Average
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Term
 
 fun List<TermDto>.toTermDomain(): List<Term> {
     return reversed().mapIndexed { index, term ->
         Term(
+            id = term.id,
             index = index,
             semesterTitle = term.text,
             semesterFulfilledCredits = term.completedCredit,
@@ -26,20 +25,5 @@ fun List<TermAveragesDto.TermAverage>.toAverageDomain() = mapIndexed { index, av
         index = index,
         normalAverage = average.average,
         commutativeAverage = average.sumAverage
-    )
-}
-
-
-fun List<ExtendedTermDto>.toExtendedTermDomain() = map {
-    ExtendedTerm(
-        termDataStatus = it.termDataStatus,
-        term = it.term,
-        termId = it.termId,
-        financialStatus = it.financialStatus,
-        semester = it.semester,
-        registration = it.registration,
-        closing = it.closing,
-        usedSupportedSemestersInTotal = it.usedSupportedSemestersInTotal,
-        studentTrainingTermDataId = it.studentTrainingTermDataId
     )
 }

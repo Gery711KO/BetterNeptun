@@ -3,7 +3,10 @@ package hu.kocsisgeri.betterneptun.ui.core.theme
 import android.app.Activity
 import android.graphics.Color
 import android.os.Build
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -11,9 +14,14 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
+import hu.kocsisgeri.betterneptun.localization.ProvideLocalization
+import hu.kocsisgeri.betterneptun.localization.LocalizationProviderScope
 
 private val DarkColorScheme = darkColorScheme(
     primary = DarkPrimary,
@@ -99,5 +107,21 @@ fun BetterNeptunTheme(
         colorScheme = colorScheme,
         typography = Typography,
         content = content
+    )
+}
+
+@Composable
+fun PreviewTheme(
+    content: @Composable () -> Unit,
+) {
+    BetterNeptunTheme(
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                content = { content() }
+            )
+        }
     )
 }

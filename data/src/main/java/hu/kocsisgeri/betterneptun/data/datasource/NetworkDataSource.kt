@@ -1,17 +1,16 @@
 package hu.kocsisgeri.betterneptun.data.datasource
 
-import hu.kocsisgeri.betterneptun.data.model.UserInfoDto
-import hu.kocsisgeri.betterneptun.data.model.ApiResponseDto
-import hu.kocsisgeri.betterneptun.data.model.MessageDetailsDto
-import hu.kocsisgeri.betterneptun.data.model.MessageListDto
-import hu.kocsisgeri.betterneptun.data.model.TermDetailDto
-import hu.kocsisgeri.betterneptun.data.model.ExtendedTermDto
-import hu.kocsisgeri.betterneptun.data.model.PostIdsRequestDto
-import hu.kocsisgeri.betterneptun.data.model.SubjectDto
-import hu.kocsisgeri.betterneptun.data.model.TermAveragesDto
-import hu.kocsisgeri.betterneptun.data.model.TermDto
-import hu.kocsisgeri.betterneptun.data.model.UnreadMessagesCountDto
-import hu.kocsisgeri.betterneptun.data.model.UserAvatarDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.UserInfoDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.ApiResponseDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.MessageDetailsDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.MessageListDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.TermDetailDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.PostIdsRequestDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.SubjectDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.TermAveragesDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.TermDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.UnreadMessagesCountDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.UserAvatarDto
 
 internal interface NetworkDataSource {
 
@@ -36,8 +35,6 @@ internal interface NetworkDataSource {
         messageId: String,
         postIds: PostIdsRequestDto
     )
-
-    suspend fun getExtendedTerms(): ApiResponseDto<List<ExtendedTermDto>>
 
     suspend fun getTermDetails(termId: String): ApiResponseDto<TermDetailDto>
 

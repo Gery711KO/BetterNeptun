@@ -63,9 +63,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.Avatar
-import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
+import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
@@ -248,7 +249,7 @@ private fun PermissionDisclaimerCard(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = "Engedélyezés",
+                    text = localized(R.string.home_permission_permit),
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -276,41 +277,41 @@ private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
         NavButton(
             modifier = Modifier.gridItem(row = 1, column = 1),
             icon = painterResource(id = R.drawable.ic_mail),
-            text = "Üzenetek",
+            text = localized(R.string.home_menu_messages),
             onClick = { onNavigate(MessagesDestination) }
         )
         NavButton(
             modifier = Modifier.gridItem(row = 1, column = 2),
             icon = painterResource(id = R.drawable.ic_calendar),
-            text = "Órarend",
+            text = localized(R.string.home_menu_timetable),
             onClick = { onNavigate(TimetableDestination) }
         )
         NavButton(
             modifier = Modifier.gridItem(row = 2, column = 1),
             icon = painterResource(id = R.drawable.ic_courses),
-            text = "Kurzusok",
+            text = localized(R.string.home_menu_courses),
             onClick = { onNavigate(SubjectsDestination) }
         )
         NavButton(
             modifier = Modifier.gridItem(row = 2, column = 2),
             icon = painterResource(id = R.drawable.ic_semesters),
-            text = "Félévek",
+            text = localized(R.string.home_menu_semesters),
             onClick = { onNavigate(SemestersDestination) }
         )
         NavButton(
             modifier = Modifier.gridItem(row = 3, column = 1),
             icon = painterResource(id = R.drawable.ic_exams),
-            text = "Vizsgák",
+            text = localized(R.string.home_menu_exams),
             isEnabled = false,
-            disabledTag = "Fejlesztés alatt",
+            disabledTag = localized(R.string.home_label_underdevelopment),
             onClick = { /* TODO */ }
         )
         NavButton(
             modifier = Modifier.gridItem(row = 3, column = 2),
             icon = painterResource(id = R.drawable.ic_schedule),
-            text = "Időszakok",
+            text = localized(R.string.home_menu_periods),
             isEnabled = false,
-            disabledTag = "Fejlesztés alatt",
+            disabledTag = localized(R.string.home_label_underdevelopment),
             onClick = { /* TODO */ }
         )
     }
@@ -446,7 +447,7 @@ fun CurrentCourseItem(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Éppen tart",
+                    text = localized(R.string.home_ongoing_course),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -495,7 +496,7 @@ fun CurrentCourseItem(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = course.location!!.trim(),
+                                text = course.location.trim(),
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
@@ -546,7 +547,7 @@ fun NextCourseCard(course: NextCourseDetail?) {
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Következő óra",
+                            text =  localized(R.string.home_next_course),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
