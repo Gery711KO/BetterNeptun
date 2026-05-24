@@ -36,9 +36,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -169,8 +171,10 @@ private fun SubjectsList(listState: ApiResult<List<Subject>>?) {
 
         is ApiResult.Success -> {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .clip(MaterialTheme.shapes.large),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(listState.data) { subject ->
@@ -195,7 +199,7 @@ private fun SubjectsList(listState: ApiResult<List<Subject>>?) {
 
 @Composable
 fun SubjectItem(subject: Subject) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
     val rotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
 
     Card(

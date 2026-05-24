@@ -164,17 +164,17 @@ private fun LoginContent(
                 verticalArrangement = Arrangement.Center
             ) {
                 Column(
-                    modifier = Modifier.animateBounds(lookaheadScope = this@LookaheadScope)
+                    modifier = Modifier.animateBounds(lookaheadScope = this@LookaheadScope),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.oe_logo),
                         contentDescription = null,
                         modifier = Modifier
                             .animateBounds(lookaheadScope = this@LookaheadScope)
-                            .size(120.dp)
                             .then(
-                                if (!isLoading) Modifier.padding(bottom = 16.dp)
-                                else Modifier
+                                if (!isLoading) Modifier.size(120.dp)
+                                else Modifier.size(192.dp)
                             )
 
                     )
