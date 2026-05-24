@@ -68,6 +68,6 @@ class HomeViewModel(
         refresher.tryEmit(Unit)
     }
 
-    fun <T> Flow<T>.repeatEveryMinute(): Flow<T> =
+    private fun <T> Flow<T>.repeatEveryMinute(): Flow<T> =
         clockTickReceiver.minuteTick.flatMapLatest { this }
 }

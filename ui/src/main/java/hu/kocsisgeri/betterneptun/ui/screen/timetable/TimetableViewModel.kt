@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import de.tobiasschuerg.weekview.data.LocalDateRange
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.usecase.timetable.AddLocalEventUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.timetable.DeleteLocalEventUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.timetable.GetEventsUseCase
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,8 +22,12 @@ enum class ViewMode(val days: Int, @DrawableRes val icon : Int) {
 }
 
 class TimetableViewModel(
-    private val neptunRepository: NeptunRepository,
+    getEventsUseCase: GetEventsUseCase,
+    private val addLocalEventsUseCase: AddLocalEventUseCase,
+    private val deleteLocalEventUseCase: DeleteLocalEventUseCase
 ) : ComposeViewModel() {
+
+    private val events = getEventsUseCase()
 
     private val currentSelected = MutableStateFlow<Long?>(null)
 
@@ -34,24 +40,31 @@ class TimetableViewModel(
     private val _times = MutableStateFlow("6:23")
     val times = _times.stateWhileSubscribed()
 
-    val dateRange = combine(selectedDate, viewMode) { date, mode ->
+    val dateRange = combine(
+        selectedDate,
+        viewMode,
+    ) { date, mode ->
         when (mode) {
             ViewMode.WEEK -> {
                 val monday = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
                 val friday = monday.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY))
+
                 LocalDateRange(monday, friday)
             }
             ViewMode.DAY -> LocalDateRange(date, date)
         }
     }.stateWhileSubscribed(LocalDateRange(LocalDate.now(), LocalDate.now()))
 
-    val timetableEvents = combine(neptunRepository.events, dateRange) { events, range ->
+    val timetableEvents = combine(
+        events,
+        dateRange,
+    ) { events, range ->
         events.filter { it.startTime.toLocalDate() in range }
     }.stateWhileSubscribed(emptyList())
 
     val selectedEvent = combine(
         currentSelected,
-        neptunRepository.events
+        events
     ) { currentSelectedEventId, events ->
         events.find { event ->
             event.id == currentSelectedEventId
@@ -68,13 +81,13 @@ class TimetableViewModel(
 
     fun addEvent(event: CalendarItem.LocalEvent) {
         viewModelScope.launchReportingErrors {
-            neptunRepository.addLocalEvent(event)
+            addLocalEventsUseCase(event)
         }
     }
 
     fun deleteEvent(eventId: Long) {
         viewModelScope.launchReportingErrors {
-            neptunRepository.deleteLocalEvent(eventId)
+            deleteLocalEventUseCase(eventId)
             clearSelectedEvent()
         }
     }

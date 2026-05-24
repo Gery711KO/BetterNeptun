@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.combine
 
 class LoadingViewModel(
     private val initializer: Initializer,
-    silentLoginUseCase: SilentLoginUseCase,
+    private val silentLoginUseCase: SilentLoginUseCase,
 ) : ComposeViewModel() {
 
     private val _nextDestination = MutableStateFlow<NavKey?>(null)
@@ -32,7 +32,14 @@ class LoadingViewModel(
 
     init {
         initialize()
+        handleSilentLogin()
+    }
 
+    fun initialize() {
+        initializer.initialize(viewModelScope)
+    }
+
+    private fun handleSilentLogin() {
         viewModelScope.launchReportingErrors {
             silentLoginUseCase { result ->
                 when (result) {
@@ -40,15 +47,12 @@ class LoadingViewModel(
                     SilentLoginUseCase.Result.NavigateToHome -> {
                         _nextDestination.value = HomeDestination
                     }
+
                     SilentLoginUseCase.Result.NavigateToLogin -> {
                         _nextDestination.value = LoginDestination
                     }
                 }
             }
         }
-    }
-
-    fun initialize() {
-        initializer.initialize(viewModelScope)
     }
 }

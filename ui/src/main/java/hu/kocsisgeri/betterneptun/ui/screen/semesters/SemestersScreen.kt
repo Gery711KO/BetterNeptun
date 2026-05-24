@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
@@ -43,6 +44,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.DefaultAxisValueFormatter
 import com.github.mikephil.charting.formatter.LargeValueFormatter
+import hu.kocsisgeri.betterneptun.domain.model.ChartColor
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
@@ -71,8 +73,8 @@ fun SemestersScreen(
 @Composable
 fun SemestersContent(
     selectedTab: Int,
-    creditsResult: ApiResult<Pair<BarDataSet, BarDataSet>>,
-    averagesResult: ApiResult<LineData>,
+    creditsResult: ApiResult<List<Pair<BarDataSet, ChartColor>>>,
+    averagesResult: ApiResult<List<Pair<LineDataSet, ChartColor>>>,
     onSelectTab: (Int) -> Unit,
     onBackClick: () -> Unit,
 ) {
@@ -148,21 +150,28 @@ fun SemestersContent(
                                     }
                                 },
                                 update = { chart ->
-                                    val data1 = creditsResult.data.first.apply {
-                                        color = colors.onSurfaceVariant
-                                            .copy(alpha = 0.3f).toArgb()
-                                    }
-                                    val data2 = creditsResult.data.second.apply {
-                                        color = colors.onSurface.toArgb()
-                                    }
-                                    chart.data = BarData(data1, data2).apply {
+                                    val dataSets =
+                                        creditsResult.data.map { (set, color) ->
+                                            set.apply {
+                                                val colorInt = when (color) {
+                                                    ChartColor.Primary -> {
+                                                        colors.onSurfaceVariant
+                                                            .copy(alpha = 0.3f).toArgb()
+                                                    }
+
+                                                    ChartColor.Secondary -> colors.onSurface.toArgb()
+                                                }
+                                                this.color = colorInt
+                                            }
+                                        }
+                                    chart.data = BarData(dataSets).apply {
                                         barWidth = 0.7f
                                         setValueTextColor(textColor)
                                         setValueTextSize(12f)
                                         setValueFormatter(LargeValueFormatter())
                                     }
-                                    chart.xAxis.axisMaximum = (data1.entryCount) + 1f
-                                    chart.xAxis.labelCount = (data1.entryCount) + 1
+                                    chart.xAxis.axisMaximum = (dataSets[0].entryCount) + 1f
+                                    chart.xAxis.labelCount = (dataSets[0].entryCount) + 1
                                     chart.animateY(1000)
                                     chart.invalidate()
                                 }
@@ -186,7 +195,18 @@ fun SemestersContent(
                                     }
                                 },
                                 update = { chart ->
-                                    chart.data = averagesResult.data.apply {
+                                    val dataSets =
+                                        averagesResult.data.map { (set, color) ->
+                                            set.apply {
+                                                val colorInt = when (color) {
+                                                    ChartColor.Primary -> "#007541".toColorInt()
+                                                    ChartColor.Secondary -> "#096FB3".toColorInt()
+                                                }
+                                                this.color = colorInt
+                                                setCircleColor(colorInt)
+                                            }
+                                        }
+                                    chart.data = LineData(dataSets).apply {
                                         setValueTextColor(textColor)
                                         setValueTextSize(12f)
                                         setValueFormatter(DefaultAxisValueFormatter(2))
@@ -337,15 +357,27 @@ private fun LineChart.setupLineChartTheme(textColor: Int) {
 private fun SemestersScreenSuccessPreview() {
     BetterNeptunTheme {
         val creditsResult = ApiResult.Success(
-            Pair(
-                BarDataSet(listOf(BarEntry(1f, 30f), BarEntry(2f, 28f)), "Felvett"),
-                BarDataSet(listOf(BarEntry(1f, 25f), BarEntry(2f, 28f)), "Teljesitett")
+            listOf(
+                BarDataSet(
+                    listOf(BarEntry(1f, 30f), BarEntry(2f, 28f)),
+                    "Felvett"
+                ) to ChartColor.Primary,
+                BarDataSet(
+                    listOf(BarEntry(1f, 25f), BarEntry(2f, 28f)),
+                    "Teljesitett"
+                )to ChartColor.Secondary,
             )
         )
         val averagesResult = ApiResult.Success(
-            LineData(
-                LineDataSet(listOf(Entry(1f, 4.2f), Entry(2f, 3.8f)), "Átlagok"),
-                LineDataSet(listOf(Entry(1f, 4.2f), Entry(2f, 4.0f)), "Kommultatív átlagok")
+            listOf(
+                LineDataSet(
+                    listOf(Entry(1f, 4.2f), Entry(2f, 3.8f)),
+                    "Átlagok"
+                ) to ChartColor.Primary,
+                LineDataSet(
+                    listOf(Entry(1f, 4.2f), Entry(2f, 4.0f)),
+                    "Kommultatív átlagok"
+                ) to ChartColor.Secondary,
             )
         )
 

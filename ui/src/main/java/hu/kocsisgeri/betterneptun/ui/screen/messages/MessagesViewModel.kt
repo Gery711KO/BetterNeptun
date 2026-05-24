@@ -14,8 +14,7 @@ class MessagesViewModel(
     private val loadMoreMessagesUseCase: LoadMoreMessagesUseCase,
 ) : ComposeViewModel() {
 
-    val listItems = getMessagesPagerUseCase()
-        .stateWhileSubscribed(MessagesPager())
+    val listItems = getMessagesPagerUseCase().stateWhileSubscribed(MessagesPager())
 
     init {
         refresh()
