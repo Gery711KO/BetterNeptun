@@ -22,16 +22,14 @@ class MessagesViewModel(
     }
 
     fun refresh() {
-        refreshMessagesUseCase(
-            onLaunch = { launchBlock ->
-                viewModelScope.launchReportingErrors(block = launchBlock)
-            }
-        )
+        viewModelScope.launchReportingErrors {
+            refreshMessagesUseCase()
+        }
     }
 
     fun loadMore() {
         viewModelScope.launchReportingErrors {
-            loadMoreMessagesUseCase(listItems.value.isLoadingNextMessages)
+            loadMoreMessagesUseCase()
         }
     }
 }

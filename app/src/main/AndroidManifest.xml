@@ -35,12 +35,12 @@
         </activity>
 
         <receiver
-            android:name=".notification.NotificationReceiver"
+            android:name=".broadcast.NotificationReceiver"
             android:enabled="true"
             android:exported="false" />
 
         <receiver
-            android:name=".notification.BootReceiver"
+            android:name=".broadcast.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>

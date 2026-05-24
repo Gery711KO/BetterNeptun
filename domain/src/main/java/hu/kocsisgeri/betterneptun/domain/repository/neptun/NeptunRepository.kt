@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface NeptunRepository {
 
+    val currentMessagePage : Int
+
     val events: Flow<List<CalendarItem>>
     val messages: StateFlow<MessagesPager>
     val unreadMessagesCount : StateFlow<Int?>
@@ -19,7 +21,6 @@ interface NeptunRepository {
     val subjects: StateFlow<ApiResult<List<Subject>>>
     val terms : StateFlow<ApiResult<List<Term>>>
     val averages : StateFlow<ApiResult<List<Average>>>
-    var currentMessagePage : Int
 
     suspend fun checkForMessageUpdates()
     suspend fun fetchMessages(isRefresh: Boolean = false)

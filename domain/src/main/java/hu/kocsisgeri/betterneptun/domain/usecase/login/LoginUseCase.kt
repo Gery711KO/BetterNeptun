@@ -3,36 +3,36 @@ package hu.kocsisgeri.betterneptun.domain.usecase.login
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
-import kotlinx.coroutines.CoroutineScope
+import hu.kocsisgeri.betterneptun.domain.usecase.UseCase
 
-class LoginUseCase(private val loginRepository: LoginRepository) {
+class LoginUseCase(private val loginRepository: LoginRepository): UseCase() {
 
-    operator fun invoke(
+    suspend operator fun invoke(
         input: Input,
-        onLaunch: (suspend CoroutineScope.() -> Unit) -> Unit,
         onResult: (Result) -> Unit,
-    ) {
-        onLaunch {
-            if (input.neptunCode.isNullOrEmpty() || input.password.isNullOrEmpty()) return@onLaunch
+    ) = withLock {
+        if (input.neptunCode.isNullOrEmpty() || input.password.isNullOrEmpty()) {
+            onResult(Result.Error("No credentials found."))
+            return@withLock
+        }
 
-            onResult(Result.Loading)
+        onResult(Result.Loading)
 
-            loginRepository.saveCurrentUser(
-                neptunCode = input.neptunCode,
-                password = input.password
-            )
-            loginRepository.saveAutoLoginPreference(
-                shouldAutoLogin = input.stayLoggedIn
-            )
-            loginRepository.login(
-                neptunCode = input.neptunCode,
-                password = input.password
-            ).collect { result ->
-                when (result) {
-                    is ApiResult.Loading -> onResult(Result.Loading)
-                    is ApiResult.Error -> onResult(Result.Error(result.error))
-                    is ApiResult.Success -> onResult(Result.Success(result.data))
-                }
+        loginRepository.saveCurrentUser(
+            neptunCode = input.neptunCode,
+            password = input.password
+        )
+        loginRepository.saveAutoLoginPreference(
+            shouldAutoLogin = input.stayLoggedIn
+        )
+        loginRepository.login(
+            neptunCode = input.neptunCode,
+            password = input.password
+        ).collect { result ->
+            when (result) {
+                is ApiResult.Loading -> onResult(Result.Loading)
+                is ApiResult.Error -> onResult(Result.Error(result.error))
+                is ApiResult.Success -> onResult(Result.Success(result.data))
             }
         }
     }

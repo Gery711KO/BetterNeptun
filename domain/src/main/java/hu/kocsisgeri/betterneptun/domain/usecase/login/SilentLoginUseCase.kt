@@ -2,29 +2,26 @@ package hu.kocsisgeri.betterneptun.domain.usecase.login
 
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
-import kotlinx.coroutines.CoroutineScope
+import hu.kocsisgeri.betterneptun.domain.usecase.UseCase
 import kotlinx.coroutines.flow.first
 
-class SilentLoginUseCase(private val loginRepository: LoginRepository) {
+class SilentLoginUseCase(private val loginRepository: LoginRepository): UseCase() {
 
-    operator fun invoke(
-        onLaunch: (suspend CoroutineScope.() -> Unit) -> Unit,
+    suspend operator fun invoke(
         onResult: (Result) -> Unit,
-    ) {
-        onLaunch {
-            onResult(Result.Loading)
-            loginRepository.shouldAutoLogin.first().let { autoLogin ->
-                if (autoLogin) {
-                    loginRepository.silentLogin().collect { result ->
-                        when (result) {
-                            is ApiResult.Loading -> onResult(Result.Loading)
-                            is ApiResult.Error -> onResult(Result.NavigateToLogin)
-                            is ApiResult.Success -> onResult(Result.NavigateToHome)
-                        }
+    ) = withLock {
+        onResult(Result.Loading)
+        loginRepository.shouldAutoLogin.first().let { autoLogin ->
+            if (autoLogin) {
+                loginRepository.silentLogin().collect { result ->
+                    when (result) {
+                        is ApiResult.Loading -> onResult(Result.Loading)
+                        is ApiResult.Error -> onResult(Result.NavigateToLogin)
+                        is ApiResult.Success -> onResult(Result.NavigateToHome)
                     }
-                } else {
-                    onResult(Result.NavigateToLogin)
                 }
+            } else {
+                onResult(Result.NavigateToLogin)
             }
         }
     }

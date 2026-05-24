@@ -15,7 +15,7 @@ internal class InitializerImpl(private val initializables: List<Initializable>):
     private val _isInitialized =
         MutableStateFlow<Initializer.State>(Initializer.State.Idle)
 
-    override val isInitialized = _isInitialized.asStateFlow()
+    override val initializationState = _isInitialized.asStateFlow()
 
     override fun initialize(scope: CoroutineScope) {
         if (_isInitialized.value !is Initializer.State.Initializing) {

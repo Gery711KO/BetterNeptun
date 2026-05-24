@@ -16,10 +16,12 @@ import hu.kocsisgeri.betterneptun.domain.repository.localization.LocalizationRep
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
-import hu.kocsisgeri.betterneptun.domain.token.LogoutHandler
+import hu.kocsisgeri.betterneptun.domain.token.LogoutRequestListener
+import hu.kocsisgeri.betterneptun.domain.token.LogoutRequester
 import hu.kocsisgeri.betterneptun.domain.token.TokenManager
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.module.dsl.new
+import org.koin.dsl.binds
 import org.koin.dsl.module
 
 val dataModule = module {
@@ -35,5 +37,8 @@ val dataModule = module {
     single<LocalizationRepository> { new(::LocalizationRepositoryImpl) }
 
     single<TokenManager> { new(::TokenManagerImpl) }
-    single<LogoutHandler> { new(::LogoutHandlerImpl) }
+    single { new(::LogoutHandlerImpl) } binds arrayOf(
+        LogoutRequester::class,
+        LogoutRequestListener::class
+    )
 }

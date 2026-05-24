@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.notification
+package hu.kocsisgeri.betterneptun.broadcast
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.activity.main.MainActivity
 
 class NotificationReceiver : BroadcastReceiver() {
@@ -17,7 +18,7 @@ class NotificationReceiver : BroadcastReceiver() {
         val id = intent.getLongExtra(EXTRA_ID, 0L)
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        
+
         val channel = NotificationChannel(
             CHANNEL_ID,
             "Esemény értesítések",
@@ -29,14 +30,14 @@ class NotificationReceiver : BroadcastReceiver() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         val pendingIntent = PendingIntent.getActivity(
-            context, 
-            id.toInt(), 
-            mainIntent, 
+            context,
+            id.toInt(),
+            mainIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(hu.kocsisgeri.betterneptun.ui.R.drawable.oe_logo) // Need to check correct icon
+            .setSmallIcon(R.drawable.oe_logo) // Need to check correct icon
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

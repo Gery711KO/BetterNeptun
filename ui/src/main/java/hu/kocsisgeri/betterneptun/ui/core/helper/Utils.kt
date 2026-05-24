@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
-fun LocalDateTime.getCourseDateString(
+fun LocalDateTime.getTimeUntil(
     localize: (Int, Array<String>) -> String,
 ): String {
     val diff =

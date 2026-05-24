@@ -1,6 +1,6 @@
 package hu.kocsisgeri.betterneptun.core.network.interceptors.token
 
-import hu.kocsisgeri.betterneptun.domain.token.LogoutHandler
+import hu.kocsisgeri.betterneptun.domain.token.LogoutRequester
 import hu.kocsisgeri.betterneptun.domain.token.TokenManager
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
@@ -11,7 +11,7 @@ import timber.log.Timber
 
 internal class TokenAuthenticator(
     private val tokenManager: TokenManager,
-    private val logoutHandler: LogoutHandler,
+    private val logoutRequester: LogoutRequester,
 ): Authenticator {
 
     private val Response.responseCount: Int
@@ -47,7 +47,7 @@ internal class TokenAuthenticator(
                     ).build()
             } catch (e: Exception) {
                 Timber.tag("Auth").e(e)
-                logoutHandler.forceLogout()
+                logoutRequester.requestLogout()
 
                 null
             }

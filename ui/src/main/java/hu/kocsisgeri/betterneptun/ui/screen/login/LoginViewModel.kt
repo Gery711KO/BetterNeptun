@@ -30,13 +30,14 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ComposeViewModel(
     }.stateWhileSubscribed(default = null)
 
     fun login() {
-        loginUseCase(
-            input = LoginUseCase.Input(
-                neptunCode = neptunCode.value,
-                password = password.value,
-                stayLoggedIn = stayLoggedIn.value,
-            ),
-            onResult = { result ->
+        viewModelScope.launchReportingErrors {
+            loginUseCase(
+                input = LoginUseCase.Input(
+                    neptunCode = neptunCode.value,
+                    password = password.value,
+                    stayLoggedIn = stayLoggedIn.value,
+                )
+            ) { result ->
                 when(result) {
                     is LoginUseCase.Result.Error -> {
                         forcedState.tryEmit(LoginState.Error(result.message))
@@ -48,11 +49,8 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ComposeViewModel(
                         forcedState.tryEmit(LoginState.Loading)
                     }
                 }
-            },
-            onLaunch = { launchBody ->
-                viewModelScope.launchReportingErrors(block = launchBody)
             }
-        )
+        }
     }
 
     fun passwordInput(input: String) {

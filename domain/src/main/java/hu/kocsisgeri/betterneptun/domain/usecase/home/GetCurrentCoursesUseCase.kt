@@ -5,7 +5,7 @@ import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 
-class GetCurrentCoursesUseCase(private val neptunRepository: NeptunRepository, ) {
+class GetCurrentCoursesUseCase(private val neptunRepository: NeptunRepository) {
 
     operator fun <T> invoke(
         map: (CalendarItem) -> T

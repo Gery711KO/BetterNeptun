@@ -9,7 +9,6 @@ import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 
 internal class LocalizationServiceImpl(
@@ -72,17 +71,6 @@ internal class LocalizationServiceImpl(
             ?.format(*args)
 
         return localizedString?: key
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is LocalizationServiceImpl) return false
-
-        return currentDictionary.value == other.currentDictionary.value
-    }
-
-    override fun hashCode(): Int {
-        return currentDictionary.value.hashCode()
     }
 }
 

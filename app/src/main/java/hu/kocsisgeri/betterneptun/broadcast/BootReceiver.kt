@@ -1,10 +1,11 @@
-package hu.kocsisgeri.betterneptun.notification
+package hu.kocsisgeri.betterneptun.broadcast
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
+import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -19,7 +20,7 @@ class BootReceiver : BroadcastReceiver(), KoinComponent {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-            val scheduler = NotificationScheduler(context)
+            val scheduler = NotificationScheduler()
 
             CoroutineScope(Dispatchers.IO).launch {
                 // TODO fetch the events from network to handle those as well
@@ -28,7 +29,7 @@ class BootReceiver : BroadcastReceiver(), KoinComponent {
                 val delay = settingsRepository.notificationDelay.first()
 
                 events.forEach { event ->
-                    scheduler.scheduleNotification(event, delay)
+                    scheduler.scheduleNotification(context, event, delay)
                 }
             }
         }

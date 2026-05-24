@@ -18,7 +18,7 @@ class LoadingViewModel(
 
     private val _nextDestination = MutableStateFlow<NavKey?>(null)
 
-    val initializationState = initializer.isInitialized.stateWhileSubscribed()
+    val initializationState = initializer.initializationState.stateWhileSubscribed()
 
     val nextDestination = combine(
         initializationState,
@@ -33,11 +33,8 @@ class LoadingViewModel(
     init {
         initialize()
 
-        silentLoginUseCase(
-            onLaunch = { launchBlock ->
-                viewModelScope.launchReportingErrors(block = launchBlock)
-            },
-            onResult = { result ->
+        viewModelScope.launchReportingErrors {
+            silentLoginUseCase { result ->
                 when (result) {
                     SilentLoginUseCase.Result.Loading -> Unit
                     SilentLoginUseCase.Result.NavigateToHome -> {
@@ -48,7 +45,7 @@ class LoadingViewModel(
                     }
                 }
             }
-        )
+        }
     }
 
     fun initialize() {

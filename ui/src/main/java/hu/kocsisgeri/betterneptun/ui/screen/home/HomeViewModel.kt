@@ -7,8 +7,8 @@ import hu.kocsisgeri.betterneptun.domain.usecase.home.GetCurrentCoursesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetNextCourseUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetStudentDataUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
-import hu.kocsisgeri.betterneptun.ui.core.helper.ClockTickReceiver
-import hu.kocsisgeri.betterneptun.ui.core.helper.getCourseDateString
+import hu.kocsisgeri.betterneptun.ui.core.helper.ClockMinutesTickReceiver
+import hu.kocsisgeri.betterneptun.ui.core.helper.getTimeUntil
 import hu.kocsisgeri.betterneptun.ui.core.helper.getTimeLeft
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flatMapLatest
 
 class HomeViewModel(
-    private val clockTickReceiver: ClockTickReceiver,
+    private val clockTickReceiver: ClockMinutesTickReceiver,
     private val localizationService: LocalizationService,
     private val fetchUnreadMessagesUseCase: FetchUnreadMessagesUseCase,
     getCurrentCoursesUseCase: GetCurrentCoursesUseCase,
@@ -48,7 +48,7 @@ class HomeViewModel(
             startTime = event.startTime,
             endTime = event.endTime,
             color = event.color,
-            timeUntilEvent = event.startTime.getCourseDateString { id, args ->
+            timeUntilEvent = event.startTime.getTimeUntil { id, args ->
                 localizationService.localized(id, *args)
             }
         )
@@ -69,5 +69,5 @@ class HomeViewModel(
     }
 
     fun <T> Flow<T>.repeatEveryMinute(): Flow<T> =
-        clockTickReceiver.minuteTickFlow.flatMapLatest { this }
+        clockTickReceiver.minuteTick.flatMapLatest { this }
 }

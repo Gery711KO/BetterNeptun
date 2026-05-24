@@ -27,7 +27,7 @@ import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
-import hu.kocsisgeri.betterneptun.domain.token.LogoutHandler
+import hu.kocsisgeri.betterneptun.domain.token.LogoutRequestListener
 import hu.kocsisgeri.betterneptun.localization.ProvideLocalization
 import hu.kocsisgeri.betterneptun.localization.rememberLocalizationProviderScope
 import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
     private val neptunRepository: NeptunRepository by inject()
     private val settingsRepository: SettingsRepository by inject()
 
-    private val logoutHandler: LogoutHandler by inject()
+    private val logoutRequestListener: LogoutRequestListener by inject()
 
     private val navigator: Navigator by inject()
     private val entryProvider by entryProvider<NavKey>()
@@ -66,11 +66,11 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
     private val notificationScheduler: NotificationScheduler by inject()
     private val permissionHandler: PermissionHandler by inject()
 
+    private val localizationService: LocalizationService by inject()
+
     private val permissions by lazy {
         permissionHandler.getPermissions(this)
     }
-
-    private val localizationService: LocalizationService by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -159,11 +159,18 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
             ) {
                 if (delay != -1) {
                     events.forEach { event ->
-                        notificationScheduler.scheduleNotification(event, delay)
+                        notificationScheduler.scheduleNotification(
+                            context = this,
+                            item = event,
+                            delayMinutes =  delay
+                        )
                     }
                 } else {
                     events.forEach { event ->
-                        notificationScheduler.cancelNotification(event.id)
+                        notificationScheduler.cancelNotification(
+                            context = this,
+                            itemId = event.id
+                        )
                     }
                 }
             } else {
@@ -173,7 +180,7 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
     }
 
     private fun handleLogout() {
-        logoutHandler.shouldForceLogout.onEach {
+        logoutRequestListener.onLogoutRequested.onEach {
             navigator.navigateToInclusive(LoginDestination)
         }.launchIn(lifecycleScope)
     }

@@ -4,16 +4,17 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import hu.kocsisgeri.betterneptun.broadcast.NotificationReceiver
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import timber.log.Timber
 import java.time.ZoneId
 import java.util.Date
 
-class NotificationScheduler(private val context: Context) {
+class NotificationScheduler {
 
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    fun scheduleNotification(context: Context, item: CalendarItem, delayMinutes: Int) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    fun scheduleNotification(item: CalendarItem, delayMinutes: Int) {
         val triggerTime = item.startTime
             .minusMinutes(delayMinutes.toLong())
             .atZone(ZoneId.systemDefault())
@@ -29,7 +30,7 @@ class NotificationScheduler(private val context: Context) {
         }
 
         if (alarmManager.canScheduleExactAlarms()) {
-            if (isAlarmAlreadySet(context, intent, item.id).not()) {
+            if (context.isAlarmAlreadySet(intent, item.id).not()) {
                 val pendingIntent = PendingIntent.getBroadcast(
                     context,
                     item.id.toInt(),
@@ -51,7 +52,9 @@ class NotificationScheduler(private val context: Context) {
         }
     }
 
-    fun cancelNotification(itemId: Long) {
+    fun cancelNotification(context: Context, itemId: Long) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
         val intent = Intent(context, NotificationReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -64,9 +67,9 @@ class NotificationScheduler(private val context: Context) {
         }
     }
 
-    private fun isAlarmAlreadySet(context: Context, intent: Intent, itemId: Long): Boolean {
+    private fun Context.isAlarmAlreadySet(intent: Intent, itemId: Long): Boolean {
         val pendingIntent = PendingIntent.getBroadcast(
-            context,
+            this,
             itemId.toInt(),
             intent,
             PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE

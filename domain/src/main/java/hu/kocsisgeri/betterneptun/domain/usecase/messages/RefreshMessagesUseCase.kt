@@ -1,21 +1,15 @@
 package hu.kocsisgeri.betterneptun.domain.usecase.messages
 
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import kotlinx.coroutines.CoroutineScope
+import hu.kocsisgeri.betterneptun.domain.usecase.UseCase
 
-class RefreshMessagesUseCase(private val neptunRepository: NeptunRepository) {
+class RefreshMessagesUseCase(private val neptunRepository: NeptunRepository): UseCase() {
 
-    operator fun invoke(
-        onLaunch: (suspend CoroutineScope.() -> Unit) -> Unit
-    ) {
+    suspend operator fun invoke() = withLock {
         if (neptunRepository.messages.value.messages.isEmpty()) {
-            onLaunch {
-                neptunRepository.fetchMessages(isRefresh = true)
-            }
+            neptunRepository.fetchMessages(isRefresh = true)
         } else {
-            onLaunch {
-                neptunRepository.checkForMessageUpdates()
-            }
+            neptunRepository.checkForMessageUpdates()
         }
     }
 }

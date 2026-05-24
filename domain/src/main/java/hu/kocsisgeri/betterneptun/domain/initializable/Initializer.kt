@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface Initializer {
 
-    val isInitialized: StateFlow<State>
+    val initializationState: StateFlow<State>
 
     fun initialize(scope: CoroutineScope)
 
