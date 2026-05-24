@@ -15,7 +15,7 @@ import org.gradle.kotlin.dsl.getByType
 
 internal const val BETTER_NEPTUN_EXTENSION_NAME = "betterNeptun"
 
-val filteredModules = ProjectModule.entries
+val filteredModules = projectModules
     .filter { it.isParentModule }
     .map { it.path }
     .plus(":app")
@@ -55,18 +55,21 @@ fun Project.setupRoom() {
     }
 }
 
-fun Project.setupKoin() {
-    dependencies {
-        implementDependencies(libs = libs, dependencyList = koinDependency)
-    }
-}
-
 fun Project.setupSerialization() {
     pluginManager.applyPluginFromLibs(libs to listOf(serializationPlugin))
 }
 
-fun Project.setNamespace(namespaceSuffix: String) {
+fun Project.setNamespace() {
     extensions.getByType(LibraryExtension::class).apply {
-        namespace = projectConfigs.namespace + ".$namespaceSuffix"
+        namespace = projectConfigs.namespace
+            .plus(".")
+            .plus(
+                projectDir.path
+                    .split("BetterNeptun\\")
+                    .last()
+                    .split("\\")
+                    .joinToString(".") { it }
+            )
+
     }
 }

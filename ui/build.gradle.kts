@@ -3,11 +3,9 @@ plugins {
 }
 
 betterNeptun {
-    setupFeatureLayer("ui")
-}
-
-dependencies {
-    implementation(libs.weekView.compose)
-    implementation(libs.compose.colorpicker)
-    implementation(libs.mpAndroidChart)
+    setupFeatureLayer {
+        implementation(libs.weekView.compose)
+        implementation(libs.chart.compose)
+        implementation(libs.compose.colorpicker)
+    }
 }

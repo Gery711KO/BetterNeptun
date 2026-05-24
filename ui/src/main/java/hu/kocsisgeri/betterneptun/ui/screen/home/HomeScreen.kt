@@ -1,6 +1,8 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,10 +10,9 @@ import androidx.compose.foundation.layout.ExperimentalGridApi
 import androidx.compose.foundation.layout.Grid
 import androidx.compose.foundation.layout.GridTrackSize
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.columns
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -22,15 +23,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.rows
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -41,9 +42,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -58,29 +57,36 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.Avatar
-import hu.kocsisgeri.betterneptun.domain.model.StudentData
+import hu.kocsisgeri.betterneptun.domain.model.TimeDuration
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
+import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
-import hu.kocsisgeri.betterneptun.ui.destination.MessagesDestination
-import hu.kocsisgeri.betterneptun.ui.destination.SemestersDestination
-import hu.kocsisgeri.betterneptun.ui.destination.SettingsDestination
-import hu.kocsisgeri.betterneptun.ui.destination.SubjectsDestination
-import hu.kocsisgeri.betterneptun.ui.destination.TimetableDestination
+import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurer
+import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurerScope
+import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.core.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
 import hu.kocsisgeri.betterneptun.ui.core.permission.rememberPermissionLauncher
+import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessagesDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.time.LocalDateTime
@@ -137,43 +143,71 @@ private fun HomeContent(
         onRefresh = onRefresh
     )
 
+    val visibleDisclaimers by remember(permissions) {
+        derivedStateOf {
+            permissions.filter {
+                it.permissionState != PermissionData.State.Granted
+            }
+        }
+    }
+
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.add(
-            WindowInsets(10.dp, 10.dp, 10.dp, 10.dp)
-        ),
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
-            .pullRefresh(pullRefreshState),
+        containerColor = BetterNeptunTheme.colorScheme.background,
+        modifier = Modifier.pullRefresh(pullRefreshState),
     ) { padding ->
-        Box(modifier = Modifier.padding(padding)) {
-            Column(
+        Box {
+            LazyColumn(
+                contentPadding = padding,
+                verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.groupSpacing),
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(vertical = BetterNeptunTheme.dimens.groupSpacing)
             ) {
-                Header(
-                    studentData = studentData,
-                    unreadMessages = unreadMessages,
-                    onNavigateToScreen = onNavigate
-                )
-                PermissionDisclaimerCarousel(
-                    permissions = permissions,
-                    onLaunchPermissionRequest = onLaunchPermissionRequest
-                )
-                CurrentlyOngoingCourses(currentCourses)
-                NextCourseCard(nextCourseState)
-                NavigationGrid(onNavigate)
+                item("HEADER") {
+                    Header(
+                        studentData = studentData,
+                        unreadMessages = unreadMessages,
+                        onNavigateToScreen = onNavigate,
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+                if (visibleDisclaimers.isNotEmpty()) item("DISCLAIMERS") {
+                    PermissionDisclaimerCarousel(
+                        permissions = visibleDisclaimers,
+                        onLaunchPermissionRequest = onLaunchPermissionRequest,
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+                if (currentCourses.isNotEmpty()) item("ONGOING_COURSE") {
+                    CurrentlyOngoingCourses(
+                        currentCourses = currentCourses,
+                        modifier = Modifier.animateItem(),
+                        onCourseClick = { onNavigate(TimetableDestination(it)) }
+                    )
+                }
+                if (nextCourseState != null) item("NEXT_COURSE") {
+                    NextCourseCard(
+                        course = nextCourseState,
+                        modifier = Modifier.animateItem(),
+                        onCourseClick = { onNavigate(TimetableDestination(it)) }
+                    )
+                }
+                item("NAVIGATION_GRID") {
+                    NavigationGrid(
+                        onNavigate = onNavigate,
+                        modifier = Modifier.animateItem()
+                    )
+                }
             }
 
             PullRefreshIndicator(
                 refreshing = isRefreshing,
                 state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter),
-                backgroundColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.primary
+                modifier = Modifier
+                    .padding(padding)
+                    .align(Alignment.TopCenter),
+                backgroundColor = BetterNeptunTheme.colorScheme.surface,
+                contentColor = BetterNeptunTheme.colorScheme.primary
             )
         }
     }
@@ -185,70 +219,68 @@ private fun PermissionDisclaimerCarousel(
     modifier: Modifier = Modifier,
     onLaunchPermissionRequest: (PermissionData) -> Unit,
 ) {
-    val visibleDisclaimers by remember(permissions) {
-        derivedStateOf {
-            permissions.filter {
-                it.permissionState != PermissionData.State.Granted
-            }
-        }
-    }
+    val lazyListState = rememberPagerState { permissions.size }
 
-    if (visibleDisclaimers.isNotEmpty()) {
-        LazyRow(
-            modifier = modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            items(visibleDisclaimers) { permission ->
-                PermissionDisclaimerCard(
-                    disclaimer = permission.disclaimer,
-                    onRequest = { onLaunchPermissionRequest(permission) },
-                    modifier = Modifier.fillParentMaxSize()
-                )
+    if (permissions.isNotEmpty()) {
+        SizeMeasurer {
+            HorizontalPager(
+                pageSpacing = BetterNeptunTheme.dimens.paddingSmall,
+                contentPadding = PaddingValues(horizontal = BetterNeptunTheme.dimens.screenPadding),
+                state = lazyListState,
+                modifier = modifier.fillMaxWidth(),
+            ) { page ->
+                permissions[page].let { permission ->
+                    PermissionDisclaimerCard(
+                        disclaimer = permission.disclaimer,
+                        onRequest = { onLaunchPermissionRequest(permission) },
+                        modifier = Modifier.fillAvailableSpace()
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun PermissionDisclaimerCard(
+private fun SizeMeasurerScope.PermissionDisclaimerCard(
     disclaimer: PermissionDisclaimer,
     onRequest: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+            containerColor = BetterNeptunTheme.colorScheme.tertiaryContainer,
+            contentColor = BetterNeptunTheme.colorScheme.onTertiaryContainer
         )
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.padding(BetterNeptunTheme.dimens.paddingLarge)) {
             Text(
-                text = disclaimer.humanReadablePermissionName,
-                fontSize = 18.sp,
+                text = disclaimer.humanReadablePermissionName.localized(),
+                style = BetterNeptunTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onTertiaryContainer
+                color = BetterNeptunTheme.colorScheme.onTertiaryContainer
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingSmall))
             Text(
-                text = disclaimer.disclaimer,
-                fontSize = 14.sp,
-                lineHeight = 20.sp,
-                color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                text = disclaimer.disclaimer.localized(),
+                style = BetterNeptunTheme.typography.bodyMedium,
+                color = BetterNeptunTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.groupSpacing))
+            Spacer(Modifier.weight(1f, isSizeMeasured))
             Button(
                 onClick = onRequest,
                 modifier = Modifier.align(Alignment.End),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiary,
-                    contentColor = MaterialTheme.colorScheme.onTertiary
+                    containerColor = BetterNeptunTheme.colorScheme.tertiary,
+                    contentColor = BetterNeptunTheme.colorScheme.onTertiary
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = BetterNeptunTheme.shapes.medium
             ) {
                 Text(
-                    text = "Engedélyezés",
+                    text = LocalizationKey.PERMISSION_BUTTON_PERMIT.localized(),
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -258,75 +290,91 @@ private fun PermissionDisclaimerCard(
 
 @Composable
 @OptIn(ExperimentalGridApi::class)
-private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
+private fun NavigationGrid(
+    modifier: Modifier = Modifier,
+    onNavigate: (NavKey) -> Unit
+) {
+    val gap = BetterNeptunTheme.dimens.paddingSmall
     Grid(
-        modifier = Modifier.fillMaxWidth(),
         config = {
             columns(
                 GridTrackSize.Percentage(0.5f),
                 GridTrackSize.Percentage(0.5f),
             )
-            rows(
-                GridTrackSize.MaxContent,
-            )
+            rows(GridTrackSize.MaxContent)
 
-            gap(8.dp)
-        }
+            gap(gap)
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = BetterNeptunTheme.dimens.itemSpacing)
     ) {
         NavButton(
-            modifier = Modifier.gridItem(row = 1, column = 1),
             icon = painterResource(id = R.drawable.ic_mail),
-            text = "Üzenetek",
-            onClick = { onNavigate(MessagesDestination) }
+            text = LocalizationKey.HOME_MENU_MESSAGES.localized(),
+            onClick = { onNavigate(MessagesDestination) },
+            modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_MESSAGES)
         )
         NavButton(
-            modifier = Modifier.gridItem(row = 1, column = 2),
             icon = painterResource(id = R.drawable.ic_calendar),
-            text = "Órarend",
-            onClick = { onNavigate(TimetableDestination) }
+            text = LocalizationKey.HOME_MENU_TIMETABLE.localized(),
+            onClick = { onNavigate(TimetableDestination(null)) },
+            modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_TIMETABLE)
         )
         NavButton(
-            modifier = Modifier.gridItem(row = 2, column = 1),
             icon = painterResource(id = R.drawable.ic_courses),
-            text = "Kurzusok",
-            onClick = { onNavigate(SubjectsDestination) }
+            text = LocalizationKey.HOME_MENU_COURSES.localized(),
+            onClick = { onNavigate(SubjectsDestination) },
+            modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_COURSES)
         )
         NavButton(
-            modifier = Modifier.gridItem(row = 2, column = 2),
             icon = painterResource(id = R.drawable.ic_semesters),
-            text = "Félévek",
-            onClick = { onNavigate(SemestersDestination) }
+            text = LocalizationKey.HOME_MENU_SEMESTERS.localized(),
+            onClick = { onNavigate(SemestersDestination) },
+            modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_SEMESTERS)
         )
         NavButton(
-            modifier = Modifier.gridItem(row = 3, column = 1),
             icon = painterResource(id = R.drawable.ic_exams),
-            text = "Vizsgák",
+            text = LocalizationKey.HOME_MENU_EXAMS.localized(),
             isEnabled = false,
-            disabledTag = "Fejlesztés alatt",
+            disabledTag = LocalizationKey.HOME_LABEL_UNDERDEVELOPMENT.localized(),
             onClick = { /* TODO */ }
         )
         NavButton(
-            modifier = Modifier.gridItem(row = 3, column = 2),
             icon = painterResource(id = R.drawable.ic_schedule),
-            text = "Időszakok",
+            text = LocalizationKey.HOME_MENU_PERIODS.localized(),
             isEnabled = false,
-            disabledTag = "Fejlesztés alatt",
+            disabledTag = LocalizationKey.HOME_LABEL_UNDERDEVELOPMENT.localized(),
             onClick = { /* TODO */ }
         )
     }
 }
 
 @Composable
-private fun CurrentlyOngoingCourses(currentCourses: List<CurrentCourseDetail>) {
+private fun CurrentlyOngoingCourses(
+    currentCourses: List<CurrentCourseDetail>,
+    modifier: Modifier = Modifier,
+    onCourseClick: (id: Long) -> Unit,
+) {
     if (currentCourses.isNotEmpty()) {
+        val listState = rememberLazyListState()
+
         LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = modifier.fillMaxWidth(),
+            state = listState,
+            horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.extraSmall),
+            contentPadding = PaddingValues(horizontal = BetterNeptunTheme.dimens.itemSpacing),
+            flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
         ) {
             items(currentCourses) { course ->
                 CurrentCourseItem(
                     course = course,
-                    modifier = Modifier.fillParentMaxWidth()
+                    onCourseClick = onCourseClick,
+                    modifier = Modifier
+                        .fillParentMaxWidth()
+                        .sharedBoundsAnimation(
+                            key = LocalizationKey.HOME_MENU_TIMETABLE.key + course.id.toString()
+                        )
                 )
             }
         }
@@ -337,64 +385,71 @@ private fun CurrentlyOngoingCourses(currentCourses: List<CurrentCourseDetail>) {
 private fun Header(
     studentData: StudentData?,
     unreadMessages: Int,
+    modifier: Modifier = Modifier,
     onNavigateToScreen: (NavKey) -> Unit,
 ) {
     Row(
-        modifier = Modifier
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
             .fillMaxWidth()
-            .height(intrinsicSize = IntrinsicSize.Max),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = BetterNeptunTheme.dimens.itemSpacing)
+            .height(intrinsicSize = IntrinsicSize.Max)
     ) {
         Card(
+            shape = BetterNeptunTheme.shapes.large,
+            colors = CardDefaults.cardColors(
+                containerColor = BetterNeptunTheme.colorScheme.primaryContainer,
+                contentColor = BetterNeptunTheme.colorScheme.onPrimaryContainer
+            ),
             modifier = Modifier
                 .weight(1f)
-                .padding(end = 10.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+                .padding(end = BetterNeptunTheme.dimens.paddingSmall)
         ) {
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(horizontal = 20.dp, vertical = 20.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(
+                        horizontal = BetterNeptunTheme.dimens.paddingLarge,
+                        vertical = BetterNeptunTheme.dimens.paddingLarge
+                    )
             ) {
                 studentData?.avatar?.let {
                     AvatarImage(
-                        modifier = Modifier.size(42.dp).clip(CircleShape),
+                        modifier = Modifier
+                            .size(BetterNeptunTheme.dimens.iconHuge)
+                            .clip(CircleShape),
                         avatar = studentData.avatar
                     )
-                    Spacer(Modifier.width(12.dp))
+                    Spacer(Modifier.width(BetterNeptunTheme.dimens.itemSpacing))
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = studentData?.name ?: "",
-                        fontSize = 16.sp,
+                        style = BetterNeptunTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = BetterNeptunTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         text = studentData?.neptun ?: "",
-                        fontSize = 14.sp,
+                        style = BetterNeptunTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        color = BetterNeptunTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                     )
                 }
                 if (unreadMessages > 0) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = unreadMessages.toString(),
-                            fontSize = 14.sp,
+                            style = BetterNeptunTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = BetterNeptunTheme.colorScheme.onPrimaryContainer
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(BetterNeptunTheme.dimens.extraSmall))
                         Icon(
                             painter = painterResource(id = R.drawable.ic_mail),
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            modifier = Modifier.size(BetterNeptunTheme.dimens.iconSmall),
+                            tint = BetterNeptunTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
@@ -404,12 +459,14 @@ private fun Header(
         Card(
             modifier = Modifier
                 .fillMaxHeight()
-                .aspectRatio(1f),
-            shape = RoundedCornerShape(20.dp),
+                .aspectRatio(1f)
+                .sharedBoundsAnimation(LocalizationKey.SETTINGS_TITLE),
+            shape = BetterNeptunTheme.shapes.large,
+            enabled = true,
             onClick = { onNavigateToScreen(SettingsDestination) },
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                containerColor = BetterNeptunTheme.colorScheme.secondaryContainer,
+                contentColor = BetterNeptunTheme.colorScheme.onSecondaryContainer,
             )
         ) {
             Box(
@@ -419,8 +476,7 @@ private fun Header(
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
-                    modifier = Modifier.size(32.dp),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                    modifier = Modifier.size(BetterNeptunTheme.dimens.iconExtraLarge),
                 )
             }
         }
@@ -431,112 +487,104 @@ private fun Header(
 fun CurrentCourseItem(
     course: CurrentCourseDetail,
     modifier: Modifier = Modifier,
+    onCourseClick: (id: Long) -> Unit,
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+            containerColor = BetterNeptunTheme.colorScheme.surfaceVariant,
+            contentColor = BetterNeptunTheme.colorScheme.onSurfaceVariant
+        ),
+        onClick = {
+            onCourseClick(course.id)
+        }
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.padding(BetterNeptunTheme.dimens.paddingLarge)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.groupSpacing)
             ) {
                 Text(
-                    text = "Éppen tart",
-                    fontSize = 18.sp,
+                    text = LocalizationKey.HOME_ONGOING_COURSE.localized(),
+                    style = BetterNeptunTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 LinearProgressIndicator(
                     progress = { course.progress / 100f },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(8.dp),
+                        .height(BetterNeptunTheme.dimens.badgeSize),
                     color = Color(course.color),
                     trackColor = Color(course.color).copy(alpha = 0.2f),
                     strokeCap = StrokeCap.Round
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.itemSpacing))
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_course),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = course.title.trim(),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.extraSmall)
+                ) {
+                    CourseInfoRow(
+                        icon = R.drawable.ic_course,
+                        text = course.title
+                    )
                     if (course.location.isNullOrBlank().not()) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_location),
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = course.location!!.trim(),
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                        }
+                        CourseInfoRow(
+                            icon = R.drawable.ic_location,
+                            text = course.location
+                        )
                     }
                 }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_schedule),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = course.remainingTime,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                }
+                CourseInfoRow(
+                    icon = R.drawable.ic_schedule,
+                    text = LocalizationKey.HOME_ONGOING_COURSE_MINUTES(
+                        course.remainingTimeMinutes.toString()
+                    ).localized()
+                )
             }
         }
     }
 }
 
 @Composable
-fun NextCourseCard(course: NextCourseDetail?) {
+fun NextCourseCard(
+    course: NextCourseDetail?,
+    modifier: Modifier = Modifier,
+    onCourseClick: (id: Long) -> Unit,
+) {
     course?.let {
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
+            shape = BetterNeptunTheme.shapes.large,
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                containerColor = BetterNeptunTheme.colorScheme.surfaceVariant,
+                contentColor = BetterNeptunTheme.colorScheme.onSurfaceVariant
+            ),
+            onClick = {
+                onCourseClick(it.id)
+            },
+            modifier = modifier
+                .sharedBoundsAnimation(
+                    key = LocalizationKey.HOME_MENU_TIMETABLE.key + course.id.toString()
+                )
+                .fillMaxWidth()
+                .padding(horizontal = BetterNeptunTheme.dimens.itemSpacing)
         ) {
             Box(
                 modifier = Modifier
-                    .padding(horizontal = 20.dp, vertical = 20.dp)
+                    .padding(
+                        horizontal = BetterNeptunTheme.dimens.paddingLarge,
+                        vertical = BetterNeptunTheme.dimens.paddingLarge
+                    )
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
@@ -544,60 +592,42 @@ fun NextCourseCard(course: NextCourseDetail?) {
                     modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.extraSmall)
+                    ) {
                         Text(
-                            text = "Következő óra",
-                            fontSize = 18.sp,
+                            text = LocalizationKey.HOME_NEXT_COURSE.localized(),
+                            style = BetterNeptunTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = BetterNeptunTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Event,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = course.timeUntilEvent,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_course),
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = course.title.trim(),
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                        }
-                        if (course.location.isNullOrBlank().not()) {
-                            Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.extraSmall))
+                        CourseInfoRow(
+                            icon = R.drawable.ic_event,
+                            text = when (course.timeUntilEvent.unit) {
+                                TimeDuration.Unit.MINUTES -> LocalizationKey.HOME_NEXT_COURSE_MINUTES(
+                                    course.timeUntilEvent.value.toString()
+                                ).localized()
 
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_location),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = course.location.trim(),
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                                )
+                                TimeDuration.Unit.HOURS -> LocalizationKey.HOME_NEXT_COURSE_HOURS(
+                                    course.timeUntilEvent.value.toString()
+                                ).localized()
+
+                                TimeDuration.Unit.DAYS -> LocalizationKey.HOME_NEXT_COURSE_DAYS(
+                                    course.timeUntilEvent.value.toString()
+                                ).localized()
                             }
+                        )
+                        CourseInfoRow(
+                            icon = R.drawable.ic_course,
+                            text = course.title
+                        )
+                        if (course.location.isNullOrBlank().not()) {
+                            CourseInfoRow(
+                                icon = R.drawable.ic_location,
+                                text = course.location
+                            )
                         }
                     }
                     Column(
@@ -605,31 +635,31 @@ fun NextCourseCard(course: NextCourseDetail?) {
                         verticalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
                             .fillMaxHeight()
-                            .padding(vertical = 12.dp)
+                            .padding(vertical = BetterNeptunTheme.dimens.itemSpacing)
                     ) {
                         Text(
                             text = "${course.startTime.hour}:${
                                 course.startTime.minute.toString().padStart(2, '0')
                             }",
-                            fontSize = 15.sp,
+                            style = BetterNeptunTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = BetterNeptunTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = "${course.endTime.hour}:${
                                 course.endTime.minute.toString().padStart(2, '0')
                             }",
-                            fontSize = 15.sp,
+                            style = BetterNeptunTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = BetterNeptunTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(BetterNeptunTheme.dimens.itemSpacing))
                     Box(
                         modifier = Modifier
-                            .width(6.dp)
+                            .width(BetterNeptunTheme.dimens.small)
                             .fillMaxHeight()
-                            .padding(vertical = 12.dp)
+                            .padding(vertical = BetterNeptunTheme.dimens.itemSpacing)
                             .background(Color(course.color), CircleShape)
                     )
                 }
@@ -651,37 +681,37 @@ fun NavButton(
         modifier = modifier,
         onClick = onClick,
         enabled = isEnabled,
-        shape = RoundedCornerShape(20.dp),
+        shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            disabledContentColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
-            disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+            containerColor = BetterNeptunTheme.colorScheme.secondaryContainer,
+            contentColor = BetterNeptunTheme.colorScheme.onSecondaryContainer,
+            disabledContentColor = BetterNeptunTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+            disabledContainerColor = BetterNeptunTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
+                .padding(BetterNeptunTheme.dimens.paddingLarge),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 painter = icon,
                 contentDescription = null,
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(BetterNeptunTheme.dimens.iconExtraLarge),
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingSmall))
             Text(
                 text = text,
-                fontSize = 15.sp,
+                style = BetterNeptunTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
             )
             disabledTag?.let {
                 Text(
                     text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(
+                    style = BetterNeptunTheme.typography.labelSmall,
+                    color = BetterNeptunTheme.colorScheme.onSecondaryContainer.copy(
                         alpha = 0.5f
                     )
                 )
@@ -690,44 +720,71 @@ fun NavButton(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun HomeScreenPreview() {
-    BetterNeptunTheme {
-        val currentCourse = CurrentCourseDetail(
-            title = "Mobil szoftverfejlesztés",
-            location = "BA.F.01",
-            color = 0xFF4285F4.toInt(),
-            progress = 30,
-            remainingTime = "30 perc"
+fun CourseInfoRow(
+    @DrawableRes icon: Int,
+    text: String
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.size(BetterNeptunTheme.dimens.iconSmall),
+            tint = BetterNeptunTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
-
-        val nextCourse = NextCourseDetail(
-            title = "Full stack fejlesztés",
-            startTime = LocalDateTime.now().plusHours(1),
-            endTime = LocalDateTime.now().plusHours(3),
-            location = "BA.F.02",
-            color = 0xFF4285F4.toInt(),
-            timeUntilEvent = "1 óra múlva"
-        )
-
-        HomeContent(
-            studentData = StudentData(
-                name = "Példa János",
-                neptun = "ABC123",
-                avatar = Avatar.MonogramAvatar(
-                    monogram = "PJ",
-                    colorLong = 0xFF4285F4
-                )
-            ),
-            unreadMessages = 5,
-            currentCourses = listOf(currentCourse),
-            nextCourseState = nextCourse,
-            refreshProgress = null,
-            permissions = emptyList(),
-            onRefresh = {},
-            onLaunchPermissionRequest = {},
-            onNavigate = {}
+        Spacer(modifier = Modifier.width(BetterNeptunTheme.dimens.paddingSmall))
+        Text(
+            text = text.trim(),
+            style = BetterNeptunTheme.typography.bodyMedium,
+            color = BetterNeptunTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
+}
+
+@Preview
+@PreviewWrapper(PreviewThemeProvider::class)
+@Composable
+fun HomeScreenPreview() {
+    val currentCourse = CurrentCourseDetail(
+        id = 11,
+        title = "Mobil szoftverfejlesztés",
+        location = "BA.F.01",
+        color = 0xFF4285F4.toInt(),
+        progress = 30,
+        remainingTimeMinutes = 30
+    )
+
+    val nextCourse = NextCourseDetail(
+        id = 16,
+        title = "Full stack fejlesztés",
+        startTime = LocalDateTime.now().plusHours(1),
+        endTime = LocalDateTime.now().plusHours(3),
+        location = "BA.F.02",
+        color = 0xFF4285F4.toInt(),
+        timeUntilEvent = TimeDuration(
+            value = 1,
+            unit = TimeDuration.Unit.DAYS
+        )
+    )
+
+    HomeContent(
+        studentData = StudentData(
+            name = "Példa János",
+            neptun = "ABC123",
+            avatar = Avatar.MonogramAvatar(
+                monogram = "PJ",
+                colorLong = 0xFF4285F4
+            )
+        ),
+        unreadMessages = 5,
+        currentCourses = listOf(currentCourse),
+        nextCourseState = nextCourse,
+        refreshProgress = null,
+        permissions = emptyList(),
+        onRefresh = {},
+        onLaunchPermissionRequest = {},
+        onNavigate = {}
+    )
 }

@@ -4,72 +4,58 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation3.runtime.NavKey
-import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
+import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
+import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
+import hu.kocsisgeri.betterneptun.localization.ProvideLocalization
+import hu.kocsisgeri.betterneptun.localization.rememberLocalizationProviderScope
 import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
-import hu.kocsisgeri.betterneptun.ui.core.checkType
-import hu.kocsisgeri.betterneptun.ui.destination.HomeDestination
-import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
 import hu.kocsisgeri.betterneptun.ui.core.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
-import org.koin.android.scope.AndroidScopeComponent
-import org.koin.androidx.compose.navigation3.entryProvider
-import org.koin.androidx.scope.activityRetainedScope
-import org.koin.core.annotation.KoinExperimentalAPI
-import org.koin.core.scope.Scope
 import timber.log.Timber
 
-@OptIn(KoinExperimentalAPI::class)
-class MainActivity : AppCompatActivity(), AndroidScopeComponent {
+class MainActivity : AppCompatActivity() {
 
-    override val scope: Scope by activityRetainedScope()
+    private val navigator: Navigator by inject()
 
-    private val loginRepository: LoginRepository by inject()
+    private val localizationService: LocalizationService by inject()
+    private val notificationScheduler: NotificationScheduler by inject()
+
     private val neptunRepository: NeptunRepository by inject()
     private val settingsRepository: SettingsRepository by inject()
 
-    private val navigator: Navigator by inject()
-    private val entryProvider by entryProvider<NavKey>()
-
-    private val notificationScheduler: NotificationScheduler by inject()
     private val permissionHandler: PermissionHandler by inject()
-
     private val permissions by lazy {
         permissionHandler.getPermissions(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        splashScreen.setOnExitAnimationListener { splashScreenView ->
+            splashScreenView.remove()
+        }
+
+        startUserRelatedActions()
+
         enableEdgeToEdge()
         setContent {
             NonContentExtras()
             MainContent()
         }
-
-        handleLogout()
-        handleNotificationScheduling()
     }
 
     @Composable
@@ -81,45 +67,16 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
 
     @Composable
     private fun MainContent() {
-        BetterNeptunTheme {
-            Navigator.DefaultNavDisplay(
-                navigator = navigator,
-                entryProvider = entryProvider,
-                transitionSpec = {
-                    val isFromLogin = initialState.checkType(LoginDestination)
-                    val isToHome = targetState.checkType(HomeDestination)
-                    val isToLogin = targetState.checkType(LoginDestination)
+        val localizationProviderScope = rememberLocalizationProviderScope(localizationService)
 
-                    if ((isFromLogin && isToHome) || isToLogin) {
-                        fadeIn() togetherWith fadeOut()
-                    } else {
-                        slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
-                    }
-                },
-                popTransitionSpec = {
-                    val isToLogin = targetState.checkType(LoginDestination)
-                    if (isToLogin) {
-                        fadeIn() togetherWith fadeOut()
-                    } else {
-                        slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                    }
-                },
-                predictivePopTransitionSpec = {
-                    val isToLogin = targetState.checkType(LoginDestination)
-                    if (isToLogin) {
-                        fadeIn() togetherWith fadeOut()
-                    } else {
-                        slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            )
+        BetterNeptunTheme {
+            localizationProviderScope.ProvideLocalization {
+                navigator.Content()
+            }
         }
     }
 
-    private fun handleNotificationScheduling() {
+    private fun startUserRelatedActions() {
         combine(
             neptunRepository.events,
             settingsRepository.notificationDelay,
@@ -133,22 +90,33 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
             ) {
                 if (delay != -1) {
                     events.forEach { event ->
-                        notificationScheduler.scheduleNotification(event, delay)
+                        notificationScheduler.scheduleNotification(
+                            context = this,
+                            item = event,
+                            delayMinutes = delay
+                        )
                     }
                 } else {
                     events.forEach { event ->
-                        notificationScheduler.cancelNotification(event.id)
+                        notificationScheduler.cancelNotification(
+                            context = this,
+                            itemId = event.id
+                        )
                     }
                 }
             } else {
                 Timber.tag("Alarm").d("Needs permissions")
             }
         }.launchIn(lifecycleScope)
+
+        settingsRepository.storedTheme.onEach {
+            AppCompatDelegate.setDefaultNightMode(it.toAppCompatMode())
+        }.launchIn(lifecycleScope)
     }
 
-    private fun handleLogout() {
-        loginRepository.forceLogOut.onEach {
-            navigator.navigateToInclusive(LoginDestination)
-        }.launchIn(lifecycleScope)
+    private fun ThemeMode.toAppCompatMode() = when (this) {
+        ThemeMode.AUTO -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        ThemeMode.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+        ThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
     }
 }

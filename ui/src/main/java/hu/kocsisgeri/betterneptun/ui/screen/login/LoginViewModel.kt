@@ -1,15 +1,16 @@
 package hu.kocsisgeri.betterneptun.ui.screen.login
 
 import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.common.launchReportingErrors
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
+import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
+import hu.kocsisgeri.betterneptun.domain.usecase.auth.LoginUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import org.koin.core.annotation.KoinViewModel
 
-class LoginViewModel(private val loginRepository: LoginRepository) : ComposeViewModel() {
+@KoinViewModel
+class LoginViewModel(private val loginUseCase: LoginUseCase) : ComposeViewModel() {
 
     private val neptunCode = MutableStateFlow<String?>(null)
     private val password = MutableStateFlow<String?>(null)
@@ -30,52 +31,27 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ComposeView
         )
     }.stateWhileSubscribed(default = null)
 
-    init {
-        viewModelScope.launchReportingErrors {
-            loginRepository.studentData.collect { result ->
-                when (result) {
-                    is ApiResult.Error -> forcedState.emit(
-                        LoginState.Error(result.error)
-                    )
-
-                    is ApiResult.Loading -> {
-                        // No nothing
-                    }
-
-                    is ApiResult.Success -> forcedState.emit(
-                        LoginState.Success(result.data)
-                    )
-                }
-            }
-        }
-
-
-        viewModelScope.launchReportingErrors {
-            loginRepository.shouldAutoLogin.collect { autoLogin ->
-                if (autoLogin) {
-                    forcedState.tryEmit(LoginState.Loading)
-                    loginRepository.silentLogin()
-                }
-            }
-        }
-    }
-
     fun login() {
         viewModelScope.launchReportingErrors {
-            val neptunCode = neptunCode.value
-            val password = password.value
-
-            if (neptunCode.isNullOrEmpty() || password.isNullOrEmpty()) {
-                return@launchReportingErrors
+            loginUseCase(
+                input = LoginUseCase.Input(
+                    neptunCode = neptunCode.value,
+                    password = password.value,
+                    stayLoggedIn = stayLoggedIn.value,
+                )
+            ).collect { result ->
+                when(result) {
+                    is LoginUseCase.Result.Error -> {
+                        forcedState.tryEmit(LoginState.Error(result.message))
+                    }
+                    is LoginUseCase.Result.Success -> {
+                        forcedState.tryEmit(LoginState.Success(result.studentData))
+                    }
+                    LoginUseCase.Result.Loading -> {
+                        forcedState.tryEmit(LoginState.Loading)
+                    }
+                }
             }
-
-            if (stayLoggedIn.value) {
-                loginRepository.saveCurrentUser(neptunCode, password)
-            }
-
-            forcedState.emit(LoginState.Loading)
-
-            loginRepository.login(neptunCode, password)
         }
     }
 
@@ -89,7 +65,6 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ComposeView
 
     fun keepMeLoggedIn(keep: Boolean) {
         stayLoggedIn.tryEmit(keep)
-        loginRepository.saveAutoLoginPreference(keep)
     }
 
     fun setIdle() {

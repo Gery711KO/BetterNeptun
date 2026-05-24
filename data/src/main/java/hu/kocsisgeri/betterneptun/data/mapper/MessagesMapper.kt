@@ -1,10 +1,10 @@
 package hu.kocsisgeri.betterneptun.data.mapper
 
-import hu.kocsisgeri.betterneptun.data.model.MessageDetailsDto
-import hu.kocsisgeri.betterneptun.data.model.ReceivedMessageDto
-import hu.kocsisgeri.betterneptun.domain.model.Avatar
-import hu.kocsisgeri.betterneptun.domain.model.Message
-import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.MessageDetailsDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.ReceivedMessageDto
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Message
+import hu.kocsisgeri.betterneptun.domain.model.neptun.MessageDetail
 
 fun ReceivedMessageDto.toMessageDomain() = Message(
     id = messageId,

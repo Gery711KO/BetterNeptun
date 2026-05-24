@@ -5,6 +5,7 @@ import extensions.dependency.Dependency
 import extensions.dependency.implementDependencies
 import extensions.dependency.implementDependency
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.dependencies
 
 /**
@@ -18,93 +19,105 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         else null
     }
 
-    private fun Project.baseLayerSetup(
-        namespaceSuffix: String,
-        layer: ProjectModule,
-        configExtra: Project.(List<ProjectModule>) -> Unit,
-    ) {
-        setNamespace(namespaceSuffix)
-        setupSerialization()
-        setupKoin()
-
-        configExtra(layer.allowedProjectDependencies)
-
-        registerCleanArchitectureCheckTask(
-            currentLayer = ":$namespaceSuffix",
-            allowed = layer.allowedProjectDependencies
-        )
-    }
-
     fun setupFeatureLayer(
-        namespaceSuffix: String,
-        useAutoProjectConfiguration: Boolean = true
+        useAutoProjectConfiguration: Boolean = true,
+        dependencies: DependencyHandlerScope.() -> Unit = {},
     ) {
-        project.baseLayerSetup(
-            namespaceSuffix = namespaceSuffix,
-            layer = ProjectModule.Ui
-        ) { allowedModules ->
-            if (useAutoProjectConfiguration) {
-                includeProjects(getAllowedProjects(allowedModules))
-            }
+        setup(BaseLayers.Ui, useAutoProjectConfiguration) {
             setupCompose()
             setupNavigation3()
 
-            dependencies { implementDependencies(libs, featureDependencies) }
+            dependencies {
+                implementDependencies(libs, featureDependencies)
+                dependencies()
+            }
         }
     }
 
     fun setupDomainLayer(
-        namespaceSuffix: String,
+        dependencies: DependencyHandlerScope.() -> Unit = {}
     ) {
-        project.baseLayerSetup(
-            namespaceSuffix = namespaceSuffix,
-            layer = ProjectModule.Domain
-        ) { allowedModules ->
-            includeProjects(getAllowedProjects(allowedModules))
+        setup(BaseLayers.Domain) {
+            dependencies { dependencies() }
         }
     }
 
     fun setupDataLayer(
-        namespaceSuffix: String,
         useRoom: Boolean = false,
-        useAutoProjectConfiguration: Boolean = true
+        useAutoProjectConfiguration: Boolean = true,
+        dependencies: DependencyHandlerScope.() -> Unit = {},
     ) {
-        project.baseLayerSetup(
-            namespaceSuffix = namespaceSuffix,
-            layer = ProjectModule.Data
-        ) { allowedModules ->
+        setup(BaseLayers.Data, useAutoProjectConfiguration) {
             if (useRoom) setupRoom()
-            if (useAutoProjectConfiguration) includeProjects(getAllowedProjects(allowedModules))
+
+            dependencies { dependencies() }
         }
     }
 
-    fun setupCommonDependencies(
-        namespaceSuffix: String,
+    fun setupCommonLayer(
         useRoom: Boolean = false,
         useCompose: Boolean = false,
         useNavigation3: Boolean = false,
+        dependencies: DependencyHandlerScope.() -> Unit = {},
     ) {
-        project.baseLayerSetup(
-            namespaceSuffix = namespaceSuffix,
-            layer = ProjectModule.Common
-        ) {
+        setup(BaseLayers.Common) {
             if (useRoom) setupRoom()
             if (useCompose) setupCompose()
             if (useNavigation3) setupNavigation3()
+
+            dependencies { dependencies() }
         }
     }
 
-    fun setupCoreDependencies(
-        namespaceSuffix: String,
+    fun setupCoreLayer(
         useRoom: Boolean = false,
+        dependencies: DependencyHandlerScope.() -> Unit = {},
     ) {
-        project.baseLayerSetup(
-            namespaceSuffix = namespaceSuffix,
-            layer = ProjectModule.Core
-        ) {
+        setup(BaseLayers.Core) {
             if (useRoom) setupRoom()
+            dependencies { dependencies() }
         }
     }
+
+    fun setupLocalizationLayer(
+        dependencies: DependencyHandlerScope.() -> Unit = {},
+    ) {
+        setup(BaseLayers.Localization) {
+            setupCompose()
+            dependencies { dependencies() }
+        }
+    }
+
+    fun setup(
+        layer: ProjectModule,
+        autoConfigureModules: Boolean = true,
+        configExtra: Project.() -> Unit = {},
+    ) {
+        with(project) {
+            val moduleString = moduleStringFromLayerAndSuffix()
+
+            setNamespace()
+            setupSerialization()
+
+            if (autoConfigureModules) includeProjects(
+                getAllowedProjects(layer.allowedProjectDependencies)
+            )
+
+            configExtra()
+
+            registerCleanArchitectureCheckTask(
+                currentLayer = moduleString,
+                allowed = layer.allowedProjectDependencies
+            )
+        }
+    }
+
+    private fun Project.moduleStringFromLayerAndSuffix(): String =
+        ":" + projectDir.path
+            .split("BetterNeptun\\")
+            .last()
+            .split("\\")
+            .joinToString(":") { it }
 
     private fun Project.includeProjects(projects: List<String>) {
         logger.lifecycle("Auto configure: $projects")
@@ -129,12 +142,15 @@ class BetterNeptunLibraryExtension(private val project: Project) {
             it.path + if (it.isParentModule) ":*" else ""
         }
 
+        val allowedDependenciesJoined = allowedDeps.joinToString { it }
+
         val dependencies = configurations
             .asSequence()
-            .flatMap { it.dependencies.map { it.toString() } }
+            .flatMap { config ->
+                config.dependencies.map { it.toString() }
+            }
             .distinct()
-            .filter { it.contains("project") }
-            .filter { it.contains(currentLayer.replace(".", ":")).not() }
+            .filter { it.contains("project") && it.contains(currentLayer).not() }
             .map {
                 it.removePrefix("project '").removeSuffix("'").let { project ->
                     val split = project.split(":")
@@ -144,14 +160,14 @@ class BetterNeptunLibraryExtension(private val project: Project) {
                     ProjectDependency(
                         group = group,
                         module = module,
-                        isAllowed = allowedDeps.joinToString { it }.contains(group)
+                        isAllowed = allowedDependenciesJoined.contains(group)
                     )
                 }
             }.toList()
 
         dependencies.forEach { projectDependency ->
             check(projectDependency.isAllowed) {
-                "[${ProjectModule.entries.find { currentLayer.contains(it.path) }}] - " +
+                "[${projectModules.find { currentLayer.contains(it.path) }}] - " +
                         "Project dependencies violate clean architecture.\n" +
                         "You are only allowed to depend on ${allowedDeps}.\n" +
                         "You currently depend on $dependencies"
@@ -171,17 +187,27 @@ class BetterNeptunLibraryExtension(private val project: Project) {
             }
         }
 
-        tasks.getByName("preBuild") {
-            dependsOn("verifyCleanArchitecture")
+        val syncHookTask = tasks.matching {
+            it.name == "prepareKotlinBuildScriptModel"
+        }
+
+        if (syncHookTask.isEmpty()) {
+            tasks.register("prepareKotlinBuildScriptModel") {
+                group = "ide"
+                dependsOn("verifyCleanArchitecture")
+            }
+        } else {
+            syncHookTask.configureEach {
+                dependsOn("verifyCleanArchitecture")
+            }
         }
     }
 
     private fun getAllowedProjects(
         allowedModules: List<ProjectModule>,
-    ): List<String> =
-        allowedModules.flatMap { module ->
-            subProjects.filter {
-                it.contains(module.path)
-            }
-        }.distinct()
+    ): List<String> = allowedModules.flatMap { module ->
+        subProjects.filter {
+            it.contains(module.path)
+        }
+    }.distinct()
 }

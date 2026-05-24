@@ -7,3 +7,5 @@ minSdk = "31"
 compileSdk = "36"
 targetSdk = "36"
 javaVersion = "11"
+
+localizationSnapshot = "snapshot_2026-06-06_04-34-49_223_dd2757d8"

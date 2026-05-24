@@ -1,5 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.screen.semesters
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,10 +10,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
@@ -20,34 +24,50 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.Legend
-import com.github.mikephil.charting.components.LimitLine
-import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.formatter.DefaultAxisValueFormatter
-import com.github.mikephil.charting.formatter.LargeValueFormatter
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.domain.model.ChartColor
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.core.theme.themeBasedColor
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBarData
+import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBars
+import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.LineData
+import ir.ehsannarmani.compose_charts.LineChart
+import ir.ehsannarmani.compose_charts.RowChart
+import ir.ehsannarmani.compose_charts.models.AnimationMode
+import ir.ehsannarmani.compose_charts.models.BarProperties
+import ir.ehsannarmani.compose_charts.models.Bars
+import ir.ehsannarmani.compose_charts.models.Bars.Data.Radius.Rectangle
+import ir.ehsannarmani.compose_charts.models.DividerProperties
+import ir.ehsannarmani.compose_charts.models.GridProperties
+import ir.ehsannarmani.compose_charts.models.HorizontalIndicatorProperties
+import ir.ehsannarmani.compose_charts.models.IndicatorCount
+import ir.ehsannarmani.compose_charts.models.LabelHelperProperties
+import ir.ehsannarmani.compose_charts.models.LabelProperties
+import ir.ehsannarmani.compose_charts.models.Line
+import ir.ehsannarmani.compose_charts.models.LineProperties
+import ir.ehsannarmani.compose_charts.models.VerticalIndicatorProperties
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import kotlin.math.roundToInt
 
 @Composable
 fun SemestersScreen(
@@ -71,146 +91,248 @@ fun SemestersScreen(
 @Composable
 fun SemestersContent(
     selectedTab: Int,
-    creditsResult: ApiResult<Pair<BarDataSet, BarDataSet>>,
-    averagesResult: ApiResult<LineData>,
+    creditsResult: ApiResult<List<ColumnBars>>,
+    averagesResult: ApiResult<List<LineData>>,
     onSelectTab: (Int) -> Unit,
     onBackClick: () -> Unit,
 ) {
     val tabs = listOf("Kreditek", "Átlagok")
 
-    val colors = MaterialTheme.colorScheme
-
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Félévek") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Vissza")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        }
+        topBar = { SemestersScreenTopBar(onBackClick) },
+        containerColor = colorScheme.background,
+        modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_SEMESTERS),
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
-            SecondaryTabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.primary,
-                indicator = {
-                    TabRowDefaults.SecondaryIndicator(
-                        Modifier.tabIndicatorOffset(selectedTab),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { onSelectTab(index) },
-                        text = {
-                            Text(
-                                text = title,
-                                color = if (selectedTab == index) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                }
-                            )
-                        }
-                    )
-                }
-            }
+            TabSelector(
+                selectedTab = selectedTab,
+                tabs = tabs,
+                onSelectTab = onSelectTab
+            )
 
-            Box(modifier = Modifier.fillMaxSize()) {
-                when (selectedTab) {
-                    0 -> when (creditsResult) {
-                        is ApiResult.Loading -> LoadingIndicator()
-                        is ApiResult.Success -> {
-                            val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
-                            AndroidView(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp),
-                                factory = { context ->
-                                    BarChart(context).apply {
-                                        setupBarChartTheme(textColor)
-                                    }
-                                },
-                                update = { chart ->
-                                    val data1 = creditsResult.data.first.apply {
-                                        color = colors.onSurfaceVariant
-                                            .copy(alpha = 0.3f).toArgb()
-                                    }
-                                    val data2 = creditsResult.data.second.apply {
-                                        color = colors.onSurface.toArgb()
-                                    }
-                                    chart.data = BarData(data1, data2).apply {
-                                        barWidth = 0.7f
-                                        setValueTextColor(textColor)
-                                        setValueTextSize(12f)
-                                        setValueFormatter(LargeValueFormatter())
-                                    }
-                                    chart.xAxis.axisMaximum = (data1.entryCount) + 1f
-                                    chart.xAxis.labelCount = (data1.entryCount) + 1
-                                    chart.animateY(1000)
-                                    chart.invalidate()
-                                }
-                            )
-                        }
-
-                        is ApiResult.Error -> ErrorMessage(creditsResult.error)
-                    }
-
-                    1 -> when (averagesResult) {
-                        is ApiResult.Loading -> LoadingIndicator()
-                        is ApiResult.Success -> {
-                            val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
-                            AndroidView(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp),
-                                factory = { context ->
-                                    LineChart(context).apply {
-                                        setupLineChartTheme(textColor)
-                                    }
-                                },
-                                update = { chart ->
-                                    chart.data = averagesResult.data.apply {
-                                        setValueTextColor(textColor)
-                                        setValueTextSize(12f)
-                                        setValueFormatter(DefaultAxisValueFormatter(2))
-                                    }
-                                    chart.animateY(1000)
-                                    chart.invalidate()
-                                }
-                            )
-                        }
-
-                        is ApiResult.Error -> ErrorMessage(averagesResult.error)
-                    }
-                }
+            when (selectedTab) {
+                0 -> CreditsChart(creditsResult)
+                1 -> AveragesChart(averagesResult)
             }
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SemestersScreenTopBar(onBackClick: () -> Unit) {
+    TopAppBar(
+        title = { Text("Félévek") },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Vissza")
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = colorScheme.background,
+            scrolledContainerColor = colorScheme.background,
+            titleContentColor = colorScheme.onSurface,
+            navigationIconContentColor = colorScheme.onSurface
+        )
+    )
+}
+
+@Composable
+private fun TabSelector(
+    selectedTab: Int,
+    tabs: List<String>,
+    onSelectTab: (Int) -> Unit
+) {
+    SecondaryTabRow(
+        selectedTabIndex = selectedTab,
+        containerColor = colorScheme.background,
+        contentColor = colorScheme.primary,
+        indicator = {
+            TabRowDefaults.SecondaryIndicator(
+                Modifier.tabIndicatorOffset(selectedTab),
+                color = colorScheme.primary
+            )
+        }
+    ) {
+        tabs.forEachIndexed { index, title ->
+            val isSelected = selectedTab == index
+            Tab(
+                selected = isSelected,
+                onClick = { onSelectTab(index) },
+                text = {
+                    Text(
+                        text = title,
+                        style = typography.bodyLarge.copy(
+                            fontWeight = if (isSelected) FontWeight.Bold
+                            else FontWeight.Normal
+                        ),
+                        color = if (isSelected) {
+                            colorScheme.primary
+                        } else {
+                            colorScheme.onSurfaceVariant
+                        }
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun AveragesChart(averagesResult: ApiResult<List<LineData>>) {
+    when (averagesResult) {
+        is ApiResult.Loading -> LoadingIndicator()
+        is ApiResult.Success -> {
+            val primaryColor = themeBasedColor(
+                darkColor = Color(0xFF00D138),
+                lightColor = Color(0xFF00751F)
+            )
+            val secondaryColor = themeBasedColor(
+                darkColor = Color(0xFF04D9FF),
+                lightColor = Color(0xFF008BA3)
+            )
+            val lines by remember(averagesResult) {
+                derivedStateOf {
+                    mapLines(
+                        averagesResult = averagesResult,
+                        primaryColor = primaryColor,
+                        secondaryColor = secondaryColor
+                    )
+                }
+            }
+
+            LineChart(
+                data = lines,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                animationMode = AnimationMode.Together { it * 50L },
+                animationDelay = 100L,
+                minValue = 1.0,
+                labelProperties = commonLabelProperties(),
+                labelHelperProperties = commonLabelHelperProperties(),
+                indicatorProperties = commonHorizontalIndicatorProperties(1.0),
+                dividerProperties = commonDividerProperties(),
+                gridProperties = commonGridProperties(),
+            )
+        }
+
+        is ApiResult.Error -> ErrorMessage(averagesResult.error)
+    }
+}
+
+@Composable
+private fun CreditsChart(creditsResult: ApiResult<List<ColumnBars>>) {
+    val colors = colorScheme
+
+    when (creditsResult) {
+        is ApiResult.Loading -> LoadingIndicator()
+        is ApiResult.Success -> {
+            val bars by remember(creditsResult) {
+                derivedStateOf {
+                    mapBars(
+                        creditsResult = creditsResult,
+                        colors = colors
+                    )
+                }
+            }
+            val availableSizePerBar = LocalWindowInfo.current.containerDpSize.height / bars.size
+            val barThickness = availableSizePerBar / 3
+
+            RowChart(
+                data = bars,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                animationMode = AnimationMode.Together { it * 50L },
+                barProperties = BarProperties(
+                    cornerRadius = Rectangle(topRight = 6.dp, bottomRight = 6.dp),
+                    spacing = -(barThickness / 2f),
+                    thickness = barThickness
+                ),
+                labelProperties = commonLabelProperties(),
+                labelHelperProperties = commonLabelHelperProperties(),
+                indicatorProperties = commonVerticalIndicatorProperties(5.0),
+                dividerProperties = commonDividerProperties(),
+                gridProperties = commonGridProperties(),
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessLow
+                ),
+            )
+        }
+
+        is ApiResult.Error -> ErrorMessage(creditsResult.error)
+    }
+}
+
+@Composable
+private fun commonLabelProperties() = LabelProperties(
+    enabled = true,
+    textStyle = typography.labelSmall.copy(
+        color = colorScheme.primary
+    ),
+    rotation = LabelProperties.Rotation(degree = 0f)
+)
+
+@Composable
+private fun commonLabelHelperProperties() = LabelHelperProperties(
+    textStyle = typography.labelSmall.copy(
+        color = colorScheme.primary
+    ),
+    labelCountPerLine = 1
+)
+
+@Composable
+private fun commonHorizontalIndicatorProperties(steps: Double) = HorizontalIndicatorProperties(
+    textStyle = typography.labelSmall.copy(
+        color = colorScheme.primary
+    ),
+    contentBuilder = { it.roundToInt().toString() },
+    count = IndicatorCount.StepBased(steps),
+)
+
+@Composable
+private fun commonVerticalIndicatorProperties(steps: Double) = VerticalIndicatorProperties(
+    textStyle = typography.labelSmall.copy(
+        color = colorScheme.primary
+    ),
+    contentBuilder = { it.roundToInt().toString() },
+    count = IndicatorCount.StepBased(steps),
+)
+
+
+@Composable
+private fun commonDividerProperties() = DividerProperties(
+    xAxisProperties = LineProperties(
+        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+    ),
+    yAxisProperties = LineProperties(
+        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+    )
+)
+
+@Composable
+private fun commonGridProperties() = GridProperties(
+    xAxisProperties = GridProperties.AxisProperties(
+        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+    ),
+    yAxisProperties = GridProperties.AxisProperties(
+        lineCount = 2,
+        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+    ),
+)
 
 @Composable
 private fun LoadingIndicator() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
             modifier = Modifier.size(50.dp),
-            color = MaterialTheme.colorScheme.primary
+            color = colorScheme.primary
         )
     }
 }
@@ -220,132 +342,104 @@ private fun ErrorMessage(message: String?) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = message ?: "Hiba történt",
-            color = MaterialTheme.colorScheme.error,
+            color = colorScheme.error,
             modifier = Modifier.padding(16.dp)
         )
     }
 }
 
-private fun BarChart.setupBarChartTheme(textColor: Int) {
-    isHighlightFullBarEnabled = false
-    isHighlightPerDragEnabled = false
-    isHighlightPerTapEnabled = false
-    isDoubleTapToZoomEnabled = false
-    description.isEnabled = false
-    setPinchZoom(false)
-    setDrawBarShadow(false)
-    setDrawGridBackground(false)
-
-    val ll1 = LimitLine(30f, "").apply {
-        lineWidth = 1f
-        lineColor = textColor
-        enableDashedLine(10f, 10f, 0f)
-        this.textColor = textColor
-        labelPosition = LimitLine.LimitLabelPosition.RIGHT_TOP
-        textSize = 10f
-    }
-
-    axisLeft.setDrawLimitLinesBehindData(true)
-    xAxis.setDrawLimitLinesBehindData(true)
-    axisLeft.addLimitLine(ll1)
-
-    legend.apply {
-        verticalAlignment = Legend.LegendVerticalAlignment.TOP
-        horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
-        orientation = Legend.LegendOrientation.VERTICAL
-        this.textColor = textColor
-        setDrawInside(true)
-        yOffset = 10f
-        xOffset = 10f
-        yEntrySpace = 0f
-        textSize = 10f
-        form = Legend.LegendForm.SQUARE
-    }
-
-    xAxis.apply {
-        granularity = 1f
-        setCenterAxisLabels(false)
-        axisMinimum = 0f
-        this.textColor = textColor
-    }
-
-    axisLeft.apply {
-        this.textColor = textColor
-        valueFormatter = LargeValueFormatter()
-        setDrawGridLines(false)
-        spaceTop = 25f
-        axisMinimum = 0f
-    }
-
-    axisRight.isEnabled = false
+private fun mapLines(
+    averagesResult: ApiResult.Success<List<LineData>>,
+    primaryColor: Color,
+    secondaryColor: Color
+): List<Line> = averagesResult.data.map { domainLine ->
+    Line(
+        label = domainLine.label,
+        values = domainLine.points,
+        color = when (domainLine.color) {
+            ChartColor.Primary -> SolidColor(primaryColor)
+            ChartColor.Secondary -> SolidColor(secondaryColor)
+        },
+        firstGradientFillColor = when (domainLine.color) {
+            ChartColor.Primary -> primaryColor.copy(alpha = .3f)
+            ChartColor.Secondary -> secondaryColor.copy(alpha = .3f)
+        },
+        secondGradientFillColor = Color.Transparent,
+    )
 }
 
-private fun LineChart.setupLineChartTheme(textColor: Int) {
-    isHighlightPerDragEnabled = false
-    isHighlightPerTapEnabled = false
-    isDoubleTapToZoomEnabled = false
-    description.isEnabled = false
-    setPinchZoom(false)
-    setDrawGridBackground(false)
+private fun mapBars(
+    creditsResult: ApiResult.Success<List<ColumnBars>>,
+    colors: ColorScheme
+): List<Bars> = creditsResult.data.map { domainBars ->
+    Bars(
+        label = domainBars.barLabel,
+        values = domainBars.bars.map { domainBar ->
+            Bars.Data(
+                label = domainBar.label,
+                value = domainBar.value,
+                color = when (domainBar.color) {
+                    ChartColor.Primary -> SolidColor(
+                        colors.onSurfaceVariant.copy(alpha = 0.3f)
+                    )
 
-    val ll1 = LimitLine(5f, "5").apply {
-        lineWidth = 1f
-        enableDashedLine(10f, 10f, 0f)
-        labelPosition = LimitLine.LimitLabelPosition.LEFT_TOP
-        this.textColor = textColor
-        lineColor = textColor
-        textSize = 10f
-    }
-
-    axisLeft.setDrawLimitLinesBehindData(true)
-    xAxis.setDrawLimitLinesBehindData(true)
-    axisLeft.addLimitLine(ll1)
-
-    legend.apply {
-        verticalAlignment = Legend.LegendVerticalAlignment.TOP
-        horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
-        orientation = Legend.LegendOrientation.VERTICAL
-        this.textColor = textColor
-        setDrawInside(true)
-        yOffset = 10f
-        xOffset = 10f
-        yEntrySpace = 0f
-        textSize = 10f
-        form = Legend.LegendForm.LINE
-    }
-
-    xAxis.apply {
-        granularity = 1f
-        axisMinimum = 0f
-        setCenterAxisLabels(false)
-        this.textColor = textColor
-    }
-
-    axisLeft.apply {
-        this.textColor = textColor
-        valueFormatter = LargeValueFormatter()
-        setDrawGridLines(false)
-        spaceTop = 25f
-        axisMinimum = 1f
-    }
-
-    axisRight.isEnabled = false
+                    ChartColor.Secondary -> SolidColor(colors.onSurface)
+                }
+            )
+        }
+    )
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
 @Composable
 private fun SemestersScreenSuccessPreview() {
     BetterNeptunTheme {
         val creditsResult = ApiResult.Success(
-            Pair(
-                BarDataSet(listOf(BarEntry(1f, 30f), BarEntry(2f, 28f)), "Felvett"),
-                BarDataSet(listOf(BarEntry(1f, 25f), BarEntry(2f, 28f)), "Teljesitett")
+            listOf(
+                ColumnBars(
+                    barLabel = "Felvett",
+                    bars = listOf(
+                        ColumnBarData(
+                            label = "2021/2022/1",
+                            value = 1.0,
+                            color = ChartColor.Primary
+                        ),
+                        ColumnBarData(
+                            label = "2021/2022/1",
+                            value = 2.0,
+                            color = ChartColor.Primary
+                        ),
+                    ),
+                ),
+                ColumnBars(
+                    barLabel = "Teljesitett",
+                    bars = listOf(
+                        ColumnBarData(
+                            label = "2021/2022/2",
+                            value = 2.0,
+                            color = ChartColor.Secondary
+                        ),
+                        ColumnBarData(
+                            label = "2021/2022/2",
+                            value = 3.0,
+                            color = ChartColor.Secondary
+                        ),
+                    ),
+                ),
             )
         )
         val averagesResult = ApiResult.Success(
-            LineData(
-                LineDataSet(listOf(Entry(1f, 4.2f), Entry(2f, 3.8f)), "Átlagok"),
-                LineDataSet(listOf(Entry(1f, 4.2f), Entry(2f, 4.0f)), "Kommultatív átlagok")
+            listOf(
+                LineData(
+                    label = "Átlagok",
+                    points = listOf(2.0, 3.2),
+                    color = ChartColor.Primary
+                ),
+                LineData(
+                    label = "Kommultatív átlagok",
+                    points = listOf(3.0, 4.2),
+                    color = ChartColor.Primary
+                ),
             )
         )
 
@@ -359,30 +453,28 @@ private fun SemestersScreenSuccessPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun SemestersScreenLoadingPreview() {
-    BetterNeptunTheme {
-        SemestersContent(
-            selectedTab = 0,
-            creditsResult = ApiResult.Loading,
-            averagesResult = ApiResult.Loading,
-            onSelectTab = {},
-            onBackClick = {},
-        )
-    }
+    SemestersContent(
+        selectedTab = 0,
+        creditsResult = ApiResult.Loading,
+        averagesResult = ApiResult.Loading,
+        onSelectTab = {},
+        onBackClick = {},
+    )
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun SemestersScreenErrorPreview() {
-    BetterNeptunTheme {
-        SemestersContent(
-            selectedTab = 0,
-            creditsResult = ApiResult.Error("Nem sikerült betölteni a krediteket"),
-            averagesResult = ApiResult.Error("Nem sikerült betölteni az átlagokat"),
-            onSelectTab = {},
-            onBackClick = {},
-        )
-    }
+    SemestersContent(
+        selectedTab = 0,
+        creditsResult = ApiResult.Error("Nem sikerült betölteni a krediteket"),
+        averagesResult = ApiResult.Error("Nem sikerült betölteni az átlagokat"),
+        onSelectTab = {},
+        onBackClick = {},
+    )
 }

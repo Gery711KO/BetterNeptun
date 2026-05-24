@@ -1,15 +1,15 @@
 package hu.kocsisgeri.betterneptun.ui.screen.messages.detail
 
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.usecase.messages.GetMessageDetailUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
-import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.InjectedParam
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class MessageDetailViewModel(
-    private val messageId: String,
-    neptunRepository: NeptunRepository,
+    @InjectedParam messageId: String,
+    getMessageDetailUseCase: GetMessageDetailUseCase,
 ) : ComposeViewModel() {
 
-    val message = neptunRepository.messages.map { pager ->
-        pager.messages.find { it.id == messageId }
-    }.stateWhileSubscribed(null)
+    val message = getMessageDetailUseCase(messageId).stateWhileSubscribed(null)
 }

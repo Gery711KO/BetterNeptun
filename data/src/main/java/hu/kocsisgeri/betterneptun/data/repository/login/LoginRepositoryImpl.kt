@@ -1,46 +1,44 @@
 package hu.kocsisgeri.betterneptun.data.repository.login
 
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.AuthenticationRequestDto
+import hu.kocsisgeri.betterneptun.data.datasource.LocalCacheKeys
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
-import hu.kocsisgeri.betterneptun.data.model.AuthenticationRequestDto
-import hu.kocsisgeri.betterneptun.data.repository.runApiCall
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.StudentData
-import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
-import hu.kocsisgeri.betterneptun.common.PREF_CURRENT_USER
-import hu.kocsisgeri.betterneptun.common.PREF_STAY_LOGGED_ID
-import hu.kocsisgeri.betterneptun.data.api.token.AuthStore
 import hu.kocsisgeri.betterneptun.data.mapper.toAvatarDomain
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
+import hu.kocsisgeri.betterneptun.data.util.runApiCall
+import hu.kocsisgeri.betterneptun.domain.clearable.BaseClearable
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
+import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.serializer
+import org.koin.core.annotation.Singleton
 
-internal class LoginRepositoryImpl(
-    authStore: AuthStore,
+@Singleton
+class LoginRepositoryImpl internal constructor(
     private val localDataSource: LocalDataSource,
     private val networkDataSource: NetworkDataSource,
-    private val ioDispatcher: CoroutineDispatcher,
-) : LoginRepository {
+) : LoginRepository, BaseClearable() {
 
-    override val studentData = MutableStateFlow<ApiResult<StudentData>>(ApiResult.Loading)
-    override val shouldAutoLogin = MutableSharedFlow<Boolean>(1, 1)
-    override val forceLogOut: SharedFlow<Unit> = authStore.forceLogout
+    override val studentData = clearableStateFlow<StudentData?>(null)
+    override val shouldAutoLogin = clearableSharedFlow<Boolean>(1, 1)
 
     init {
         shouldAutoLogin.tryEmit(
             localDataSource.getFromSharedPreferences(
-                key = PREF_STAY_LOGGED_ID,
+                key = LocalCacheKeys.STAY_LOGGED_ID,
                 defaultValue = false,
                 serializer = serializer()
             )
         )
     }
 
-    override suspend fun login(neptunCode: String, password: String) {
-        studentData.runApiCall(ioDispatcher) {
+    override fun login(neptunCode: String, password: String) = runApiCall(
+        onResult = { data ->
+            studentData.value = data
+        },
+        block = {
             networkDataSource.getUserInfo().data.let {
                 StudentData(
                     name = it.name,
@@ -49,16 +47,16 @@ internal class LoginRepositoryImpl(
                 )
             }
         }
-    }
+    )
 
-    override suspend fun silentLogin() {
+    override fun silentLogin(): Flow<ApiResult<StudentData>> {
         val currentUser = localDataSource.getFromSharedPreferences<AuthenticationRequestDto?>(
-            key = PREF_CURRENT_USER,
+            key = LocalCacheKeys.CURRENT_USER,
             defaultValue = null,
             serializer = serializer()
         )
 
-        if (currentUser == null) studentData.value = ApiResult.Error("No current user")
+        return if (currentUser == null) flowOf(ApiResult.Error("No current user"))
         else login(
             neptunCode = currentUser.userName,
             password = currentUser.password
@@ -67,7 +65,7 @@ internal class LoginRepositoryImpl(
 
     override fun saveCurrentUser(neptunCode: String, password: String) {
         localDataSource.saveToSharedPreferences(
-            key = PREF_CURRENT_USER,
+            key = LocalCacheKeys.CURRENT_USER,
             value = AuthenticationRequestDto(
                 userName = neptunCode,
                 password = password
@@ -78,15 +76,9 @@ internal class LoginRepositoryImpl(
 
     override fun saveAutoLoginPreference(shouldAutoLogin: Boolean) {
         localDataSource.saveToSharedPreferences(
-            key = PREF_STAY_LOGGED_ID,
+            key = LocalCacheKeys.STAY_LOGGED_ID,
             value = shouldAutoLogin,
             serializer = serializer()
         )
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override fun purge() {
-        studentData.value = ApiResult.Loading
-        shouldAutoLogin.resetReplayCache()
     }
 }

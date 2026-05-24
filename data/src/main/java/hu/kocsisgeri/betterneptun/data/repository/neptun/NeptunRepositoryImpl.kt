@@ -1,50 +1,47 @@
 package hu.kocsisgeri.betterneptun.data.repository.neptun
 
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.PostIdsRequestDto
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.data.mapper.toAvatarDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toAverageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toEntity
-import hu.kocsisgeri.betterneptun.data.mapper.toExtendedTermDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toSubjectDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toTermDomain
-import hu.kocsisgeri.betterneptun.data.model.PostIdsRequestDto
-import hu.kocsisgeri.betterneptun.data.repository.runApiCall
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.model.Avatar
-import hu.kocsisgeri.betterneptun.domain.model.Average
-import hu.kocsisgeri.betterneptun.domain.model.CalendarItem
-import hu.kocsisgeri.betterneptun.domain.model.ExtendedTerm
-import hu.kocsisgeri.betterneptun.domain.model.Message
-import hu.kocsisgeri.betterneptun.domain.model.MessageDetail
-import hu.kocsisgeri.betterneptun.domain.model.MessagesPager
-import hu.kocsisgeri.betterneptun.domain.model.Subject
-import hu.kocsisgeri.betterneptun.domain.model.Term
+import hu.kocsisgeri.betterneptun.data.util.runApiCall
+import hu.kocsisgeri.betterneptun.domain.clearable.BaseClearable
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Average
+import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
+import hu.kocsisgeri.betterneptun.domain.model.neptun.MessageDetail
+import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
+import hu.kocsisgeri.betterneptun.domain.model.neptun.Term
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
+import org.koin.core.annotation.Singleton
 
-internal class NeptunRepositoryImpl(
+@Singleton
+class NeptunRepositoryImpl internal constructor(
     private val networkDataSource: NetworkDataSource,
     private val localDataSource: LocalDataSource,
     private val ioDispatcher: CoroutineDispatcher,
-) : NeptunRepository {
+) : NeptunRepository, BaseClearable() {
 
     override var currentMessagePage = 1
 
-    private val remoteEvents = MutableStateFlow<List<CalendarItem.Event>>(listOf())
-    private val localEvents = localDataSource.localEvents.getData().map { list ->
+    private val remoteEvents = clearableStateFlow<List<CalendarItem.Event>>(listOf())
+    private val localEvents = localDataSource.localEventsDb.getData().map { list ->
         list.map { it.toDomain() }
     }
 
@@ -52,15 +49,14 @@ internal class NeptunRepositoryImpl(
         remote + local
     }
 
-    override val messages = MutableStateFlow(MessagesPager())
-    override val unreadMessagesCount: MutableStateFlow<Int?> = MutableStateFlow(null)
+    override val messages = clearableStateFlow(MessagesPager())
+    override val unreadMessagesCount: MutableStateFlow<Int?> = clearableStateFlow(null)
 
-    override val extendedTerms = MutableStateFlow<ApiResult<List<ExtendedTerm>>>(ApiResult.Loading)
     override val subjects =
-        MutableStateFlow<ApiResult<List<Subject>>>(ApiResult.Loading)
+        clearableStateFlow<ApiResult<List<Subject>>>(ApiResult.Loading)
 
-    override val terms = MutableStateFlow<ApiResult<List<Term>>>(ApiResult.Loading)
-    override val averages = MutableStateFlow<ApiResult<List<Average>>>(ApiResult.Loading)
+    override val terms = clearableStateFlow<ApiResult<List<Term>>>(ApiResult.Loading)
+    override val averages = clearableStateFlow<ApiResult<List<Average>>>(ApiResult.Loading)
 
     override suspend fun checkForMessageUpdates() {
         withContext(ioDispatcher) {
@@ -147,12 +143,6 @@ internal class NeptunRepositoryImpl(
         }
     }
 
-    override suspend fun fetchExtendedTerms() {
-        extendedTerms.runApiCall(ioDispatcher) {
-            networkDataSource.getExtendedTerms().data.toExtendedTermDomain()
-        }
-    }
-
     override suspend fun fetchSubjects(termId: String) {
         subjects.runApiCall(ioDispatcher) {
             networkDataSource.getTakenSubjects(termId).data.toSubjectDomain()
@@ -205,84 +195,23 @@ internal class NeptunRepositoryImpl(
         }
     }
 
-    override fun purge() {
-        remoteEvents.value = emptyList()
-        unreadMessagesCount.value = null
-        extendedTerms.value = ApiResult.Loading
-        subjects.value = ApiResult.Loading
-        terms.value = ApiResult.Loading
-        averages.value = ApiResult.Loading
-        currentMessagePage = 1
-    }
-
     override suspend fun addLocalEvent(event: CalendarItem.LocalEvent) {
         withContext(ioDispatcher) {
-            localDataSource.localEvents.insertOne(event.toEntity())
+            localDataSource.localEventsDb.insertOne(event.toEntity())
         }
     }
 
     override suspend fun deleteLocalEvent(eventId: Long) {
         withContext(ioDispatcher) {
-            localDataSource.localEvents.deleteById(eventId)
+            localDataSource.localEventsDb.deleteById(eventId)
         }
     }
 
     override suspend fun fetchCalendarData() {
-//            val response = networkDataSource.getCourses()
-//            val colorMap = mutableMapOf<String?, Int>()
-//            when (response) {
-//                is ApiResult.Error -> {/* do something about errors */ }
-//                is ApiResult.Progress -> {/* don't need to do anything here */ }
-//                is ApiResult.Success -> {
-//                    response.data.events.filter { event ->
-//                        event.allday != 1
-//                    }.map {
-//                        CalendarEntity.Event(
-//                            it.id?.toLong() ?: 1111111,
-//                            title = it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
-//                            startTime = it.startdate?.split("(")?.get(1)?.split(")")?.get(0)
-//                                ?.toLong()
-//                                ?.let { longTime ->
-//                                    LocalDateTime.ofEpochSecond(
-//                                        longTime / 1000,
-//                                        0,
-//                                        ZoneOffset.UTC
-//                                    )
-//                                }
-//                                ?: LocalDateTime.now(),
-//                            endTime = it.enddate?.split("(")?.get(1)?.split(")")?.get(0)?.toLong()
-//                                ?.let { longTime ->
-//                                    LocalDateTime.ofEpochSecond(
-//                                        longTime / 1000,
-//                                        0,
-//                                        ZoneOffset.UTC
-//                                    )
-//                                }
-//                                ?: LocalDateTime.now(),
-//                            location = it.location.toString(),
-//                            color = getRandomColor(
-//                                it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
-//                                colorMap
-//                            ),
-//                            isAllDay = it.allday != 0,
-//                            isCanceled = false,
-//                            subjectCode = it.title?.split("(")?.get(1)?.split(")")?.get(0)
-//                                ?: "ERROR",
-//                            courseCode = it.title?.split(" - ")?.get(1)?.split(" ")?.get(0)
-//                                ?: "ERROR",
-//                            teacher = it.title?.split("(")?.get(2)?.split(")")?.get(0) ?: "ERROR"
-//                        )
-//                    }.let { event ->
-//                        dataManager.colors.insertAll(event.map {
-//                            hu.kocsisgeri.betterneptun.data.dao.Color(
-//                                title = it.title.toString(),
-//                                colorInt = it.color
-//                            )
-//                        })
-//                        HomeState.courses.tryEmit(event)
-//                        remoteEvents.tryEmit(event)
-//                    }
-//                }
-//            }
+        // TODO
+    }
+
+    override suspend fun onClear() {
+        currentMessagePage = 1
     }
 }

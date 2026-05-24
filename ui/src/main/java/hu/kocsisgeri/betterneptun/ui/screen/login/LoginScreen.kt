@@ -58,15 +58,20 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.AndroidUiModes.UI_MODE_NIGHT_YES
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
-import hu.kocsisgeri.betterneptun.ui.destination.HomeDestination
+import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.isLoading
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -124,31 +129,36 @@ private fun LoginContent(
     var passwordVisible by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = BetterNeptunTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = ScaffoldDefaults.contentWindowInsets.add(
-            WindowInsets(16.dp, 16.dp, 16.dp, 16.dp)
+            WindowInsets(
+                BetterNeptunTheme.dimens.screenPadding,
+                BetterNeptunTheme.dimens.screenPadding,
+                BetterNeptunTheme.dimens.screenPadding,
+                BetterNeptunTheme.dimens.screenPadding
+            )
         ),
         bottomBar = {
             if (!isLoading) Button(
                 onClick = onLoginClick,
                 enabled = isButtonEnabled,
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(BetterNeptunTheme.dimens.screenPadding)
                     .navigationBarsPadding()
                     .imePadding()
                     .fillMaxWidth()
                     .alpha(if (isButtonEnabled) 1f else 0.6f),
-                shape = RoundedCornerShape(14.dp),
+                shape = BetterNeptunTheme.shapes.medium,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = BetterNeptunTheme.colorScheme.primary,
+                    contentColor = BetterNeptunTheme.colorScheme.onPrimary
                 ),
-                contentPadding = PaddingValues(vertical = 12.dp)
+                contentPadding = PaddingValues(vertical = BetterNeptunTheme.dimens.itemSpacing)
             ) {
                 Text(
-                    text = "Belépés",
-                    fontSize = 18.sp,
+                    text = LocalizationKey.LOGIN_SUBMIT.localized(),
+                    style = BetterNeptunTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -163,25 +173,25 @@ private fun LoginContent(
                 verticalArrangement = Arrangement.Center
             ) {
                 Column(
-                    modifier = Modifier.animateBounds(lookaheadScope = this@LookaheadScope)
+                    modifier = Modifier.animateBounds(lookaheadScope = this@LookaheadScope),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.oe_logo),
                         contentDescription = null,
                         modifier = Modifier
                             .animateBounds(lookaheadScope = this@LookaheadScope)
-                            .size(120.dp)
                             .then(
-                                if (!isLoading) Modifier.padding(bottom = 16.dp)
-                                else Modifier
+                                if (!isLoading) Modifier.size(BetterNeptunTheme.dimens.logoSizeSmall)
+                                else Modifier.size(BetterNeptunTheme.dimens.splashSize)
                             )
 
                     )
                     if (isLoading) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.medium))
                         LinearProgressIndicator(
-                            modifier = Modifier.width(120.dp),
-                            color = MaterialTheme.colorScheme.primary
+                            modifier = Modifier.width(BetterNeptunTheme.dimens.logoSizeSmall),
+                            color = BetterNeptunTheme.colorScheme.primary
                         )
                     }
                 }
@@ -198,24 +208,24 @@ private fun LoginContent(
                                     neptunCode = it
                                     onNeptunCodeChange(it)
                                 },
-                                label = { Text("Neptun kód") },
+                                label = { Text(LocalizationKey.LOGIN_INPUT_NEPTUN_CODE.localized()) },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = TextFieldDefaults.colors(
-                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
-                                    focusedLabelColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    cursorColor = MaterialTheme.colorScheme.primary,
-                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    focusedIndicatorColor = BetterNeptunTheme.colorScheme.primary,
+                                    unfocusedIndicatorColor = BetterNeptunTheme.colorScheme.outline,
+                                    focusedLabelColor = BetterNeptunTheme.colorScheme.primary,
+                                    unfocusedLabelColor = BetterNeptunTheme.colorScheme.onSurfaceVariant,
+                                    cursorColor = BetterNeptunTheme.colorScheme.primary,
+                                    focusedTextColor = BetterNeptunTheme.colorScheme.onSurface,
+                                    unfocusedTextColor = BetterNeptunTheme.colorScheme.onSurface,
                                     focusedContainerColor = Color.Transparent,
                                     unfocusedContainerColor = Color.Transparent,
                                 )
                             )
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.medium))
 
                             OutlinedTextField(
                                 value = password,
@@ -223,7 +233,7 @@ private fun LoginContent(
                                     password = it
                                     onPasswordChange(it)
                                 },
-                                label = { Text("Jelszó") },
+                                label = { Text(LocalizationKey.LOGIN_INPUT_PASSWORD.localized()) },
                                 modifier = Modifier.fillMaxWidth(),
                                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(
@@ -242,18 +252,18 @@ private fun LoginContent(
                                         Icon(
                                             imageVector = image,
                                             contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary
+                                            tint = BetterNeptunTheme.colorScheme.primary
                                         )
                                     }
                                 },
                                 colors = TextFieldDefaults.colors(
-                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
-                                    focusedLabelColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    cursorColor = MaterialTheme.colorScheme.primary,
-                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    focusedIndicatorColor = BetterNeptunTheme.colorScheme.primary,
+                                    unfocusedIndicatorColor = BetterNeptunTheme.colorScheme.outline,
+                                    focusedLabelColor = BetterNeptunTheme.colorScheme.primary,
+                                    unfocusedLabelColor = BetterNeptunTheme.colorScheme.onSurfaceVariant,
+                                    cursorColor = BetterNeptunTheme.colorScheme.primary,
+                                    focusedTextColor = BetterNeptunTheme.colorScheme.onSurface,
+                                    unfocusedTextColor = BetterNeptunTheme.colorScheme.onSurface,
                                     focusedContainerColor = Color.Transparent,
                                     unfocusedContainerColor = Color.Transparent,
                                 )
@@ -262,7 +272,7 @@ private fun LoginContent(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 16.dp),
+                                    .padding(vertical = BetterNeptunTheme.dimens.medium),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Start
                             ) {
@@ -273,14 +283,14 @@ private fun LoginContent(
                                         onKeepMeLoggedInChange(it)
                                     },
                                     colors = CheckboxDefaults.colors(
-                                        checkedColor = MaterialTheme.colorScheme.primary,
-                                        uncheckedColor = MaterialTheme.colorScheme.outline
+                                        checkedColor = BetterNeptunTheme.colorScheme.primary,
+                                        uncheckedColor = BetterNeptunTheme.colorScheme.outline
                                     )
                                 )
                                 Text(
-                                    text = "Maradjak belépve",
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.padding(start = 8.dp)
+                                    text = LocalizationKey.LOGIN_CHECKBOX_STAY_LOGGEDIN.localized(),
+                                    color = BetterNeptunTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(start = BetterNeptunTheme.dimens.paddingSmall)
                                 )
                             }
                             Spacer(Modifier.weight(1f))
@@ -292,34 +302,30 @@ private fun LoginContent(
     }
 }
 
-@Preview(showBackground = true)
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun LoginContentPreview() {
-    BetterNeptunTheme {
-        LoginContent(
-            isButtonEnabled = true,
-            isLoading = false,
-            onLoginClick = {},
-            onNeptunCodeChange = {},
-            onPasswordChange = {},
-            onKeepMeLoggedInChange = {}
-        )
-    }
+    LoginContent(
+        isButtonEnabled = true,
+        isLoading = false,
+        onLoginClick = {},
+        onNeptunCodeChange = {},
+        onPasswordChange = {},
+        onKeepMeLoggedInChange = {}
+    )
 }
 
-@Preview(showBackground = true)
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun LoginContentLoadingPreview() {
-    BetterNeptunTheme {
-        LoginContent(
-            isButtonEnabled = false,
-            isLoading = true,
-            onLoginClick = {},
-            onNeptunCodeChange = {},
-            onPasswordChange = {},
-            onKeepMeLoggedInChange = {}
-        )
-    }
+    LoginContent(
+        isButtonEnabled = false,
+        isLoading = true,
+        onLoginClick = {},
+        onNeptunCodeChange = {},
+        onPasswordChange = {},
+        onKeepMeLoggedInChange = {}
+    )
 }

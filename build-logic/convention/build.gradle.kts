@@ -1,5 +1,6 @@
 plugins {
     `kotlin-dsl`
+    alias(libs.plugins.koin.compiler)
 }
 
 group = "hu.kocsisgeri.betterneptun.buildlogic"
@@ -9,6 +10,10 @@ dependencies {
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.compose.gradlePlugin)
     compileOnly(libs.room.gradlePlugin)
+    compileOnly(libs.ksp.gradlePlugin)
+    compileOnly(libs.koin.gradlePlugin)
+
+    implementation(libs.androidSecrets.gradlePlugin)
 }
 
 gradlePlugin {
@@ -37,4 +42,14 @@ enum class PluginStack(
         pluginId = "betterneptun.android.library",
         pluginImplementationClass = "AndroidLibraryConventionPlugin"
     ),
+    KoinPlugin(
+        pluginName = "koinPlugin",
+        pluginId = "betterneptun.android.koin",
+        pluginImplementationClass = "AndroidKoinConventionPlugin"
+    ),
+    SecretsPlugin(
+        pluginName = "secretsPlugin",
+        pluginId = "betterneptun.android.secrets",
+        pluginImplementationClass = "AndroidSecretsConventionPlugin"
+    )
 }

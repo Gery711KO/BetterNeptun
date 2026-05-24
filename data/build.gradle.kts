@@ -3,14 +3,8 @@ plugins {
 }
 
 betterNeptun {
-    setupDataLayer(
-        namespaceSuffix = "data",
-        useRoom = true
-    )
-}
-
-dependencies {
-    implementation(libs.bundles.datastore)
-    implementation(libs.bundles.networking)
-    implementation(libs.androidx.work.runtime)
+    setupDataLayer(useRoom = true) {
+        implementation(libs.bundles.datastore)
+        implementation(libs.androidx.work.runtime)
+    }
 }

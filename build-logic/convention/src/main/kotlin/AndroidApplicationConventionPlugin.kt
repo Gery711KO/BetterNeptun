@@ -1,9 +1,11 @@
 import com.android.build.api.dsl.ApplicationExtension
 import extensions.config.libs
 import extensions.dependency.Dependency
+import extensions.dependency.applyPluginFromLibs
 import extensions.dependency.implementDependency
 import extensions.gradle.BETTER_NEPTUN_EXTENSION_NAME
 import extensions.gradle.BetterNeptunApplicationExtension
+import extensions.gradle.koinPluginList
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
@@ -16,6 +18,8 @@ class AndroidApplicationConventionPlugin: AndroidBaseConventionPlugin() {
         target.run {
             with(pluginManager) {
                 apply("com.android.application")
+                apply("betterneptun.android.koin")
+                apply("betterneptun.android.secrets")
             }
 
             extensions.add(

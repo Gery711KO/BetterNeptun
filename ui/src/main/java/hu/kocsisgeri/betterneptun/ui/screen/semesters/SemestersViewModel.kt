@@ -1,91 +1,74 @@
 package hu.kocsisgeri.betterneptun.ui.screen.semesters
 
-import androidx.core.graphics.toColorInt
 import androidx.lifecycle.viewModelScope
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import hu.kocsisgeri.betterneptun.common.launchReportingErrors
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.usecase.semester.FetchTermAveragesUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.semester.FetchTermsUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.semester.GetSemesterAveragesUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.semester.GetSemesterCreditsUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import timber.log.Timber
+import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBarData
+import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBars
+import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.LineData
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class SemestersViewModel(
-    repo: NeptunRepository
+    getSemesterCreditsUseCase: GetSemesterCreditsUseCase,
+    getSemesterAveragesUseCase: GetSemesterAveragesUseCase,
+    private val fetchTermsUseCase: FetchTermsUseCase,
+    private val fetchTermAveragesUseCase: FetchTermAveragesUseCase,
 ) : ComposeViewModel() {
 
-    val credits = repo.terms.map {
-        when (it) {
-            is ApiResult.Error -> ApiResult.Error(it.error)
-            is ApiResult.Loading -> ApiResult.Loading
-            is ApiResult.Success -> {
-                val takenCredits = it.data.mapIndexed { index, model ->
-                    BarEntry(
-                        (index + 1).toFloat(),
-                        model.semesterTakenCredits?.toFloat() ?: 0f
+    val credits = getSemesterCreditsUseCase(
+        mapDataSet = { barData ->
+            ColumnBars(
+                barLabel = barData.title,
+                bars = barData.bars.map { bar ->
+                    ColumnBarData(
+                        label = bar.chartLabel.toLabelString(),
+                        value = bar.value,
+                        color = bar.chartColor
                     )
                 }
-                val acquiredCredits = it.data.mapIndexed { index, model ->
-                    BarEntry(
-                        (index + 1).toFloat(),
-                        model.semesterFulfilledCredits?.toFloat() ?: 0f
-                    )
-                }
-                val takenSet = BarDataSet(takenCredits, "Felvett")
-                val aquiredSet = BarDataSet(acquiredCredits, "Teljesitett")
-                ApiResult.Success(Pair(takenSet, aquiredSet))
-            }
+            )
         }
-    }.stateWhileSubscribed(ApiResult.Loading)
+    ).stateWhileSubscribed(ApiResult.Loading)
 
-    val averages = repo.averages.map {
-        when(it) {
-            is ApiResult.Error -> ApiResult.Error(it.error)
-            is ApiResult.Loading -> ApiResult.Loading
-            is ApiResult.Success -> {
-                val normalAverages = it.data.map { model ->
-                    Entry(
-                        (model.index + 1).toFloat(),
-                        model.normalAverage?.toFloat()?: 0f
-                    )
-                }
-
-                val comAverages = it.data.map { model ->
-                    Entry(
-                        (model.index + 1).toFloat(),
-                        model.commutativeAverage?.toFloat()?: 0f
-                    )
-                }
-
-                val normalSet = LineDataSet(normalAverages, "Átlagok")
-                    .apply {
-                        setCircleColor("#007541".toColorInt())
-                        lineWidth = 3f
-                        color = "#007541".toColorInt()
-                    }
-                val comSet = LineDataSet(comAverages, "Kommultatív átlagok")
-                    .apply {
-                        setCircleColor("#096FB3".toColorInt())
-                        lineWidth = 3f
-                        color = "#096FB3".toColorInt()
-                    }
-                ApiResult.Success(LineData(normalSet, comSet))
-            }
+    val averages = getSemesterAveragesUseCase(
+        mapDataSet = { averageEntries, chartLabel, chartColor ->
+            val label = chartLabel.toLabelString()
+            LineData(
+                label = label,
+                points = averageEntries,
+                color = chartColor
+            )
         }
-    }.stateWhileSubscribed(ApiResult.Loading)
+    ).stateWhileSubscribed(ApiResult.Loading)
 
     init {
-        if (repo.terms.value !is ApiResult.Success) viewModelScope.launchReportingErrors {
-            repo.fetchTerms()
-        }
+        fetchInitialData()
+    }
 
-        if (repo.averages.value !is ApiResult.Success) viewModelScope.launchReportingErrors {
-            repo.fetchTermAverages()
+    private fun fetchInitialData() {
+        viewModelScope.launchReportingErrors {
+            listOf(
+                async { fetchTermsUseCase() },
+                async { fetchTermAveragesUseCase() }
+            ).awaitAll()
         }
+    }
+
+    private fun GetSemesterAveragesUseCase.ChartLabel.toLabelString() = when (this) {
+        GetSemesterAveragesUseCase.ChartLabel.Averages -> "Átlagok"
+        GetSemesterAveragesUseCase.ChartLabel.SumAverages -> "Kommultatív átlagok"
+    }
+
+    private fun GetSemesterCreditsUseCase.ChartLabel.toLabelString() = when (this) {
+        GetSemesterCreditsUseCase.ChartLabel.TakenCredits -> "Felvett"
+        GetSemesterCreditsUseCase.ChartLabel.FulfilledCredits -> "Teljesitett"
     }
 }

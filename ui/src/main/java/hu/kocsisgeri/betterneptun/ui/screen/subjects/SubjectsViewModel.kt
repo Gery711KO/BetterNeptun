@@ -1,33 +1,90 @@
 package hu.kocsisgeri.betterneptun.ui.screen.subjects
 
 import androidx.lifecycle.viewModelScope
-import hu.kocsisgeri.betterneptun.common.launchReportingErrors
-import hu.kocsisgeri.betterneptun.domain.model.ApiResult
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
+import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.usecase.semester.FetchTermsUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.subjects.FetchSubjectsUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.subjects.GetSubjectsUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.subjects.GetTermsUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
+import hu.kocsisgeri.betterneptun.ui.screen.subjects.model.SubjectsScreenUiModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class SubjectsViewModel(
-    repo: NeptunRepository
+    getTermsUseCase: GetTermsUseCase,
+    getSubjectsUseCase: GetSubjectsUseCase,
+    private val fetchTermsUseCase: FetchTermsUseCase,
+    private val fetchSubjectsUseCase: FetchSubjectsUseCase,
 ) : ComposeViewModel() {
 
-    val listItems = repo.subjects.stateWhileSubscribed()
+    private val selectedTerm = MutableStateFlow<String?>(null)
+
+    private val subjects = getSubjectsUseCase()
+
+    private val termFilterItems = getTermsUseCase { term ->
+        SubjectsScreenUiModel.FilterItem(
+            id = term.id,
+            name = term.semesterTitle
+        )
+    }
+
+    val state = combine(
+        selectedTerm.filterNotNull(),
+        termFilterItems,
+        subjects,
+    ) { selectedTerm, termsFilters, subjects ->
+        SubjectsScreenUiModel(
+            selectedTermId = selectedTerm,
+            filterBar = termsFilters,
+            listItems = subjects
+        )
+    }.stateWhileSubscribed(
+        SubjectsScreenUiModel(
+            selectedTermId = "",
+            filterBar = ApiResult.Loading,
+            listItems = ApiResult.Loading
+        )
+    )
 
     init {
-        if (repo.subjects.value !is ApiResult.Success) viewModelScope.launchReportingErrors {
-            repo.fetchExtendedTerms()
+        fetchTerms()
+        selectDefaultTerm()
+        handleTermSelection()
+    }
 
-            repo.extendedTerms.collect {
-                when (it) {
-                    is ApiResult.Error -> {
-                        // TODO handle error
-                    }
-                    ApiResult.Loading -> {
-                        // TODO handle loading
-                    }
-                    is ApiResult.Success -> it.data.firstOrNull()?.termId?.let { termId ->
-                        repo.fetchSubjects(termId)
+    fun selectTerm(termId: String) {
+        selectedTerm.value = termId
+    }
+
+    private fun fetchTerms() {
+        viewModelScope.launchReportingErrors {
+            fetchTermsUseCase()
+        }
+    }
+
+    private fun selectDefaultTerm() {
+        viewModelScope.launchReportingErrors {
+            termFilterItems
+                .filterIsInstance<ApiResult.Success<List<SubjectsScreenUiModel.FilterItem>>>()
+                .first().let {
+                    it.data.asReversed().firstOrNull()?.id?.let { termId ->
+                        selectedTerm.value = termId
                     }
                 }
+        }
+    }
+
+    private fun handleTermSelection() {
+        viewModelScope.launchReportingErrors {
+            selectedTerm.collect { termId ->
+                fetchSubjectsUseCase(termId)
             }
         }
     }

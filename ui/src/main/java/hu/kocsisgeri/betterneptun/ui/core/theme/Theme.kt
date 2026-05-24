@@ -1,19 +1,58 @@
 package hu.kocsisgeri.betterneptun.ui.core.theme
 
 import android.app.Activity
+import android.content.ComponentCallbacks
+import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
-import android.os.Build
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.tooling.preview.PreviewWrapperProvider
 import androidx.core.view.WindowCompat
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
+import hu.kocsisgeri.betterneptun.ui.navigation.utils.ProvideSharedTransitionScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.koin.core.annotation.Singleton
+
+object BetterNeptunTheme {
+    val colorScheme: ColorScheme
+        @Composable
+        @ReadOnlyComposable
+        get() = MaterialTheme.colorScheme
+
+    val typography: Typography
+        @Composable
+        @ReadOnlyComposable
+        get() = MaterialTheme.typography
+
+    val shapes: Shapes
+        @Composable
+        @ReadOnlyComposable
+        get() = MaterialTheme.shapes
+
+    val dimens: BetterNeptunDimens
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalDimens.current
+}
 
 private val DarkColorScheme = darkColorScheme(
     primary = DarkPrimary,
@@ -67,6 +106,31 @@ private val LightColorScheme = lightColorScheme(
     outline = LightOutline
 )
 
+@Singleton
+class BetterNeptunColors(context: Context) {
+
+    val colors = MutableStateFlow(DarkColorScheme)
+
+    private val configCallbacks = object : ComponentCallbacks {
+        override fun onConfigurationChanged(newConfig: Configuration) {
+            colors.value = if (newConfig.uiMode == Configuration.UI_MODE_NIGHT_YES) {
+                DarkColorScheme
+            } else {
+                LightColorScheme
+            }
+
+        }
+
+        @Deprecated("Deprecated in Java")
+        override fun onLowMemory() {
+        }
+    }
+
+    init {
+        context.applicationContext.registerComponentCallbacks(configCallbacks)
+    }
+}
+
 @Composable
 fun BetterNeptunTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -74,14 +138,15 @@ fun BetterNeptunTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        dynamicColor -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -95,9 +160,37 @@ fun BetterNeptunTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    CompositionLocalProvider(LocalDimens provides BetterNeptunDimens()) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            shapes = Shapes,
+            content = content
+        )
+    }
+}
+
+class PreviewThemeProvider : PreviewWrapperProvider {
+
+    @Composable
+    override fun Wrap(content: @Composable (() -> Unit)) {
+        AnimatedContent(true) { visible ->
+            if (visible) BetterNeptunTheme(
+                darkTheme = isSystemInDarkTheme(),
+                content = {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = BetterNeptunTheme.colorScheme.background,
+                        content = {
+                            CompositionLocalProvider(LocalNavAnimatedContentScope provides this) {
+                                SharedTransitionLayout {
+                                    ProvideSharedTransitionScope(content)
+                                }
+                            }
+                        }
+                    )
+                }
+            )
+        }
+    }
 }

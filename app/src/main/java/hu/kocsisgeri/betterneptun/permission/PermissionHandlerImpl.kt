@@ -12,7 +12,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import org.koin.core.annotation.Singleton
 
+@Singleton
 class PermissionHandlerImpl(
     private val handledPermissions: List<PermissionData>,
 ) : PermissionHandler {

@@ -15,11 +15,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
-import hu.kocsisgeri.betterneptun.common.get
-import hu.kocsisgeri.betterneptun.common.put
+import hu.kocsisgeri.betterneptun.data.util.get
+import hu.kocsisgeri.betterneptun.data.util.put
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
+import org.koin.core.annotation.Singleton
 
+@Singleton
 class NotificationPermission(
     private val sharedPreferences: SharedPreferences,
 ) : PermissionData() {
@@ -29,9 +32,8 @@ class NotificationPermission(
     override var permissionState: State by mutableStateOf(State.NotRequested)
 
     override val disclaimer: PermissionDisclaimer = PermissionDisclaimer(
-        humanReadablePermissionName = "Értesítések",
-        disclaimer = "Az értesítések engedélyezése segítségével értesítéseket kaphatsz az órarended " +
-                "eseményei alapján és saját beállított események alapján."
+        humanReadablePermissionName = LocalizationKey.PERMISSION_NOTIFICATION_TITLE,
+        disclaimer = LocalizationKey.PERMISSION_NOTIFICATION_DISCLAIMER
     )
 
     override fun requestPermission(

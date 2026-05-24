@@ -42,6 +42,11 @@ internal fun Project.configureAndroidEarly(
                     name = "VERSION_CODE",
                     value = "\"${projectConfigs.versionCode}\""
                 )
+                buildConfigField(
+                    type = "String",
+                    name = "NAMESPACE",
+                    value = "\"${projectConfigs.namespace}\""
+                )
             }
 
             commonExtension.buildFeatures {
