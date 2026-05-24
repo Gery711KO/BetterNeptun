@@ -5,7 +5,15 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface Initializer {
 
-    val isInitialized: StateFlow<Boolean>
+    val isInitialized: StateFlow<State>
 
     fun initialize(scope: CoroutineScope)
+
+    sealed interface State {
+
+        data object Idle: State
+        data object Initialized: State
+        data object Initializing: State
+        data class Error(val errorMessage: String): State
+    }
 }

@@ -34,6 +34,7 @@ val navigationModule = module {
         navigation<LoadingDestination> {
             LoadingScreen()
         }
+
         navigation<LoginDestination> {
             LoginScreen()
         }

@@ -1,10 +1,10 @@
 package hu.kocsisgeri.betterneptun.domain.initializable
 
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharedFlow
 
 interface Initializable {
 
-    val isInitialized: StateFlow<Boolean>
+    val isInitialized: SharedFlow<Boolean>
 
     suspend fun initialize()
 }

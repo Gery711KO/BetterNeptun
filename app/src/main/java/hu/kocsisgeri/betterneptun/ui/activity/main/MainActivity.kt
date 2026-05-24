@@ -5,8 +5,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -15,18 +19,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.NavKey
-import hu.kocsisgeri.betterneptun.domain.initializable.Initializer
 import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
 import hu.kocsisgeri.betterneptun.domain.token.LogoutHandler
-import hu.kocsisgeri.betterneptun.localization.LocalizationProviderScope
 import hu.kocsisgeri.betterneptun.localization.ProvideLocalization
 import hu.kocsisgeri.betterneptun.localization.rememberLocalizationProviderScope
 import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
@@ -54,8 +55,6 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
 
     override val scope: Scope by activityRetainedScope()
 
-    private val initializer: Initializer by inject()
-
     private val neptunRepository: NeptunRepository by inject()
     private val settingsRepository: SettingsRepository by inject()
 
@@ -74,8 +73,12 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
     private val localizationService: LocalizationService by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        splashScreen.setOnExitAnimationListener { splashScreenView ->
+            splashScreenView.remove()
+        }
 
         enableEdgeToEdge()
         setContent {
@@ -111,26 +114,28 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
                         val isToLogin = targetState.checkType(LoginDestination)
 
                         if ((isFromLogin && isToHome) || isToLogin || isFromLoading) {
-                            fadeIn() togetherWith fadeOut()
+                            fadeIn(animationSpec = tween(500)) + slideIntoContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Down,
+                                animationSpec = tween(500, 300)
+                            ) + scaleIn(
+                                initialScale = 0.6f,
+                                animationSpec = tween(500, 300)
+                            ) togetherWith slideOutOfContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Up,
+                                animationSpec = tween(500, 300),
+                            ) + scaleOut(
+                                targetScale = 0.6f,
+                                animationSpec = tween(500)
+                            ) + fadeOut(animationSpec = tween(500, 500))
                         } else {
                             slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
                         }
                     },
                     popTransitionSpec = {
-                        val isToLogin = targetState.checkType(LoginDestination)
-                        if (isToLogin) {
-                            fadeIn() togetherWith fadeOut()
-                        } else {
-                            slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                        }
+                        slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
                     },
                     predictivePopTransitionSpec = {
-                        val isToLogin = targetState.checkType(LoginDestination)
-                        if (isToLogin) {
-                            fadeIn() togetherWith fadeOut()
-                        } else {
-                            slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                        }
+                        slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
                     },
                     modifier = Modifier
                         .fillMaxSize()

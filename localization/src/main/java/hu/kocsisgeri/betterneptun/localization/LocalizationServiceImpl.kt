@@ -6,6 +6,7 @@ import hu.kocsisgeri.betterneptun.domain.model.localization.LocalizationDictiona
 import hu.kocsisgeri.betterneptun.domain.repository.localization.LocalizationRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -28,7 +29,7 @@ internal class LocalizationServiceImpl(
 
     override val languages = MutableStateFlow(emptyList<Language>())
 
-    override val isInitialized = MutableStateFlow(false)
+    override val isInitialized = MutableSharedFlow<Boolean>(1, 1)
 
     override suspend fun initialize() {
         val storedLanguage = settingsRepository.storedLanguage.firstOrNull()
@@ -43,7 +44,7 @@ internal class LocalizationServiceImpl(
             changeLanguage(language)
         }
 
-        isInitialized.value = currentDictionary.value.localizations.isNotEmpty()
+        isInitialized.tryEmit(currentDictionary.value.localizations.isNotEmpty())
     }
 
     override suspend fun changeLanguage(languageKey: String) {

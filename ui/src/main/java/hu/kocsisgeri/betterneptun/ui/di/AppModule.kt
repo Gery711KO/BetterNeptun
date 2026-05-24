@@ -9,11 +9,13 @@ import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.TimetableViewModel
 import hu.kocsisgeri.betterneptun.ui.core.helper.ClockTickReceiver
+import hu.kocsisgeri.betterneptun.ui.screen.loading.LoadingViewModel
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val uiModule = module {
+    viewModelOf(::LoadingViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::HomeViewModel)
     viewModelOf(::MessagesViewModel)

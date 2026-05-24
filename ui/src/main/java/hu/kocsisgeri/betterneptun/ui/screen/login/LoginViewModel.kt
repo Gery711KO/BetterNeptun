@@ -48,16 +48,6 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ComposeView
                 }
             }
         }
-
-
-        viewModelScope.launchReportingErrors {
-            loginRepository.shouldAutoLogin.collect { autoLogin ->
-                if (autoLogin) {
-                    forcedState.tryEmit(LoginState.Loading)
-                    loginRepository.silentLogin()
-                }
-            }
-        }
     }
 
     fun login() {
