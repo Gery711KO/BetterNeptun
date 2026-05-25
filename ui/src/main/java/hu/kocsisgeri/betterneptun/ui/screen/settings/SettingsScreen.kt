@@ -40,9 +40,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.model.localization.Language
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.BuildConfig
-import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
@@ -94,7 +94,7 @@ fun SettingsContent(
             LargeTopAppBar(
                 title = {
                     Text(
-                        text = localized(R.string.settings_title),
+                        text = localized(LocalizationKey.SETTINGS_TITLE),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 24.sp
@@ -130,7 +130,7 @@ fun SettingsContent(
                 .padding(bottom = paddingValues.calculateBottomPadding()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SettingsSectionLabel(label = localized(R.string.settings_section_language))
+            SettingsSectionLabel(label = localized(LocalizationKey.SETTINGS_SECTION_LANGUAGE))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -139,10 +139,18 @@ fun SettingsContent(
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
+                val languagesWithKeys = languages.mapNotNull { language ->
+                    LocalizationKey.entries.firstOrNull {
+                        it.key == language.localizationKey
+                    }?.let { key ->
+                        language to key
+                    }
+                }
+
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    languages.forEach { language ->
+                    languagesWithKeys.forEach { (language, localizationKey) ->
                         RadioOption(
-                            label = localized(language.localizationKey),
+                            label = localized(key = localizationKey),
                             selected = language.isSelected,
                             onClick = { onLanguageChange(language) }
                         )
@@ -150,7 +158,7 @@ fun SettingsContent(
                 }
             }
 
-            SettingsSectionLabel(label = localized(R.string.settings_section_theme),)
+            SettingsSectionLabel(label = localized(LocalizationKey.SETTINGS_SECTION_THEME),)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -161,24 +169,24 @@ fun SettingsContent(
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     RadioOption(
-                        label = localized(R.string.settings_section_theme_system),
+                        label = localized(LocalizationKey.SETTINGS_SECTION_THEME_SYSTEM),
                         selected = themeMode == ThemeMode.AUTO,
                         onClick = { onThemeChange(ThemeMode.AUTO) }
                     )
                     RadioOption(
-                        label = localized(R.string.settings_section_theme_light),
+                        label = localized(LocalizationKey.SETTINGS_SECTION_THEME_LIGHT),
                         selected = themeMode == ThemeMode.LIGHT,
                         onClick = { onThemeChange(ThemeMode.LIGHT) }
                     )
                     RadioOption(
-                        label = localized(R.string.settings_section_theme_dark),
+                        label = localized(LocalizationKey.SETTINGS_SECTION_THEME_DARK),
                         selected = themeMode == ThemeMode.DARK,
                         onClick = { onThemeChange(ThemeMode.DARK) }
                     )
                 }
             }
 
-            SettingsSectionLabel(label = localized(R.string.settings_section_timetable))
+            SettingsSectionLabel(label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -189,34 +197,34 @@ fun SettingsContent(
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     RadioOption(
-                        label = localized(R.string.settings_section_timetable_none),
+                        label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_NONE),
                         selected = notificationDelay == -1,
                         onClick = { onNotificationDelayChange(-1) }
                     )
                     RadioOption(
-                        label = localized(R.string.settings_section_timetable_minutes, 5.toString()),
+                        label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES, 5.toString()),
                         selected = notificationDelay == 5,
                         onClick = { onNotificationDelayChange(5) }
                     )
                     RadioOption(
-                        label = localized(R.string.settings_section_timetable_minutes, 10.toString()),
+                        label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES, 10.toString()),
                         selected = notificationDelay == 10,
                         onClick = { onNotificationDelayChange(10) }
                     )
                     RadioOption(
-                        label = localized(R.string.settings_section_timetable_minutes, 15.toString()),
+                        label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES, 15.toString()),
                         selected = notificationDelay == 15,
                         onClick = { onNotificationDelayChange(15) }
                     )
                     RadioOption(
-                        label = localized(R.string.settings_section_timetable_minutes, 30.toString()),
+                        label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES, 30.toString()),
                         selected = notificationDelay == 30,
                         onClick = { onNotificationDelayChange(30) }
                     )
                 }
             }
 
-            SettingsSectionLabel(label = localized(R.string.settings_section_information))
+            SettingsSectionLabel(label = localized(LocalizationKey.SETTINGS_SECTION_INFORMATION))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -227,7 +235,7 @@ fun SettingsContent(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     InfoRow(
-                        label = localized(R.string.settings_section_information_version),
+                        label = localized(LocalizationKey.SETTINGS_SECTION_INFORMATION_VERSION),
                         value = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
                     )
                 }
@@ -331,11 +339,11 @@ fun LogoutButton(onClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = localized(R.string.settings_logout_button_title),
+                text = localized(LocalizationKey.SETTINGS_LOGOUT_BUTTON_TITLE),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             )
             Text(
-                text = localized(R.string.settings_logout_button_description),
+                text = localized(LocalizationKey.SETTINGS_LOGOUT_BUTTON_DESCRIPTION),
                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                 textAlign = TextAlign.Center
             )
@@ -353,7 +361,7 @@ fun SettingsPreviewLight() {
                 Language.DEFAULT,
                 Language(
                     key = "en",
-                    localizationKey = "language_en",
+                    localizationKey = LocalizationKey.LANGUAGE_EN.key,
                     isSelected = false,
                     isDefault = false
                 )
@@ -378,7 +386,7 @@ fun SettingsPreviewDark() {
                 Language.DEFAULT,
                 Language(
                     key = "en",
-                    localizationKey = "language_en",
+                    localizationKey = LocalizationKey.LANGUAGE_EN.key,
                     isSelected = false,
                     isDefault = false
                 )

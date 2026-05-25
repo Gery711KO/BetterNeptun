@@ -4,6 +4,6 @@ data class CurrentCourseDetail(
     val title: String,
     val location: String?,
     val progress: Int,
-    val remainingTime: String,
+    val remainingTimeMinutes: Int,
     val color: Int,
 )

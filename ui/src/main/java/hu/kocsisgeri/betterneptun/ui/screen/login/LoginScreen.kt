@@ -61,6 +61,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
@@ -148,7 +149,7 @@ private fun LoginContent(
                 contentPadding = PaddingValues(vertical = 12.dp)
             ) {
                 Text(
-                    text = localized(R.string.login_submit),
+                    text = localized(LocalizationKey.LOGIN_SUBMIT),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -199,7 +200,7 @@ private fun LoginContent(
                                     neptunCode = it
                                     onNeptunCodeChange(it)
                                 },
-                                label = { Text(localized(R.string.login_input_neptun_code)) },
+                                label = { Text(localized(LocalizationKey.LOGIN_INPUT_NEPTUN_CODE)) },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                                 modifier = Modifier.fillMaxWidth(),
@@ -224,7 +225,7 @@ private fun LoginContent(
                                     password = it
                                     onPasswordChange(it)
                                 },
-                                label = { Text(localized(R.string.login_input_password)) },
+                                label = { Text(localized(LocalizationKey.LOGIN_INPUT_PASSWORD)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(
@@ -279,7 +280,7 @@ private fun LoginContent(
                                     )
                                 )
                                 Text(
-                                    text = localized(R.string.login_checkbox_stay_loggedin),
+                                    text = localized(LocalizationKey.LOGIN_CHECKBOX_STAY_LOGGEDIN),
                                     color = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.padding(start = 8.dp)
                                 )

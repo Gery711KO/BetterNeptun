@@ -1,25 +1,25 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
-import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
 import hu.kocsisgeri.betterneptun.domain.usecase.home.FetchUnreadMessagesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetCurrentCoursesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetNextCourseUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetStudentDataUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.core.helper.ClockMinutesTickReceiver
-import hu.kocsisgeri.betterneptun.ui.core.helper.getTimeUntil
-import hu.kocsisgeri.betterneptun.ui.core.helper.getTimeLeft
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
+import hu.kocsisgeri.betterneptun.ui.screen.home.model.getTimeLeft
+import hu.kocsisgeri.betterneptun.ui.screen.home.model.getTimeUntil
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.getPercent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onEach
+import timber.log.Timber
 
 class HomeViewModel(
     private val clockTickReceiver: ClockMinutesTickReceiver,
-    private val localizationService: LocalizationService,
     private val fetchUnreadMessagesUseCase: FetchUnreadMessagesUseCase,
     getCurrentCoursesUseCase: GetCurrentCoursesUseCase,
     getNextCourseUseCase: GetNextCourseUseCase,
@@ -34,12 +34,12 @@ class HomeViewModel(
             title = item.title,
             location = item.location,
             progress = item.getPercent(),
-            remainingTime = item.endTime.getTimeLeft { id, args ->
-                localizationService.localized(id, *args)
-            },
+            remainingTimeMinutes = item.endTime.getTimeLeft(),
             color = item.color
         )
-    }.repeatEveryMinute().stateWhileSubscribed(emptyList())
+    }.repeatEveryMinute().onEach {
+        Timber.tag("REMAP").d("$it")
+    }.stateWhileSubscribed(emptyList())
 
     val nextCourse = getNextCourseUseCase { event ->
         NextCourseDetail(
@@ -48,11 +48,11 @@ class HomeViewModel(
             startTime = event.startTime,
             endTime = event.endTime,
             color = event.color,
-            timeUntilEvent = event.startTime.getTimeUntil { id, args ->
-                localizationService.localized(id, *args)
-            }
+            timeUntilEvent = event.startTime.getTimeUntil()
         )
-    }.repeatEveryMinute().stateWhileSubscribed(null)
+    }.repeatEveryMinute().onEach {
+        Timber.tag("REMAP").d("$it")
+    }.stateWhileSubscribed(null)
 
     val studentData = getStudentDataUseCase().stateWhileSubscribed()
 

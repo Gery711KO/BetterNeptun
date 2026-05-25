@@ -1,6 +1,8 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.gestures.snapping.snapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.ExperimentalGridApi
 import androidx.compose.foundation.layout.Grid
 import androidx.compose.foundation.layout.GridTrackSize
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -24,6 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,9 +67,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
+import hu.kocsisgeri.betterneptun.domain.model.TimeDuration
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
@@ -140,9 +146,6 @@ private fun HomeContent(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.add(
-            WindowInsets(10.dp, 10.dp, 10.dp, 10.dp)
-        ),
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
             .pullRefresh(pullRefreshState),
@@ -197,7 +200,8 @@ private fun PermissionDisclaimerCarousel(
     if (visibleDisclaimers.isNotEmpty()) {
         LazyRow(
             modifier = modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp)
         ) {
             items(visibleDisclaimers) { permission ->
                 PermissionDisclaimerCard(
@@ -249,7 +253,7 @@ private fun PermissionDisclaimerCard(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = localized(R.string.home_permission_permit),
+                    text = localized(LocalizationKey.HOME_PERMISSION_PERMIT),
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -261,7 +265,6 @@ private fun PermissionDisclaimerCard(
 @OptIn(ExperimentalGridApi::class)
 private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
     Grid(
-        modifier = Modifier.fillMaxWidth(),
         config = {
             columns(
                 GridTrackSize.Percentage(0.5f),
@@ -272,46 +275,49 @@ private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
             )
 
             gap(8.dp)
-        }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp)
     ) {
         NavButton(
             modifier = Modifier.gridItem(row = 1, column = 1),
             icon = painterResource(id = R.drawable.ic_mail),
-            text = localized(R.string.home_menu_messages),
+            text = localized(LocalizationKey.HOME_MENU_MESSAGES),
             onClick = { onNavigate(MessagesDestination) }
         )
         NavButton(
             modifier = Modifier.gridItem(row = 1, column = 2),
             icon = painterResource(id = R.drawable.ic_calendar),
-            text = localized(R.string.home_menu_timetable),
+            text = localized(LocalizationKey.HOME_MENU_TIMETABLE),
             onClick = { onNavigate(TimetableDestination) }
         )
         NavButton(
             modifier = Modifier.gridItem(row = 2, column = 1),
             icon = painterResource(id = R.drawable.ic_courses),
-            text = localized(R.string.home_menu_courses),
+            text = localized(LocalizationKey.HOME_MENU_COURSES),
             onClick = { onNavigate(SubjectsDestination) }
         )
         NavButton(
             modifier = Modifier.gridItem(row = 2, column = 2),
             icon = painterResource(id = R.drawable.ic_semesters),
-            text = localized(R.string.home_menu_semesters),
+            text = localized(LocalizationKey.HOME_MENU_SEMESTERS),
             onClick = { onNavigate(SemestersDestination) }
         )
         NavButton(
             modifier = Modifier.gridItem(row = 3, column = 1),
             icon = painterResource(id = R.drawable.ic_exams),
-            text = localized(R.string.home_menu_exams),
+            text = localized(LocalizationKey.HOME_MENU_EXAMS),
             isEnabled = false,
-            disabledTag = localized(R.string.home_label_underdevelopment),
+            disabledTag = localized(LocalizationKey.HOME_LABEL_UNDERDEVELOPMENT),
             onClick = { /* TODO */ }
         )
         NavButton(
             modifier = Modifier.gridItem(row = 3, column = 2),
             icon = painterResource(id = R.drawable.ic_schedule),
-            text = localized(R.string.home_menu_periods),
+            text = localized(LocalizationKey.HOME_MENU_PERIODS),
             isEnabled = false,
-            disabledTag = localized(R.string.home_label_underdevelopment),
+            disabledTag = localized(LocalizationKey.HOME_LABEL_UNDERDEVELOPMENT),
             onClick = { /* TODO */ }
         )
     }
@@ -320,9 +326,14 @@ private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
 @Composable
 private fun CurrentlyOngoingCourses(currentCourses: List<CurrentCourseDetail>) {
     if (currentCourses.isNotEmpty()) {
+        val listState = rememberLazyListState()
+
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            state = listState,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp),
+            flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
         ) {
             items(currentCourses) { course ->
                 CurrentCourseItem(
@@ -343,6 +354,7 @@ private fun Header(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 12.dp)
             .height(intrinsicSize = IntrinsicSize.Max),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -447,7 +459,7 @@ fun CurrentCourseItem(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = localized(R.string.home_ongoing_course),
+                    text = localized(LocalizationKey.HOME_ONGOING_COURSE),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -513,7 +525,10 @@ fun CurrentCourseItem(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = course.remainingTime,
+                        text = localized(
+                            LocalizationKey.HOME_ONGOING_COURSE_MINUTES,
+                            course.remainingTimeMinutes.toString()
+                        ),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -528,12 +543,14 @@ fun CurrentCourseItem(
 fun NextCourseCard(course: NextCourseDetail?) {
     course?.let {
         Card(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp)
         ) {
             Box(
                 modifier = Modifier
@@ -547,7 +564,7 @@ fun NextCourseCard(course: NextCourseDetail?) {
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text =  localized(R.string.home_next_course),
+                            text =  localized(LocalizationKey.HOME_NEXT_COURSE),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -562,7 +579,20 @@ fun NextCourseCard(course: NextCourseDetail?) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = course.timeUntilEvent,
+                                text = when (course.timeUntilEvent.unit) {
+                                    TimeDuration.Unit.MINUTES -> localized(
+                                        LocalizationKey.HOME_NEXT_COURSE_MINUTES,
+                                        course.timeUntilEvent.value.toString()
+                                    )
+                                    TimeDuration.Unit.HOURS -> localized(
+                                        LocalizationKey.HOME_NEXT_COURSE_HOURS,
+                                        course.timeUntilEvent.value.toString()
+                                    )
+                                    TimeDuration.Unit.DAYS -> localized(
+                                        LocalizationKey.HOME_NEXT_COURSE_DAYS,
+                                        course.timeUntilEvent.value.toString()
+                                    )
+                                },
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
@@ -700,7 +730,7 @@ fun HomeScreenPreview() {
             location = "BA.F.01",
             color = 0xFF4285F4.toInt(),
             progress = 30,
-            remainingTime = "30 perc"
+            remainingTimeMinutes = 30
         )
 
         val nextCourse = NextCourseDetail(
@@ -709,7 +739,10 @@ fun HomeScreenPreview() {
             endTime = LocalDateTime.now().plusHours(3),
             location = "BA.F.02",
             color = 0xFF4285F4.toInt(),
-            timeUntilEvent = "1 óra múlva"
+            timeUntilEvent = TimeDuration(
+                value = 1,
+                unit = TimeDuration.Unit.DAYS
+            )
         )
 
         HomeContent(

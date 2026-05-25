@@ -1,10 +1,11 @@
-package hu.kocsisgeri.betterneptun.localization
+package hu.kocsisgeri.betterneptun.localization.service
 
-import android.content.Context
+import hu.kocsisgeri.betterneptun.domain.initializable.Initializable
 import hu.kocsisgeri.betterneptun.domain.model.localization.Language
 import hu.kocsisgeri.betterneptun.domain.model.localization.LocalizationDictionary
 import hu.kocsisgeri.betterneptun.domain.repository.localization.LocalizationRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
+import hu.kocsisgeri.betterneptun.domain.service.Localization
 import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,10 +13,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 
 internal class LocalizationServiceImpl(
-    private val context: Context,
     private val localizationRepository: LocalizationRepository,
     private val settingsRepository: SettingsRepository,
-): LocalizationService {
+): LocalizationService, Initializable {
 
     private val allDictionaries = MutableStateFlow(emptyList<LocalizationDictionary>())
 
@@ -56,39 +56,22 @@ internal class LocalizationServiceImpl(
         settingsRepository.saveLanguage(languageKey)
     }
 
-    override fun localized(id: Int, vararg args: String): String {
-        val key = context.getString(id)
+    override fun localized(key: Localization, vararg args: String): String {
         val localizedString = currentDictionary.value
-            .localizations[key]
+            .localizations[key.key]
             ?.format(*args)
 
-        return localizedString?: key
-    }
-
-    override fun localized(key: String, vararg args: String): String {
-        val localizedString = currentDictionary.value
-            .localizations[key]
-            ?.format(*args)
-
-        return localizedString?: key
+        return localizedString?: key.defaultValue
     }
 }
 
-internal fun defaultLocalizationService(context: Context) = object: LocalizationService {
+internal fun defaultLocalizationService() = object: LocalizationService {
     override val languages: StateFlow<List<Language>> =
         MutableStateFlow(listOf(Language.DEFAULT))
 
     override suspend fun changeLanguage(languageKey: String) {}
 
-    override fun localized(key: String, vararg args: String): String {
-        return key
+    override fun localized(key: Localization, vararg args: String): String {
+        return key.defaultValue.format(*args)
     }
-
-    override fun localized(id: Int, vararg args: String): String {
-        return context.getString(id)
-    }
-
-    override val isInitialized: StateFlow<Boolean> = MutableStateFlow(true)
-
-    override suspend fun initialize() {}
 }
