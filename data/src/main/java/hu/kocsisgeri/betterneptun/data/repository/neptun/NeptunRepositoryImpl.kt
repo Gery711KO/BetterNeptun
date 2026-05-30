@@ -192,15 +192,6 @@ internal class NeptunRepositoryImpl(
         }
     }
 
-    override fun purge() {
-        remoteEvents.value = emptyList()
-        unreadMessagesCount.value = null
-        subjects.value = ApiResult.Loading
-        terms.value = ApiResult.Loading
-        averages.value = ApiResult.Loading
-        currentMessagePage = 1
-    }
-
     override suspend fun addLocalEvent(event: CalendarItem.LocalEvent) {
         withContext(ioDispatcher) {
             localDataSource.localEventsDb.insertOne(event.toEntity())

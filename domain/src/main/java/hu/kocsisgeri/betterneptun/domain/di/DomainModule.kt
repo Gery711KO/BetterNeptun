@@ -4,9 +4,9 @@ import hu.kocsisgeri.betterneptun.domain.usecase.home.FetchUnreadMessagesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetCurrentCoursesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetNextCourseUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetStudentDataUseCase
-import hu.kocsisgeri.betterneptun.domain.usecase.login.LogOutUseCase
-import hu.kocsisgeri.betterneptun.domain.usecase.login.LoginUseCase
-import hu.kocsisgeri.betterneptun.domain.usecase.login.SilentLoginUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.auth.LoginUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.auth.LogoutUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.auth.SilentLoginUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.messages.GetMessageDetailUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.messages.GetMessagesPagerUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.messages.LoadMoreMessagesUseCase
@@ -29,9 +29,9 @@ import org.koin.dsl.module
 
 val domainModule = module {
 
-    factoryOf(::LogOutUseCase)
     factoryOf(::LoginUseCase)
     factoryOf(::SilentLoginUseCase)
+    factoryOf(::LogoutUseCase)
 
     factoryOf(::FetchUnreadMessagesUseCase)
     factoryOf(::GetCurrentCoursesUseCase)

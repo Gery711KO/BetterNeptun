@@ -43,10 +43,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +57,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.common.utils.DateUtils
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
@@ -69,6 +70,7 @@ import hu.kocsisgeri.betterneptun.ui.core.composable.ScrollBar
 import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.destination.MessageDetailDestination
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -106,18 +108,18 @@ fun MessagesContent(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     val shouldLoadMore by remember {
-        derivedStateOf {
-            val lastVisibleItemIndex =
-                listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
-            val totalItemsCount = listState.layoutInfo.totalItemsCount
+        snapshotFlow { listState.layoutInfo }.map { info ->
+            val lastVisibleItemIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val totalItemsCount = info.totalItemsCount
             lastVisibleItemIndex >= totalItemsCount - 5 && totalItemsCount > 0
         }
-    }
+    }.collectAsStateWithLifecycle(
+        initialValue = false,
+        minActiveState = Lifecycle.State.RESUMED
+    )
 
     LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) {
-            onLoadMore()
-        }
+        if (shouldLoadMore) onLoadMore()
     }
 
     Scaffold(

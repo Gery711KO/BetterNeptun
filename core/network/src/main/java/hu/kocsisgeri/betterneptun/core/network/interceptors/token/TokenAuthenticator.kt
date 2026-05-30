@@ -1,6 +1,6 @@
 package hu.kocsisgeri.betterneptun.core.network.interceptors.token
 
-import hu.kocsisgeri.betterneptun.domain.token.LogoutRequester
+import hu.kocsisgeri.betterneptun.domain.auth.LogoutRequester
 import hu.kocsisgeri.betterneptun.domain.token.TokenManager
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator

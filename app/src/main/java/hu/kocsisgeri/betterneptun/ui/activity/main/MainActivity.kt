@@ -27,7 +27,6 @@ import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
-import hu.kocsisgeri.betterneptun.domain.token.LogoutRequestListener
 import hu.kocsisgeri.betterneptun.localization.ProvideLocalization
 import hu.kocsisgeri.betterneptun.localization.rememberLocalizationProviderScope
 import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
@@ -55,19 +54,16 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
 
     override val scope: Scope by activityRetainedScope()
 
-    private val neptunRepository: NeptunRepository by inject()
-    private val settingsRepository: SettingsRepository by inject()
-
-    private val logoutRequestListener: LogoutRequestListener by inject()
-
     private val navigator: Navigator by inject()
     private val entryProvider by entryProvider<NavKey>()
 
-    private val notificationScheduler: NotificationScheduler by inject()
-    private val permissionHandler: PermissionHandler by inject()
-
     private val localizationService: LocalizationService by inject()
+    private val notificationScheduler: NotificationScheduler by inject()
 
+    private val neptunRepository: NeptunRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
+
+    private val permissionHandler: PermissionHandler by inject()
     private val permissions by lazy {
         permissionHandler.getPermissions(this)
     }
@@ -80,15 +76,13 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
             splashScreenView.remove()
         }
 
+        startUserRelatedActions()
+
         enableEdgeToEdge()
         setContent {
             NonContentExtras()
             MainContent()
         }
-
-        handleLogout()
-        handleNotificationScheduling()
-        handleThemeChange()
     }
 
     @Composable
@@ -145,7 +139,7 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
         }
     }
 
-    private fun handleNotificationScheduling() {
+    private fun startUserRelatedActions() {
         combine(
             neptunRepository.events,
             settingsRepository.notificationDelay,
@@ -177,15 +171,7 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
                 Timber.tag("Alarm").d("Needs permissions")
             }
         }.launchIn(lifecycleScope)
-    }
 
-    private fun handleLogout() {
-        logoutRequestListener.onLogoutRequested.onEach {
-            navigator.navigateToInclusive(LoginDestination)
-        }.launchIn(lifecycleScope)
-    }
-
-    private fun handleThemeChange() {
         settingsRepository.storedTheme.onEach {
             AppCompatDelegate.setDefaultNightMode(it.toAppCompatMode())
         }.launchIn(lifecycleScope)

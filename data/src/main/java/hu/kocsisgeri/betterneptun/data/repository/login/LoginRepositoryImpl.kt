@@ -9,7 +9,6 @@ import hu.kocsisgeri.betterneptun.data.util.runApiCall
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +34,9 @@ internal class LoginRepositoryImpl(
     }
 
     override fun login(neptunCode: String, password: String) = runApiCall(
-        onResult = { studentData.value = it },
+        onResult = { data ->
+            studentData.value = data
+        },
         block = {
             networkDataSource.getUserInfo().data.let {
                 StudentData(
@@ -80,9 +81,9 @@ internal class LoginRepositoryImpl(
         )
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override fun purge() {
+    override suspend fun purge() {
         studentData.value = null
         shouldAutoLogin.resetReplayCache()
+        localDataSource.purge()
     }
 }

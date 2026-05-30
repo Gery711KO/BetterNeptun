@@ -2,7 +2,6 @@ package hu.kocsisgeri.betterneptun.ui.screen.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.gestures.snapping.snapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +12,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.columns
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -28,6 +25,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,7 +46,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -76,6 +74,8 @@ import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurer
+import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurerScope
 import hu.kocsisgeri.betterneptun.ui.destination.MessagesDestination
 import hu.kocsisgeri.betterneptun.ui.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.destination.SettingsDestination
@@ -197,25 +197,30 @@ private fun PermissionDisclaimerCarousel(
         }
     }
 
+    val lazyListState = rememberPagerState { visibleDisclaimers.size }
+
     if (visibleDisclaimers.isNotEmpty()) {
-        LazyRow(
-            modifier = modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            contentPadding = PaddingValues(horizontal = 12.dp)
-        ) {
-            items(visibleDisclaimers) { permission ->
-                PermissionDisclaimerCard(
-                    disclaimer = permission.disclaimer,
-                    onRequest = { onLaunchPermissionRequest(permission) },
-                    modifier = Modifier.fillParentMaxSize()
-                )
+        SizeMeasurer {
+            HorizontalPager(
+                pageSpacing = 10.dp,
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                state = lazyListState,
+                modifier = modifier.fillMaxWidth(),
+            ) { page ->
+                visibleDisclaimers[page].let { permission ->
+                    PermissionDisclaimerCard(
+                        disclaimer = permission.disclaimer,
+                        onRequest = { onLaunchPermissionRequest(permission) },
+                        modifier = Modifier.fillAvailableSpace()
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun PermissionDisclaimerCard(
+private fun SizeMeasurerScope.PermissionDisclaimerCard(
     disclaimer: PermissionDisclaimer,
     onRequest: () -> Unit,
     modifier: Modifier = Modifier
@@ -243,6 +248,7 @@ private fun PermissionDisclaimerCard(
                 color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
             )
             Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.weight(1f, isSizeMeasured))
             Button(
                 onClick = onRequest,
                 modifier = Modifier.align(Alignment.End),

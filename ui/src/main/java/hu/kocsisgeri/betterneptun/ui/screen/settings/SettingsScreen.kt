@@ -45,7 +45,6 @@ import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.BuildConfig
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -65,10 +64,7 @@ fun SettingsScreen(
         onThemeChange = viewModel::saveTheme,
         onNotificationDelayChange = viewModel::saveNotificationDelay,
         onLanguageChange = viewModel::changeLanguage,
-        onLogout = {
-            viewModel.logout()
-            navigator.navigateToInclusive(LoginDestination)
-        },
+        onLogout = viewModel::logout,
         onBackClick = navigator::navigateBack
     )
 }
@@ -323,14 +319,13 @@ fun InfoRow(label: String, value: String) {
 @Composable
 fun LogoutButton(onClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth(0.7f)
-            .clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth(0.7f),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.errorContainer,
             contentColor = MaterialTheme.colorScheme.onErrorContainer
-        )
+        ),
+        onClick = onClick
     ) {
         Column(
             modifier = Modifier

@@ -15,8 +15,6 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.getPercent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.onEach
-import timber.log.Timber
 
 class HomeViewModel(
     private val clockTickReceiver: ClockMinutesTickReceiver,
@@ -37,9 +35,7 @@ class HomeViewModel(
             remainingTimeMinutes = item.endTime.getTimeLeft(),
             color = item.color
         )
-    }.repeatEveryMinute().onEach {
-        Timber.tag("REMAP").d("$it")
-    }.stateWhileSubscribed(emptyList())
+    }.repeatEveryMinute().stateWhileSubscribed(emptyList())
 
     val nextCourse = getNextCourseUseCase { event ->
         NextCourseDetail(
@@ -50,9 +46,7 @@ class HomeViewModel(
             color = event.color,
             timeUntilEvent = event.startTime.getTimeUntil()
         )
-    }.repeatEveryMinute().onEach {
-        Timber.tag("REMAP").d("$it")
-    }.stateWhileSubscribed(null)
+    }.repeatEveryMinute().stateWhileSubscribed(null)
 
     val studentData = getStudentDataUseCase().stateWhileSubscribed()
 

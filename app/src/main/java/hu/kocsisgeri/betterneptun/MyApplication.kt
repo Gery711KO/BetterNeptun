@@ -3,11 +3,13 @@ package hu.kocsisgeri.betterneptun
 import android.app.Application
 import hu.kocsisgeri.betterneptun.core.database.di.databaseModule
 import hu.kocsisgeri.betterneptun.core.network.di.networkModule
-import hu.kocsisgeri.betterneptun.data.di.dataModule
+import hu.kocsisgeri.betterneptun.data.di.persistentDataModule
+import hu.kocsisgeri.betterneptun.data.di.userRelatedDataModule
 import hu.kocsisgeri.betterneptun.di.appModule
 import hu.kocsisgeri.betterneptun.di.permissionModule
 import hu.kocsisgeri.betterneptun.domain.di.domainModule
 import hu.kocsisgeri.betterneptun.localization.di.localizationModule
+import hu.kocsisgeri.betterneptun.ui.di.contractsModule
 import hu.kocsisgeri.betterneptun.ui.di.navigationModule
 import hu.kocsisgeri.betterneptun.ui.di.uiModule
 import org.koin.android.ext.koin.androidContext
@@ -15,9 +17,9 @@ import org.koin.core.context.GlobalContext.startKoin
 import timber.log.Timber
 
 open class MyApplication : Application() {
+
     override fun onCreate() {
         super.onCreate()
-
         startKoin()
         initLogging()
     }
@@ -37,11 +39,13 @@ open class MyApplication : Application() {
         internal val koinModules = listOf(
             networkModule,
             databaseModule,
-            dataModule,
+            userRelatedDataModule,
+            persistentDataModule,
             domainModule,
             localizationModule,
             navigationModule,
             uiModule,
+            contractsModule,
             permissionModule,
             appModule,
         )

@@ -2,7 +2,7 @@ package hu.kocsisgeri.betterneptun.ui.screen.login
 
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
-import hu.kocsisgeri.betterneptun.domain.usecase.login.LoginUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.auth.LoginUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +37,7 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ComposeViewModel(
                     password = password.value,
                     stayLoggedIn = stayLoggedIn.value,
                 )
-            ) { result ->
+            ).collect { result ->
                 when(result) {
                     is LoginUseCase.Result.Error -> {
                         forcedState.tryEmit(LoginState.Error(result.message))

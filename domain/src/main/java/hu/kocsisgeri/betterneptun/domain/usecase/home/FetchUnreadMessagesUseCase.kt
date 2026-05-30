@@ -1,17 +1,14 @@
 package hu.kocsisgeri.betterneptun.domain.usecase.home
 
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.callbackFlow
+import hu.kocsisgeri.betterneptun.domain.usecase.UseCase
 import kotlinx.coroutines.flow.first
 
-class FetchUnreadMessagesUseCase(private val neptunRepository: NeptunRepository) {
+class FetchUnreadMessagesUseCase(private val neptunRepository: NeptunRepository): UseCase() {
 
-    operator fun invoke() = callbackFlow {
+    operator fun invoke() = lockedFlow {
         neptunRepository.fetchUnreadMessages()
 
-        send(neptunRepository.unreadMessagesCount.first())
-
-        awaitClose()
+        emit(neptunRepository.unreadMessagesCount.first())
     }
 }

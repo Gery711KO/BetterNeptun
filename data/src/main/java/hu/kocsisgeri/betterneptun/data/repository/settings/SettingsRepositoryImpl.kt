@@ -53,10 +53,6 @@ internal class SettingsRepositoryImpl(
         )
     }
 
-    override suspend fun purgeLocalData() {
-        localDataSource.purge()
-    }
-
     companion object {
 
         private val THEME_KEY =

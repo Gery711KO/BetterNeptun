@@ -1,27 +1,27 @@
-package hu.kocsisgeri.betterneptun.domain.usecase.login
+package hu.kocsisgeri.betterneptun.domain.usecase.auth
 
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.domain.usecase.UseCase
 import kotlinx.coroutines.flow.first
 
-class SilentLoginUseCase(private val loginRepository: LoginRepository): UseCase() {
+class SilentLoginUseCase(
+    private val loginRepository: LoginRepository,
+): UseCase() {
 
-    suspend operator fun invoke(
-        onResult: (Result) -> Unit,
-    ) = withLock {
-        onResult(Result.Loading)
+    operator fun invoke() = lockedFlow {
+        emit(Result.Loading)
         loginRepository.shouldAutoLogin.first().let { autoLogin ->
             if (autoLogin) {
                 loginRepository.silentLogin().collect { result ->
                     when (result) {
-                        is ApiResult.Loading -> onResult(Result.Loading)
-                        is ApiResult.Error -> onResult(Result.NavigateToLogin)
-                        is ApiResult.Success -> onResult(Result.NavigateToHome)
+                        is ApiResult.Loading -> emit(Result.Loading)
+                        is ApiResult.Error -> emit(Result.NavigateToLogin)
+                        is ApiResult.Success -> emit(Result.NavigateToHome)
                     }
                 }
             } else {
-                onResult(Result.NavigateToLogin)
+                emit(Result.NavigateToLogin)
             }
         }
     }

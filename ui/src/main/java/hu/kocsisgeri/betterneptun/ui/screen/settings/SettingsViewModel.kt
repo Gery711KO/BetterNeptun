@@ -5,19 +5,17 @@ import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.model.localization.Language
 import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
-import hu.kocsisgeri.betterneptun.domain.usecase.login.LogOutUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.auth.LogoutUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.settings.GetStoredNotificationDelayUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.settings.GetStoredThemeUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.settings.SaveSettingsUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 
 class SettingsViewModel(
     private val localizationService: LocalizationService,
-    private val logOutUseCase: LogOutUseCase,
     private val saveSettingsUseCase: SaveSettingsUseCase,
+    private val logoutUseCase: LogoutUseCase,
     getStoredNotificationDelayUseCase: GetStoredNotificationDelayUseCase,
     getStoredThemeUseCase: GetStoredThemeUseCase,
 ) : ComposeViewModel() {
@@ -49,8 +47,8 @@ class SettingsViewModel(
     }
 
     fun logout() {
-        CoroutineScope(Dispatchers.IO).launchReportingErrors {
-            logOutUseCase()
+        viewModelScope.launchReportingErrors {
+            logoutUseCase()
         }
     }
 }
