@@ -22,15 +22,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.rows
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Event
@@ -60,6 +59,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,22 +72,22 @@ import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurer
 import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurerScope
+import hu.kocsisgeri.betterneptun.ui.core.permission.PermissionHandler
+import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
+import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
+import hu.kocsisgeri.betterneptun.ui.core.permission.rememberPermissionLauncher
+import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.destination.MessagesDestination
 import hu.kocsisgeri.betterneptun.ui.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.destination.SettingsDestination
 import hu.kocsisgeri.betterneptun.ui.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.destination.TimetableDestination
-import hu.kocsisgeri.betterneptun.ui.core.permission.PermissionHandler
-import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
-import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
-import hu.kocsisgeri.betterneptun.ui.core.permission.rememberPermissionLauncher
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.time.LocalDateTime
@@ -144,38 +144,71 @@ private fun HomeContent(
         onRefresh = onRefresh
     )
 
+    val visibleDisclaimers by remember(permissions) {
+        derivedStateOf {
+            permissions.filter {
+                it.permissionState != PermissionData.State.Granted
+            }
+        }
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
             .pullRefresh(pullRefreshState),
     ) { padding ->
-        Box(modifier = Modifier.padding(padding)) {
-            Column(
+        Box {
+            LazyColumn(
+                contentPadding = padding,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(vertical = 16.dp)
             ) {
-                Header(
-                    studentData = studentData,
-                    unreadMessages = unreadMessages,
-                    onNavigateToScreen = onNavigate
-                )
-                PermissionDisclaimerCarousel(
-                    permissions = permissions,
-                    onLaunchPermissionRequest = onLaunchPermissionRequest
-                )
-                CurrentlyOngoingCourses(currentCourses)
-                NextCourseCard(nextCourseState)
-                NavigationGrid(onNavigate)
+                item("HEADER") {
+                    Header(
+                        studentData = studentData,
+                        unreadMessages = unreadMessages,
+                        onNavigateToScreen = onNavigate,
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+                if (visibleDisclaimers.isNotEmpty()) item("DISCLAIMERS") {
+                    PermissionDisclaimerCarousel(
+                        permissions = visibleDisclaimers,
+                        onLaunchPermissionRequest = onLaunchPermissionRequest,
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+                if (currentCourses.isNotEmpty()) item("ONGOING_COURSE") {
+                    CurrentlyOngoingCourses(
+                        currentCourses = currentCourses,
+                        modifier = Modifier.animateItem(),
+                        onCourseClick = { onNavigate(TimetableDestination(it)) }
+                    )
+                }
+                if (nextCourseState != null) item("NEXT_COURSE") {
+                    NextCourseCard(
+                        course = nextCourseState,
+                        modifier = Modifier.animateItem(),
+                        onCourseClick = { onNavigate(TimetableDestination(it)) }
+                    )
+                }
+                item("NAVIGATION_GRID") {
+                    NavigationGrid(
+                        onNavigate = onNavigate,
+                        modifier = Modifier.animateItem()
+                    )
+                }
             }
 
             PullRefreshIndicator(
                 refreshing = isRefreshing,
                 state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter),
+                modifier = Modifier
+                    .padding(padding)
+                    .align(Alignment.TopCenter),
                 backgroundColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.primary
             )
@@ -189,17 +222,9 @@ private fun PermissionDisclaimerCarousel(
     modifier: Modifier = Modifier,
     onLaunchPermissionRequest: (PermissionData) -> Unit,
 ) {
-    val visibleDisclaimers by remember(permissions) {
-        derivedStateOf {
-            permissions.filter {
-                it.permissionState != PermissionData.State.Granted
-            }
-        }
-    }
+    val lazyListState = rememberPagerState { permissions.size }
 
-    val lazyListState = rememberPagerState { visibleDisclaimers.size }
-
-    if (visibleDisclaimers.isNotEmpty()) {
+    if (permissions.isNotEmpty()) {
         SizeMeasurer {
             HorizontalPager(
                 pageSpacing = 10.dp,
@@ -207,7 +232,7 @@ private fun PermissionDisclaimerCarousel(
                 state = lazyListState,
                 modifier = modifier.fillMaxWidth(),
             ) { page ->
-                visibleDisclaimers[page].let { permission ->
+                permissions[page].let { permission ->
                     PermissionDisclaimerCard(
                         disclaimer = permission.disclaimer,
                         onRequest = { onLaunchPermissionRequest(permission) },
@@ -269,49 +294,45 @@ private fun SizeMeasurerScope.PermissionDisclaimerCard(
 
 @Composable
 @OptIn(ExperimentalGridApi::class)
-private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
+private fun NavigationGrid(
+    modifier: Modifier = Modifier,
+    onNavigate: (NavKey) -> Unit
+) {
     Grid(
         config = {
             columns(
                 GridTrackSize.Percentage(0.5f),
                 GridTrackSize.Percentage(0.5f),
             )
-            rows(
-                GridTrackSize.MaxContent,
-            )
+            rows(GridTrackSize.MaxContent)
 
             gap(8.dp)
         },
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
     ) {
         NavButton(
-            modifier = Modifier.gridItem(row = 1, column = 1),
             icon = painterResource(id = R.drawable.ic_mail),
             text = localized(LocalizationKey.HOME_MENU_MESSAGES),
             onClick = { onNavigate(MessagesDestination) }
         )
         NavButton(
-            modifier = Modifier.gridItem(row = 1, column = 2),
             icon = painterResource(id = R.drawable.ic_calendar),
             text = localized(LocalizationKey.HOME_MENU_TIMETABLE),
-            onClick = { onNavigate(TimetableDestination) }
+            onClick = { onNavigate(TimetableDestination(null)) }
         )
         NavButton(
-            modifier = Modifier.gridItem(row = 2, column = 1),
             icon = painterResource(id = R.drawable.ic_courses),
             text = localized(LocalizationKey.HOME_MENU_COURSES),
             onClick = { onNavigate(SubjectsDestination) }
         )
         NavButton(
-            modifier = Modifier.gridItem(row = 2, column = 2),
             icon = painterResource(id = R.drawable.ic_semesters),
             text = localized(LocalizationKey.HOME_MENU_SEMESTERS),
             onClick = { onNavigate(SemestersDestination) }
         )
         NavButton(
-            modifier = Modifier.gridItem(row = 3, column = 1),
             icon = painterResource(id = R.drawable.ic_exams),
             text = localized(LocalizationKey.HOME_MENU_EXAMS),
             isEnabled = false,
@@ -319,7 +340,6 @@ private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
             onClick = { /* TODO */ }
         )
         NavButton(
-            modifier = Modifier.gridItem(row = 3, column = 2),
             icon = painterResource(id = R.drawable.ic_schedule),
             text = localized(LocalizationKey.HOME_MENU_PERIODS),
             isEnabled = false,
@@ -330,12 +350,16 @@ private fun NavigationGrid(onNavigate: (NavKey) -> Unit) {
 }
 
 @Composable
-private fun CurrentlyOngoingCourses(currentCourses: List<CurrentCourseDetail>) {
+private fun CurrentlyOngoingCourses(
+    currentCourses: List<CurrentCourseDetail>,
+    modifier: Modifier = Modifier,
+    onCourseClick: (id: Long) -> Unit,
+) {
     if (currentCourses.isNotEmpty()) {
         val listState = rememberLazyListState()
 
         LazyRow(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = modifier.fillMaxWidth(),
             state = listState,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             contentPadding = PaddingValues(horizontal = 12.dp),
@@ -344,7 +368,8 @@ private fun CurrentlyOngoingCourses(currentCourses: List<CurrentCourseDetail>) {
             items(currentCourses) { course ->
                 CurrentCourseItem(
                     course = course,
-                    modifier = Modifier.fillParentMaxWidth()
+                    modifier = Modifier.fillParentMaxWidth(),
+                    onCourseClick = onCourseClick
                 )
             }
         }
@@ -355,10 +380,11 @@ private fun CurrentlyOngoingCourses(currentCourses: List<CurrentCourseDetail>) {
 private fun Header(
     studentData: StudentData?,
     unreadMessages: Int,
+    modifier: Modifier = Modifier,
     onNavigateToScreen: (NavKey) -> Unit,
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
             .height(intrinsicSize = IntrinsicSize.Max),
@@ -381,7 +407,9 @@ private fun Header(
             ) {
                 studentData?.avatar?.let {
                     AvatarImage(
-                        modifier = Modifier.size(42.dp).clip(CircleShape),
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape),
                         avatar = studentData.avatar
                     )
                     Spacer(Modifier.width(12.dp))
@@ -450,6 +478,7 @@ private fun Header(
 fun CurrentCourseItem(
     course: CurrentCourseDetail,
     modifier: Modifier = Modifier,
+    onCourseClick: (id: Long) -> Unit,
 ) {
     Card(
         modifier = modifier,
@@ -457,7 +486,10 @@ fun CurrentCourseItem(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        ),
+        onClick = {
+            onCourseClick(course.id)
+        }
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
@@ -468,7 +500,9 @@ fun CurrentCourseItem(
                     text = localized(LocalizationKey.HOME_ONGOING_COURSE),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 LinearProgressIndicator(
                     progress = { course.progress / 100f },
@@ -500,7 +534,9 @@ fun CurrentCourseItem(
                             text = course.title.trim(),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                     if (course.location.isNullOrBlank().not()) {
@@ -516,7 +552,9 @@ fun CurrentCourseItem(
                             Text(
                                 text = course.location.trim(),
                                 fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         }
                     }
@@ -546,7 +584,11 @@ fun CurrentCourseItem(
 }
 
 @Composable
-fun NextCourseCard(course: NextCourseDetail?) {
+fun NextCourseCard(
+    course: NextCourseDetail?,
+    modifier: Modifier = Modifier,
+    onCourseClick: (id: Long) -> Unit,
+) {
     course?.let {
         Card(
             shape = RoundedCornerShape(20.dp),
@@ -554,7 +596,10 @@ fun NextCourseCard(course: NextCourseDetail?) {
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
-            modifier = Modifier
+            onClick = {
+                onCourseClick(it.id)
+            },
+            modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp)
         ) {
@@ -570,7 +615,7 @@ fun NextCourseCard(course: NextCourseDetail?) {
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text =  localized(LocalizationKey.HOME_NEXT_COURSE),
+                            text = localized(LocalizationKey.HOME_NEXT_COURSE),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -590,10 +635,12 @@ fun NextCourseCard(course: NextCourseDetail?) {
                                         LocalizationKey.HOME_NEXT_COURSE_MINUTES,
                                         course.timeUntilEvent.value.toString()
                                     )
+
                                     TimeDuration.Unit.HOURS -> localized(
                                         LocalizationKey.HOME_NEXT_COURSE_HOURS,
                                         course.timeUntilEvent.value.toString()
                                     )
+
                                     TimeDuration.Unit.DAYS -> localized(
                                         LocalizationKey.HOME_NEXT_COURSE_DAYS,
                                         course.timeUntilEvent.value.toString()
@@ -615,7 +662,9 @@ fun NextCourseCard(course: NextCourseDetail?) {
                             Text(
                                 text = course.title.trim(),
                                 fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         }
                         if (course.location.isNullOrBlank().not()) {
@@ -732,6 +781,7 @@ fun NavButton(
 fun HomeScreenPreview() {
     BetterNeptunTheme {
         val currentCourse = CurrentCourseDetail(
+            id = 11,
             title = "Mobil szoftverfejlesztés",
             location = "BA.F.01",
             color = 0xFF4285F4.toInt(),
@@ -740,6 +790,7 @@ fun HomeScreenPreview() {
         )
 
         val nextCourse = NextCourseDetail(
+            id = 16,
             title = "Full stack fejlesztés",
             startTime = LocalDateTime.now().plusHours(1),
             endTime = LocalDateTime.now().plusHours(3),

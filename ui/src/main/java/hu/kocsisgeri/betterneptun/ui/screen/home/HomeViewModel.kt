@@ -27,18 +27,20 @@ class HomeViewModel(
     val refresher = MutableSharedFlow<Unit>(0, 10)
     val refreshProgress = MutableSharedFlow<ApiResult<Unit>>(1, 50)
 
-    val currentCourses = getCurrentCoursesUseCase { item ->
+    val currentCourses = getCurrentCoursesUseCase { event ->
         CurrentCourseDetail(
-            title = item.title,
-            location = item.location,
-            progress = item.getPercent(),
-            remainingTimeMinutes = item.endTime.getTimeLeft(),
-            color = item.color
+            id = event.id,
+            title = event.title,
+            location = event.location,
+            progress = event.getPercent(),
+            remainingTimeMinutes = event.endTime.getTimeLeft(),
+            color = event.color
         )
     }.repeatEveryMinute().stateWhileSubscribed(emptyList())
 
     val nextCourse = getNextCourseUseCase { event ->
         NextCourseDetail(
+            id = event.id,
             title = event.title,
             location = event.location,
             startTime = event.startTime,

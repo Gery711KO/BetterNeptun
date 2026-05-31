@@ -9,8 +9,10 @@ import hu.kocsisgeri.betterneptun.ui.screen.settings.SettingsViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.SubjectsViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.TimetableViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.loading.LoadingViewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import org.koin.plugin.module.dsl.viewModel
 
 val uiModule = module {
     viewModelOf(::LoadingViewModel)
@@ -18,7 +20,14 @@ val uiModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::MessagesViewModel)
     viewModelOf(::MessageDetailViewModel)
-    viewModelOf(::TimetableViewModel)
+    viewModel {
+        TimetableViewModel(
+            defaultSelected = it.getOrNull(),
+            getEventsUseCase = get(),
+            addLocalEventsUseCase = get(),
+            deleteLocalEventUseCase = get(),
+        )
+    }
     viewModelOf(::SettingsViewModel)
     viewModelOf(::SubjectsViewModel)
     viewModelOf(::SemestersViewModel)

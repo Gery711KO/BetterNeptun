@@ -4,6 +4,7 @@ import hu.kocsisgeri.betterneptun.domain.model.TimeDuration
 import java.time.LocalDateTime
 
 data class NextCourseDetail(
+    val id: Long,
     val title: String,
     val location: String?,
     val startTime: LocalDateTime,

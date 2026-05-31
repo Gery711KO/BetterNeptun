@@ -11,12 +11,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentWithReceiverOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -26,11 +28,20 @@ fun SizeMeasurer(
     content: @Composable SizeMeasurerScope.() -> Unit
 ) {
     val scope = rememberSaveable(saver = SizeMeasurerScopeImpl.SAVER) { SizeMeasurerScopeImpl() }
+    val unmodifiedScope = remember { SizeMeasurerScopeImpl() }
 
-    Layout(
-        content = { Box { content(scope) } }
-    ) { measurables, constraints ->
-        val measured = measurables.first().measure(constraints)
+    val movableContent = remember {
+        movableContentWithReceiverOf<SizeMeasurerScope> { Box { content() } }
+    }
+
+    SubcomposeLayout { constraints ->
+        val measured = subcompose(SizeMeasurerScopeImpl.Slot.MEASURE) {
+            movableContent(unmodifiedScope)
+        }.first().measure(constraints)
+
+        val placed = subcompose(SizeMeasurerScopeImpl.Slot.PLACE) {
+            movableContent(scope)
+        }.first().measure(constraints)
 
         scope.size = DpSize(
             width = measured.width.toDp(),
@@ -41,7 +52,7 @@ fun SizeMeasurer(
             height = measured.height,
             width = measured.width
         ) {
-            measured.place(x = 0, y = 0)
+            placed.place(x = 0, y = 0)
         }
     }
 }
@@ -102,5 +113,10 @@ private class SizeMeasurerScopeImpl : SizeMeasurerScope {
                 }
             }
         )
+    }
+
+    enum class Slot {
+        MEASURE,
+        PLACE
     }
 }

@@ -64,7 +64,9 @@ val navigationModule = module {
         }
 
         navigation<TimetableDestination> {
-            TimetableScreen()
+            TimetableScreen(it.selected)
         }
     }
+
+    factory<Long?> { null }
 }
