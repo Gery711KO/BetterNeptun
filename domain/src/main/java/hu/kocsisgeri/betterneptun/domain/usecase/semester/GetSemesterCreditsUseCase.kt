@@ -4,42 +4,51 @@ import hu.kocsisgeri.betterneptun.domain.model.ChartColor
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.Factory
 
+@Factory
 class GetSemesterCreditsUseCase(private val neptunRepository: NeptunRepository) {
 
-    operator fun <E, S>invoke(
-        mapEntry: (point: Float, credits: Float) -> E,
-        mapDataSet: (entryPoints: List<E>, chartLabel: ChartLabel, chartColor: ChartColor) -> S,
+    operator fun <S> invoke(
+        mapDataSet: (BarData) -> S,
     ) = neptunRepository.terms.map {
         when (it) {
             is ApiResult.Error -> ApiResult.Error(it.error)
             is ApiResult.Loading -> ApiResult.Loading
             is ApiResult.Success -> {
-                val takenCredits = it.data.mapIndexed { index, model ->
-                    mapEntry(
-                        (index + 1).toFloat(),
-                        model.semesterTakenCredits?.toFloat() ?: 0f
+                val credits = it.data.mapIndexed { index, model ->
+                    mapDataSet(
+                        BarData(
+                            title = (index + 1).toString(),
+                            bars = listOf(
+                                BarData.Bar(
+                                    value = (model.semesterTakenCredits?.toDouble() ?: 0.0),
+                                    chartLabel = ChartLabel.TakenCredits,
+                                    chartColor = ChartColor.Primary,
+                                ),
+                                BarData.Bar(
+                                    value = (model.semesterFulfilledCredits?.toDouble() ?: 0.0),
+                                    chartLabel = ChartLabel.FulfilledCredits,
+                                    chartColor = ChartColor.Secondary,
+                                )
+                            )
+                        )
                     )
                 }
-                val acquiredCredits = it.data.mapIndexed { index, model ->
-                    mapEntry(
-                        (index + 1).toFloat(),
-                        model.semesterFulfilledCredits?.toFloat() ?: 0f
-                    )
-                }
-                val takenSet = mapDataSet(
-                    takenCredits,
-                    ChartLabel.TakenCredits,
-                    ChartColor.Primary
-                )
-                val acquiredSet = mapDataSet(
-                    acquiredCredits,
-                    ChartLabel.FulfilledCredits,
-                    ChartColor.Secondary
-                )
-                ApiResult.Success(listOf(takenSet, acquiredSet))
+                ApiResult.Success(credits)
             }
         }
+    }
+
+    data class BarData(
+        val title: String,
+        val bars: List<Bar>,
+    ) {
+        data class Bar(
+            val value: Double,
+            val chartLabel: ChartLabel,
+            val chartColor: ChartColor,
+        )
     }
 
     enum class ChartLabel {

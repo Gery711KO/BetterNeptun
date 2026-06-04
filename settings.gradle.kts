@@ -44,3 +44,4 @@ include(":localization")
 include(":core:database")
 include(":core:network")
 
+include(":ui:navigation")

@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.data.repository.neptun
 
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.PostIdsRequestDto
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.data.mapper.toAvatarDomain
@@ -9,7 +10,6 @@ import hu.kocsisgeri.betterneptun.data.mapper.toEntity
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toSubjectDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toTermDomain
-import hu.kocsisgeri.betterneptun.core.network.model.neptun.PostIdsRequestDto
 import hu.kocsisgeri.betterneptun.data.util.runApiCall
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
@@ -28,7 +28,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
+import org.koin.core.annotation.Singleton
 
+@Singleton(binds = [NeptunRepository::class])
 internal class NeptunRepositoryImpl(
     private val networkDataSource: NetworkDataSource,
     private val localDataSource: LocalDataSource,

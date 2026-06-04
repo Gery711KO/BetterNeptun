@@ -1,19 +1,9 @@
 package hu.kocsisgeri.betterneptun
 
 import android.app.Application
-import hu.kocsisgeri.betterneptun.core.database.di.databaseModule
-import hu.kocsisgeri.betterneptun.core.network.di.networkModule
-import hu.kocsisgeri.betterneptun.data.di.persistentDataModule
-import hu.kocsisgeri.betterneptun.data.di.userRelatedDataModule
-import hu.kocsisgeri.betterneptun.di.appModule
-import hu.kocsisgeri.betterneptun.di.permissionModule
-import hu.kocsisgeri.betterneptun.domain.di.domainModule
-import hu.kocsisgeri.betterneptun.localization.di.localizationModule
-import hu.kocsisgeri.betterneptun.ui.di.contractsModule
-import hu.kocsisgeri.betterneptun.ui.di.navigationModule
-import hu.kocsisgeri.betterneptun.ui.di.uiModule
+import hu.kocsisgeri.betterneptun.di.MyApp
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.GlobalContext.startKoin
+import org.koin.plugin.module.dsl.startKoin
 import timber.log.Timber
 
 open class MyApplication : Application() {
@@ -25,29 +15,14 @@ open class MyApplication : Application() {
     }
 
     open fun startKoin() {
-        startKoin {
+        startKoin<MyApp> {
             androidContext(this@MyApplication)
-            modules(koinModules)
+            printLogger()
         }
+
     }
 
     open fun initLogging() {
         Timber.plant(Timber.DebugTree())
-    }
-
-    companion object {
-        internal val koinModules = listOf(
-            networkModule,
-            databaseModule,
-            userRelatedDataModule,
-            persistentDataModule,
-            domainModule,
-            localizationModule,
-            navigationModule,
-            uiModule,
-            contractsModule,
-            permissionModule,
-            appModule,
-        )
     }
 }

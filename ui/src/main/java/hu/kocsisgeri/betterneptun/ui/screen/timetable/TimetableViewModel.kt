@@ -14,11 +14,13 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.toComposeEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
+import org.koin.core.annotation.KoinViewModel
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.TemporalAdjusters
 
+@KoinViewModel
 class TimetableViewModel(
     defaultSelected: Long?,
     getEventsUseCase: GetEventsUseCase,
@@ -94,21 +96,11 @@ class TimetableViewModel(
     }
 
     fun next() {
-        _selectedDate.update {
-            when (viewMode.value) {
-                ViewMode.WEEK -> it.plusWeeks(1)
-                ViewMode.DAY -> it.plusDays(1)
-            }
-        }
+        _selectedDate.update { it.next(viewMode.value) }
     }
 
     fun previous() {
-        _selectedDate.update {
-            when (viewMode.value) {
-                ViewMode.WEEK -> it.minusWeeks(1)
-                ViewMode.DAY -> it.minusDays(1)
-            }
-        }
+        _selectedDate.update { it.previous(viewMode.value) }
     }
 
     fun setViewMode(mode: ViewMode) {
@@ -119,9 +111,16 @@ class TimetableViewModel(
         mode: ViewMode,
         date: LocalDate
     ): LocalDateRange = when (mode) {
-        ViewMode.WEEK -> {
+        ViewMode.FULL_WEEK -> {
             val monday = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
             val friday = monday.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
+
+            LocalDateRange(monday, friday)
+        }
+
+        ViewMode.WEEK -> {
+            val monday = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            val friday = monday.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY))
 
             LocalDateRange(monday, friday)
         }
@@ -151,14 +150,14 @@ class TimetableViewModel(
 
     private fun LocalDate.previous(viewMode: ViewMode): LocalDate {
         return when(viewMode) {
-            ViewMode.WEEK -> minusWeeks(1)
+            ViewMode.WEEK, ViewMode.FULL_WEEK -> minusWeeks(1)
             ViewMode.DAY -> minusDays(1)
         }
     }
 
     private fun LocalDate.next(viewMode: ViewMode): LocalDate {
         return when(viewMode) {
-            ViewMode.WEEK -> plusWeeks(1)
+            ViewMode.WEEK, ViewMode.FULL_WEEK -> plusWeeks(1)
             ViewMode.DAY -> plusDays(1)
         }
     }

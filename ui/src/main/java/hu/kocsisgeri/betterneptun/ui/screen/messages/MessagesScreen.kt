@@ -64,12 +64,12 @@ import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Message
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
 import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.composable.ScrollBar
 import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.destination.MessageDetailDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject

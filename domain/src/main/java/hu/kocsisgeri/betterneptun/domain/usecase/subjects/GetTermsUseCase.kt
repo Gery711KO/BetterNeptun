@@ -4,7 +4,9 @@ import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Term
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.Factory
 
+@Factory
 class GetTermsUseCase(private val neptunRepository: NeptunRepository) {
 
     operator fun <T> invoke(

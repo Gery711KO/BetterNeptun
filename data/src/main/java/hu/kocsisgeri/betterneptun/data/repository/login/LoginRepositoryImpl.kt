@@ -14,7 +14,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.serializer
+import org.koin.core.annotation.Singleton
 
+@Singleton
 internal class LoginRepositoryImpl(
     private val localDataSource: LocalDataSource,
     private val networkDataSource: NetworkDataSource,

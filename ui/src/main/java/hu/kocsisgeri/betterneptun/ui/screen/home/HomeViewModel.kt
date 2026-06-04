@@ -15,7 +15,9 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.getPercent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class HomeViewModel(
     private val clockTickReceiver: ClockMinutesTickReceiver,
     private val fetchUnreadMessagesUseCase: FetchUnreadMessagesUseCase,

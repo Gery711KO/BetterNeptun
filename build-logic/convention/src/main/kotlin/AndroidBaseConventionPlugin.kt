@@ -1,6 +1,9 @@
 import com.android.build.api.dsl.CommonExtension
+import extensions.config.libs
+import extensions.dependency.applyPluginFromLibs
 import extensions.gradle.configureAndroidEarly
 import extensions.gradle.configureAndroidLate
+import extensions.gradle.koinPluginList
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 

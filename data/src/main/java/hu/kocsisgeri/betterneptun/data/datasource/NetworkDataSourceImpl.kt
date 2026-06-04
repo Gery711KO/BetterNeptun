@@ -4,7 +4,9 @@ import hu.kocsisgeri.betterneptun.core.network.api.MainApiService
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.PostIdsRequestDto
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import org.koin.core.annotation.Singleton
 
+@Singleton
 internal class NetworkDataSourceImpl(
     private val api: MainApiService,
     private val ioDispatcher: CoroutineDispatcher,

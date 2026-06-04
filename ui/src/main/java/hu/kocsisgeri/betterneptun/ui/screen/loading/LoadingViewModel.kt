@@ -4,11 +4,13 @@ import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.domain.initializable.Initializer
 import hu.kocsisgeri.betterneptun.domain.usecase.auth.SilentLoginUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
-import hu.kocsisgeri.betterneptun.ui.destination.HomeDestination
-import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class LoadingViewModel(
     private val initializer: Initializer,
     silentLoginUseCase: SilentLoginUseCase,

@@ -6,10 +6,12 @@ import android.content.Context
 import android.content.Intent
 import hu.kocsisgeri.betterneptun.broadcast.NotificationReceiver
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
+import org.koin.core.annotation.Singleton
 import timber.log.Timber
 import java.time.ZoneId
 import java.util.Date
 
+@Singleton
 class NotificationScheduler {
 
     fun scheduleNotification(context: Context, item: CalendarItem, delayMinutes: Int) {

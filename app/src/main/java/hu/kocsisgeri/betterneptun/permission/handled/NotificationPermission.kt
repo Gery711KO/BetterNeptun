@@ -19,7 +19,9 @@ import hu.kocsisgeri.betterneptun.data.util.get
 import hu.kocsisgeri.betterneptun.data.util.put
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
+import org.koin.core.annotation.Singleton
 
+@Singleton
 class NotificationPermission(
     private val sharedPreferences: SharedPreferences,
 ) : PermissionData() {

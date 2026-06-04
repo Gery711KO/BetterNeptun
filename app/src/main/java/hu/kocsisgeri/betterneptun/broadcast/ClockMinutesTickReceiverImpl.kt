@@ -8,7 +8,9 @@ import hu.kocsisgeri.betterneptun.ui.core.helper.ClockMinutesTickReceiver
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import org.koin.core.annotation.Factory
 
+@Factory
 class ClockMinutesTickReceiverImpl(context: Context): ClockMinutesTickReceiver {
 
     override val minuteTick: Flow<Unit> = context.minuteTickFlow()

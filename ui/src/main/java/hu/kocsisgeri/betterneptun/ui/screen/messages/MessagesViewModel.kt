@@ -7,7 +7,9 @@ import hu.kocsisgeri.betterneptun.domain.usecase.messages.RefreshMessagesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.messages.GetMessagesPagerUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.messages.LoadMoreMessagesUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class MessagesViewModel(
     getMessagesPagerUseCase: GetMessagesPagerUseCase,
     private val refreshMessagesUseCase: RefreshMessagesUseCase,

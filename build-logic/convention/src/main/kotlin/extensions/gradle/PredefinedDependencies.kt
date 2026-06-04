@@ -8,6 +8,10 @@ val composePluginList: List<String> = listOf(
     "kotlin-compose",
 )
 
+val koinPluginList: List<String> = listOf(
+    "koin-compiler"
+)
+
 val composeDependencies: List<Dependency>
     get() = listOf(
         Dependency(

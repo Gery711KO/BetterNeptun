@@ -1,10 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.screen.semesters
 
 import androidx.lifecycle.viewModelScope
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineDataSet
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.usecase.semester.FetchTermAveragesUseCase
@@ -12,9 +8,14 @@ import hu.kocsisgeri.betterneptun.domain.usecase.semester.FetchTermsUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.semester.GetSemesterAveragesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.semester.GetSemesterCreditsUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
+import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBarData
+import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBars
+import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.LineData
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class SemestersViewModel(
     getSemesterCreditsUseCase: GetSemesterCreditsUseCase,
     getSemesterAveragesUseCase: GetSemesterAveragesUseCase,
@@ -23,22 +24,28 @@ class SemestersViewModel(
 ) : ComposeViewModel() {
 
     val credits = getSemesterCreditsUseCase(
-        mapEntry = { point, credits ->
-            BarEntry(point, credits)
-        },
-        mapDataSet = { entryPoints, chartLabel, chartColor ->
-            BarDataSet(entryPoints, chartLabel.toLabelString()) to chartColor
+        mapDataSet = { barData ->
+            ColumnBars(
+                barLabel = barData.title,
+                bars = barData.bars.map { bar ->
+                    ColumnBarData(
+                        label = bar.chartLabel.toLabelString(),
+                        value = bar.value,
+                        color = bar.chartColor
+                    )
+                }
+            )
         }
     ).stateWhileSubscribed(ApiResult.Loading)
 
     val averages = getSemesterAveragesUseCase(
-        mapEntry = { point, average ->
-            Entry(point, average)
-        },
         mapDataSet = { averageEntries, chartLabel, chartColor ->
-            LineDataSet(averageEntries, chartLabel.toLabelString()).apply {
-                lineWidth = 3f
-            } to chartColor
+            val label = chartLabel.toLabelString()
+            LineData(
+                label = label,
+                points = averageEntries,
+                color = chartColor
+            )
         }
     ).stateWhileSubscribed(ApiResult.Loading)
 

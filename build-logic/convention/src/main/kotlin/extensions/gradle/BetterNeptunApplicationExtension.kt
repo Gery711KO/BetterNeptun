@@ -29,7 +29,6 @@ class BetterNeptunApplicationExtension(private val project: Project) {
         with(project) {
             includeAllSubprojects()
             setupSerialization()
-            setupKoin()
             setupCompose()
             setupNavigation3()
         }

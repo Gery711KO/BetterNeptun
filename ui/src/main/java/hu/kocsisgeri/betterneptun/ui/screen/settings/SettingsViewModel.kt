@@ -11,7 +11,9 @@ import hu.kocsisgeri.betterneptun.domain.usecase.settings.GetStoredThemeUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.settings.SaveSettingsUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import kotlinx.coroutines.flow.StateFlow
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class SettingsViewModel(
     private val localizationService: LocalizationService,
     private val saveSettingsUseCase: SaveSettingsUseCase,

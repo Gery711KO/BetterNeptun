@@ -15,7 +15,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
+import org.koin.core.annotation.Singleton
 
+@Singleton
 internal class LocalDataSourceImpl(
     override val localEventsDb: LocalEventsDatabase,
     private val cache: SharedPreferences,

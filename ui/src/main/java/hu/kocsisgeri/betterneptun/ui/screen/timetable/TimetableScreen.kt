@@ -40,7 +40,7 @@ import de.tobiasschuerg.weekview.data.WeekData
 import de.tobiasschuerg.weekview.data.WeekViewConfig
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.AddEventDialog
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.CourseDetailDialog
@@ -261,10 +261,9 @@ private fun TimeTableScreenTopBar(
                 )
             }
             IconButton(onClick = {
-                val newMode = when (viewMode) {
-                    ViewMode.WEEK -> ViewMode.DAY
-                    ViewMode.DAY -> ViewMode.WEEK
-                }
+                val newMode = ViewMode.entries.find {
+                    viewMode.ordinal + 1 == it.ordinal
+                }?: ViewMode.FULL_WEEK
                 onViewModeChange(newMode)
             }) {
                 Icon(
@@ -309,6 +308,11 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
         ViewMode.WEEK -> {
             val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
             val friday = monday.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY))
+            LocalDateRange(monday, friday)
+        }
+        ViewMode.FULL_WEEK -> {
+            val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            val friday = monday.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
             LocalDateRange(monday, friday)
         }
         ViewMode.DAY -> LocalDateRange(today, today)

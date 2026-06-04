@@ -7,7 +7,9 @@ import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class LoginViewModel(private val loginUseCase: LoginUseCase) : ComposeViewModel() {
 
     private val neptunCode = MutableStateFlow<String?>(null)

@@ -17,6 +17,7 @@ class AndroidLibraryConventionPlugin : AndroidBaseConventionPlugin() {
         target.run {
             pluginManager.apply {
                 apply("com.android.library")
+                apply("betterneptun.android.koin")
             }
 
             extensions.add(

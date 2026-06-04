@@ -1,5 +1,8 @@
 package hu.kocsisgeri.betterneptun.ui.core.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 
 val Black = Color(0xFF000000)
@@ -70,12 +73,15 @@ val DarkSurfaceVariant = Color(0xFF1E1E1E)
 val DarkOnSurfaceVariant = Color(0xFFBDBDBD)
 val DarkOutline = Color(0xFF757575)
 
-// Compatibility/Legacy Colors
-val LightCardBg = Color(0xFFF5F5F5)
-val DarkCardBg = Color(0xFF1E1E1E)
-val DarkBaseFragmentBg = Color(0xFF121212)
-val LightBaseTextColor = Color(0xFF212121)
-val DarkBaseTextColor = Color(0xFFEEEEEE)
-val LightRadioButtonColor = Color(0xFF424242)
-val DarkRadioButtonColor = Color(0xFFE0E0E0)
-val LightBaseButtonBg = Color(0xFF212121)
+@Composable
+fun themeBasedColor(
+    lightColor: Color,
+    darkColor: Color,
+): Color {
+    val isDarkTheme = isSystemInDarkTheme()
+
+    return remember(isDarkTheme) {
+        if (isDarkTheme) darkColor
+        else lightColor
+    }
+}

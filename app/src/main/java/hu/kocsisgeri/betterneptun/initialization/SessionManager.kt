@@ -1,6 +1,5 @@
 package hu.kocsisgeri.betterneptun.initialization
 
-import hu.kocsisgeri.betterneptun.data.di.userRelatedDataModule
 import hu.kocsisgeri.betterneptun.domain.auth.LogoutRequester
 import hu.kocsisgeri.betterneptun.domain.auth.LogoutRegistry
 import hu.kocsisgeri.betterneptun.domain.auth.OnLogoutCallback
@@ -11,9 +10,9 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.koin.core.context.GlobalContext.loadKoinModules
-import org.koin.core.context.GlobalContext.unloadKoinModules
+import org.koin.core.annotation.Singleton
 
+@Singleton
 class SessionManager: LogoutRequester, LogoutRegistry {
 
     private val mutex = Mutex()
@@ -39,7 +38,7 @@ class SessionManager: LogoutRequester, LogoutRegistry {
     }
 
     private fun reloadModules() {
-        unloadKoinModules(userRelatedDataModule)
-        loadKoinModules(userRelatedDataModule)
+//        unloadKoinModules(UserRelatedDataModule().module)
+//        loadKoinModules(UserRelatedDataModule().module)
     }
 }

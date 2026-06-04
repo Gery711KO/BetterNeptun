@@ -5,24 +5,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
@@ -30,32 +16,19 @@ import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
 import hu.kocsisgeri.betterneptun.localization.ProvideLocalization
 import hu.kocsisgeri.betterneptun.localization.rememberLocalizationProviderScope
 import hu.kocsisgeri.betterneptun.notification.NotificationScheduler
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
-import hu.kocsisgeri.betterneptun.ui.core.checkType
 import hu.kocsisgeri.betterneptun.ui.core.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.destination.HomeDestination
-import hu.kocsisgeri.betterneptun.ui.destination.LoadingDestination
-import hu.kocsisgeri.betterneptun.ui.destination.LoginDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
-import org.koin.android.scope.AndroidScopeComponent
-import org.koin.androidx.compose.navigation3.entryProvider
-import org.koin.androidx.scope.activityRetainedScope
-import org.koin.core.annotation.KoinExperimentalAPI
-import org.koin.core.scope.Scope
 import timber.log.Timber
 
-@OptIn(KoinExperimentalAPI::class)
-class MainActivity : AppCompatActivity(), AndroidScopeComponent {
-
-    override val scope: Scope by activityRetainedScope()
+class MainActivity : AppCompatActivity() {
 
     private val navigator: Navigator by inject()
-    private val entryProvider by entryProvider<NavKey>()
 
     private val localizationService: LocalizationService by inject()
     private val notificationScheduler: NotificationScheduler by inject()
@@ -98,43 +71,7 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
 
         BetterNeptunTheme {
             localizationProviderScope.ProvideLocalization {
-                Navigator.DefaultNavDisplay(
-                    navigator = navigator,
-                    entryProvider = entryProvider,
-                    transitionSpec = {
-                        val isFromLoading = initialState.checkType(LoadingDestination)
-                        val isFromLogin = initialState.checkType(LoginDestination)
-                        val isToHome = targetState.checkType(HomeDestination)
-                        val isToLogin = targetState.checkType(LoginDestination)
-
-                        if ((isFromLogin && isToHome) || isToLogin || isFromLoading) {
-                            fadeIn(animationSpec = tween(500)) + slideIntoContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Down,
-                                animationSpec = tween(500, 300)
-                            ) + scaleIn(
-                                initialScale = 0.6f,
-                                animationSpec = tween(500, 300)
-                            ) togetherWith slideOutOfContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Up,
-                                animationSpec = tween(500, 300),
-                            ) + scaleOut(
-                                targetScale = 0.6f,
-                                animationSpec = tween(500)
-                            ) + fadeOut(animationSpec = tween(500, 500))
-                        } else {
-                            slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
-                        }
-                    },
-                    popTransitionSpec = {
-                        slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                    },
-                    predictivePopTransitionSpec = {
-                        slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                    },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
-                )
+                navigator.Content()
             }
         }
     }
@@ -156,7 +93,7 @@ class MainActivity : AppCompatActivity(), AndroidScopeComponent {
                         notificationScheduler.scheduleNotification(
                             context = this,
                             item = event,
-                            delayMinutes =  delay
+                            delayMinutes = delay
                         )
                     }
                 } else {

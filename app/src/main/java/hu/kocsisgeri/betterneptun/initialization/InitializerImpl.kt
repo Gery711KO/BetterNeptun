@@ -9,7 +9,9 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import org.koin.core.annotation.Singleton
 
+@Singleton
 internal class InitializerImpl(private val initializables: List<Initializable>): Initializer {
 
     private val _isInitialized =

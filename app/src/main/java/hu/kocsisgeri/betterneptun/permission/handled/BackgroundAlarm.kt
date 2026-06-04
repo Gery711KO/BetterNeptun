@@ -11,12 +11,13 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import hu.kocsisgeri.betterneptun.R
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
+import org.koin.core.annotation.Singleton
 
-class BackgroundAlarm(
-    appName: String,
-): PermissionData() {
+@Singleton
+class BackgroundAlarm(context: Context): PermissionData() {
 
     override val permission: String = Manifest.permission.SCHEDULE_EXACT_ALARM
     override var permissionState : State by mutableStateOf(State.NotRequested)
@@ -25,7 +26,9 @@ class BackgroundAlarm(
         humanReadablePermissionName = "Háttérműveletek",
         disclaimer = "A háttérműveletek bekapcsolása az értesítések megfelelő működéséhez szükséges, " +
                 "ugyanis az értesítések teljesen lokálisan szerver nélkül kerülnek elküldésre.\n" +
-                "A felugró ablakban keresd ki az $appName appot és engedélyezd a háttérműveleteket."
+                "A felugró ablakban keresd ki az ${
+                    context.getString(R.string.app_name)
+                } appot és engedélyezd a háttérműveleteket."
     )
 
     override fun requestPermission(

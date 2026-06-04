@@ -15,7 +15,7 @@ import org.gradle.kotlin.dsl.getByType
 
 internal const val BETTER_NEPTUN_EXTENSION_NAME = "betterNeptun"
 
-val filteredModules = ProjectModule.entries
+val filteredModules = projectModules
     .filter { it.isParentModule }
     .map { it.path }
     .plus(":app")
@@ -52,12 +52,6 @@ fun Project.setupRoom() {
         add("implementation", libs.findLibrary("androidx.room.runtime").get())
         add("implementation", libs.findLibrary("androidx.room.ktx").get())
         add("ksp", libs.findLibrary("androidx.room.compiler").get())
-    }
-}
-
-fun Project.setupKoin() {
-    dependencies {
-        implementDependencies(libs = libs, dependencyList = koinDependency)
     }
 }
 

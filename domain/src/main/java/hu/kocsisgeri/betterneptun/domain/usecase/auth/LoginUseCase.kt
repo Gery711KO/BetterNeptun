@@ -6,7 +6,9 @@ import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.domain.usecase.UseCase
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.Factory
 
+@Factory
 class LoginUseCase(private val loginRepository: LoginRepository): UseCase() {
 
     operator fun invoke(input: Input) = lockedFlow {

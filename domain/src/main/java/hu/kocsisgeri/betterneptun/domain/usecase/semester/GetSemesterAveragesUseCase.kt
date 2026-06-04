@@ -4,28 +4,27 @@ import hu.kocsisgeri.betterneptun.domain.model.ChartColor
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
 import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.Factory
 
+@Factory
 class GetSemesterAveragesUseCase(private val neptunRepository: NeptunRepository) {
 
-    operator fun <E, S>invoke(
-        mapEntry: (point: Float, average: Float) -> E,
-        mapDataSet: (averageEntries: List<E>, chartLabel: ChartLabel, chartColor: ChartColor) -> S
+    operator fun <S> invoke(
+        mapDataSet: (
+            averageEntries: List<Double>,
+            chartLabel: ChartLabel,
+            chartColor: ChartColor
+        ) -> S
     ) = neptunRepository.averages.map {
-        when(it) {
+        when (it) {
             is ApiResult.Error -> ApiResult.Error(it.error)
             is ApiResult.Loading -> ApiResult.Loading
             is ApiResult.Success -> {
                 val normalAverages = it.data.map { model ->
-                    mapEntry(
-                        (model.index + 1).toFloat(),
-                        model.normalAverage?.toFloat()?: 0f,
-                    )
+                    model.normalAverage ?: 0.0
                 }
                 val comAverages = it.data.map { model ->
-                    mapEntry(
-                        (model.index + 1).toFloat(),
-                        model.commutativeAverage?.toFloat()?: 0f,
-                    )
+                    model.commutativeAverage ?: 0.0
                 }
 
                 val normalSet = mapDataSet(

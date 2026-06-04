@@ -72,7 +72,6 @@ import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurer
 import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurerScope
@@ -81,11 +80,12 @@ import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
 import hu.kocsisgeri.betterneptun.ui.core.permission.rememberPermissionLauncher
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.destination.MessagesDestination
-import hu.kocsisgeri.betterneptun.ui.destination.SemestersDestination
-import hu.kocsisgeri.betterneptun.ui.destination.SettingsDestination
-import hu.kocsisgeri.betterneptun.ui.destination.SubjectsDestination
-import hu.kocsisgeri.betterneptun.ui.destination.TimetableDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessagesDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
 import org.koin.androidx.compose.koinViewModel

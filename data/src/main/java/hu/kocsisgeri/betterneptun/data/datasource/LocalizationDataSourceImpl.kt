@@ -3,7 +3,9 @@ package hu.kocsisgeri.betterneptun.data.datasource
 import hu.kocsisgeri.betterneptun.core.network.api.LocalizationApiService
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import org.koin.core.annotation.Singleton
 
+@Singleton
 class LocalizationDataSourceImpl(
     private val api: LocalizationApiService,
     private val ioDispatcher: CoroutineDispatcher,

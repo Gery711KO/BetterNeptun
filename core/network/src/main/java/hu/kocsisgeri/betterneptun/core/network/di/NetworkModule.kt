@@ -9,64 +9,86 @@ import hu.kocsisgeri.betterneptun.core.network.interceptors.token.TokenAuthentic
 import hu.kocsisgeri.betterneptun.core.network.interceptors.token.TokenInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import org.koin.core.module.dsl.new
-import org.koin.core.qualifier.named
-import org.koin.dsl.module
+import org.koin.core.annotation.Configuration
+import org.koin.core.annotation.Factory
+import org.koin.core.annotation.Module
+import org.koin.core.annotation.Named
+import org.koin.core.annotation.Single
 import retrofit2.Retrofit
 
 private const val BASE_URL = "https://neptun.uni-obuda.hu/ujhallgato/api/"
 private const val LOCALIZATION_BASE_URL = "https://cdn.simplelocalize.io/${BuildConfig.LOCALIZATION_TOKEN}/"
 
-val networkModule = module {
-    factory { new(::TokenAuthenticator) }
-    factory { new(::TokenInterceptor) }
+@Module
+@Configuration
+class NetworkModule {
 
-    factory {
-        HttpLoggingInterceptor().apply { setLevel(HttpLoggingInterceptor.Level.BODY) }
+    @Factory
+    internal fun provideLoggingInterceptor(): HttpLoggingInterceptor {
+        return HttpLoggingInterceptor().apply { setLevel(HttpLoggingInterceptor.Level.BODY) }
     }
 
-    single(named("LocalizationClient")) {
-        OkHttpClient.Builder()
-            .addInterceptor(get<HttpLoggingInterceptor>())
+    @Single
+    @Named("LocalizationClient")
+    internal fun provideLocalizationClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
             .build()
     }
 
-    single(named("AuthClient")) {
-        OkHttpClient.Builder()
-            .addInterceptor(get<HttpLoggingInterceptor>())
+    @Single
+    @Named("AuthClient")
+    internal fun provideAuthClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
             .build()
     }
 
-    single(named("MainClient")) {
-        OkHttpClient.Builder()
-            .addInterceptor(get<HttpLoggingInterceptor>())
-            .addInterceptor(get<TokenInterceptor>())
-            .authenticator(get<TokenAuthenticator>())
+    @Single
+    @Named("MainClient")
+    internal fun provideMainClient(
+        loggingInterceptor: HttpLoggingInterceptor,
+        tokenInterceptor: TokenInterceptor,
+        tokenAuthenticator: TokenAuthenticator
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor(tokenInterceptor)
+            .authenticator(tokenAuthenticator)
             .build()
     }
 
-    factory {
-        Retrofit.Builder()
+    @Factory
+    internal fun provideLocalizationApiService(
+        @Named("LocalizationClient") client: OkHttpClient
+    ): LocalizationApiService {
+        return Retrofit.Builder()
             .baseUrl(LOCALIZATION_BASE_URL)
-            .client(get(named("LocalizationClient")))
+            .client(client)
             .addConverterFactory(Serialization.converterFactory)
             .build()
             .create(LocalizationApiService::class.java)
     }
 
-    factory {
-        Retrofit.Builder()
+    @Factory
+    internal fun provideAuthApiService(
+        @Named("AuthClient") client: OkHttpClient
+    ): AuthApiService {
+        return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(get(named("AuthClient")))
+            .client(client)
             .addConverterFactory(Serialization.converterFactory)
             .build()
             .create(AuthApiService::class.java)
     }
 
-    factory {
-        Retrofit.Builder()
+    @Factory
+    internal fun provideMainApiService(
+        @Named("MainClient") client: OkHttpClient
+    ): MainApiService {
+        return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(get(named("MainClient")))
+            .client(client)
             .addConverterFactory(Serialization.converterFactory)
             .build()
             .create(MainApiService::class.java)

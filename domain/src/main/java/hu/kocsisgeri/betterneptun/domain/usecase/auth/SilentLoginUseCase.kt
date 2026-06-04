@@ -4,7 +4,9 @@ import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.domain.usecase.UseCase
 import kotlinx.coroutines.flow.first
+import org.koin.core.annotation.Factory
 
+@Factory
 class SilentLoginUseCase(
     private val loginRepository: LoginRepository,
 ): UseCase() {

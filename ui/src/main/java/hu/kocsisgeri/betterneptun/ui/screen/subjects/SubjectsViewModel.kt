@@ -14,7 +14,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import org.koin.core.annotation.KoinViewModel
 
+@KoinViewModel
 class SubjectsViewModel(
     getTermsUseCase: GetTermsUseCase,
     getSubjectsUseCase: GetSubjectsUseCase,
@@ -24,14 +26,14 @@ class SubjectsViewModel(
 
     private val selectedTerm = MutableStateFlow<String?>(null)
 
+    private val subjects = getSubjectsUseCase()
+
     private val termFilterItems = getTermsUseCase { term ->
         SubjectsScreenUiModel.FilterItem(
             id = term.id,
             name = term.semesterTitle
         )
     }
-
-    private val subjects = getSubjectsUseCase()
 
     val state = combine(
         selectedTerm.filterNotNull(),

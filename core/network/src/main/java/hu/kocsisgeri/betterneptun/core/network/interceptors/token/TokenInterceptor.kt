@@ -3,8 +3,10 @@ package hu.kocsisgeri.betterneptun.core.network.interceptors.token
 import hu.kocsisgeri.betterneptun.domain.token.TokenManager
 import okhttp3.Interceptor
 import okhttp3.Response
+import org.koin.core.annotation.Factory
 
-internal class TokenInterceptor(private val tokenManager: TokenManager): Interceptor {
+@Factory
+internal class TokenInterceptor (private val tokenManager: TokenManager) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val token = tokenManager.getToken()
 
@@ -13,7 +15,7 @@ internal class TokenInterceptor(private val tokenManager: TokenManager): Interce
                 .let { builder ->
                     token?.let {
                         builder.header("Authorization", "Bearer $token")
-                    }?: builder
+                    } ?: builder
                 }
                 .build()
         )

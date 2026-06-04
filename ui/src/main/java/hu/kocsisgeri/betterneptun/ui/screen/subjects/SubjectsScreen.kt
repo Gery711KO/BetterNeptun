@@ -50,7 +50,7 @@ import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.model.SubjectsScreenUiModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -78,39 +78,12 @@ fun SubjectsContent(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Kurzusok",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Vissza"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
-                )
-            )
+            SubjectsScreenTopAppBar(onBackClick)
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         subjectsState?.let {
-            Column (
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
+            Column (modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                 FilterItems(
                     selectedTermId = subjectsState.selectedTermId,
                     filterItems = subjectsState.filterBar,
@@ -122,6 +95,35 @@ fun SubjectsContent(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SubjectsScreenTopAppBar(onBackClick: () -> Unit) {
+    TopAppBar(
+        title = {
+            Text(
+                text = "Kurzusok",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.ExtraBold
+                )
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Vissza"
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            scrolledContainerColor = MaterialTheme.colorScheme.background,
+            titleContentColor = MaterialTheme.colorScheme.onBackground,
+            navigationIconContentColor = MaterialTheme.colorScheme.onBackground
+        )
+    )
 }
 
 @Composable

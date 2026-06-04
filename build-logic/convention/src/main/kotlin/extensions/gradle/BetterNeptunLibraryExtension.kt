@@ -23,10 +23,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         useAutoProjectConfiguration: Boolean = true,
         dependencies: DependencyHandlerScope.() -> Unit = {},
     ) {
-        project.baseLayerSetup(ProjectModule.Ui) { allowedModules ->
-            if (useAutoProjectConfiguration) {
-                includeProjects(getAllowedProjects(allowedModules))
-            }
+        setup(BaseLayers.Ui, useAutoProjectConfiguration) {
             setupCompose()
             setupNavigation3()
 
@@ -40,9 +37,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
     fun setupDomainLayer(
         dependencies: DependencyHandlerScope.() -> Unit = {}
     ) {
-        project.baseLayerSetup(ProjectModule.Domain) { allowedModules ->
-            includeProjects(getAllowedProjects(allowedModules))
-
+        setup(BaseLayers.Domain) {
             dependencies { dependencies() }
         }
     }
@@ -52,9 +47,8 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         useAutoProjectConfiguration: Boolean = true,
         dependencies: DependencyHandlerScope.() -> Unit = {},
     ) {
-        project.baseLayerSetup(ProjectModule.Data) { allowedModules ->
+        setup(BaseLayers.Data, useAutoProjectConfiguration) {
             if (useRoom) setupRoom()
-            if (useAutoProjectConfiguration) includeProjects(getAllowedProjects(allowedModules))
 
             dependencies { dependencies() }
         }
@@ -66,7 +60,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         useNavigation3: Boolean = false,
         dependencies: DependencyHandlerScope.() -> Unit = {},
     ) {
-        project.baseLayerSetup(ProjectModule.Common) {
+        setup(BaseLayers.Common) {
             if (useRoom) setupRoom()
             if (useCompose) setupCompose()
             if (useNavigation3) setupNavigation3()
@@ -79,9 +73,8 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         useRoom: Boolean = false,
         dependencies: DependencyHandlerScope.() -> Unit = {},
     ) {
-        project.baseLayerSetup(ProjectModule.Core) { allowedModules ->
+        setup(BaseLayers.Core) {
             if (useRoom) setupRoom()
-            includeProjects(getAllowedProjects(allowedModules))
             dependencies { dependencies() }
         }
     }
@@ -89,29 +82,34 @@ class BetterNeptunLibraryExtension(private val project: Project) {
     fun setupLocalizationLayer(
         dependencies: DependencyHandlerScope.() -> Unit = {},
     ) {
-        project.baseLayerSetup(ProjectModule.Localization) { allowedModules ->
-            includeProjects(getAllowedProjects(allowedModules))
+        setup(BaseLayers.Localization) {
             setupCompose()
             dependencies { dependencies() }
         }
     }
 
-    private fun Project.baseLayerSetup(
+    fun setup(
         layer: ProjectModule,
-        configExtra: Project.(List<ProjectModule>) -> Unit,
+        autoConfigureModules: Boolean = true,
+        configExtra: Project.() -> Unit = {},
     ) {
-        val moduleString = moduleStringFromLayerAndSuffix()
+        with(project) {
+            val moduleString = moduleStringFromLayerAndSuffix()
 
-        setNamespace()
-        setupSerialization()
-        setupKoin()
+            setNamespace()
+            setupSerialization()
 
-        configExtra(layer.allowedProjectDependencies)
+            if (autoConfigureModules) includeProjects(
+                getAllowedProjects(layer.allowedProjectDependencies)
+            )
 
-        registerCleanArchitectureCheckTask(
-            currentLayer = moduleString,
-            allowed = layer.allowedProjectDependencies
-        )
+            configExtra()
+
+            registerCleanArchitectureCheckTask(
+                currentLayer = moduleString,
+                allowed = layer.allowedProjectDependencies
+            )
+        }
     }
 
     private fun Project.moduleStringFromLayerAndSuffix(): String =
@@ -148,7 +146,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
 
         val dependencies = configurations
             .asSequence()
-            .flatMap {  config ->
+            .flatMap { config ->
                 config.dependencies.map { it.toString() }
             }
             .distinct()
@@ -169,7 +167,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
 
         dependencies.forEach { projectDependency ->
             check(projectDependency.isAllowed) {
-                "[${ProjectModule.entries.find { currentLayer.contains(it.path) }}] - " +
+                "[${projectModules.find { currentLayer.contains(it.path) }}] - " +
                         "Project dependencies violate clean architecture.\n" +
                         "You are only allowed to depend on ${allowedDeps}.\n" +
                         "You currently depend on $dependencies"
@@ -207,10 +205,9 @@ class BetterNeptunLibraryExtension(private val project: Project) {
 
     private fun getAllowedProjects(
         allowedModules: List<ProjectModule>,
-    ): List<String> =
-        allowedModules.flatMap { module ->
-            subProjects.filter {
-                it.contains(module.path)
-            }
-        }.distinct()
+    ): List<String> = allowedModules.flatMap { module ->
+        subProjects.filter {
+            it.contains(module.path)
+        }
+    }.distinct()
 }

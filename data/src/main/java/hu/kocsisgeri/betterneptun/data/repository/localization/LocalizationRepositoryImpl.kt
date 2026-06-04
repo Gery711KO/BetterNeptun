@@ -6,7 +6,9 @@ import hu.kocsisgeri.betterneptun.domain.model.localization.LocalizationDictiona
 import hu.kocsisgeri.betterneptun.domain.repository.localization.LocalizationRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import org.koin.core.annotation.Singleton
 
+@Singleton
 class LocalizationRepositoryImpl(
     private val localizationDataSource: LocalizationDataSource,
     private val ioDispatcher: CoroutineDispatcher,

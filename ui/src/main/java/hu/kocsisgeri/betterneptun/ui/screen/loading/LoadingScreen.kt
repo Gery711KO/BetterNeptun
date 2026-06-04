@@ -35,8 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.initializable.Initializer
 import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewTheme
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import kotlinx.coroutines.flow.filterNotNull
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject

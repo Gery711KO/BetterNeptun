@@ -44,7 +44,7 @@ import hu.kocsisgeri.betterneptun.domain.model.neptun.MessageDetail
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.composable.HtmlText
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import org.koin.compose.koinInject

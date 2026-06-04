@@ -11,7 +11,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
+import org.koin.core.annotation.Singleton
 
+@Singleton
 internal class LocalizationServiceImpl(
     private val localizationRepository: LocalizationRepository,
     private val settingsRepository: SettingsRepository,

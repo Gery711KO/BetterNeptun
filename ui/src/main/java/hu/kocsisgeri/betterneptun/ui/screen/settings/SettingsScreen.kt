@@ -26,6 +26,7 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -43,8 +44,9 @@ import hu.kocsisgeri.betterneptun.domain.model.localization.Language
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.BuildConfig
-import hu.kocsisgeri.betterneptun.ui.core.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.screen.settings.model.SettingsRadioOption
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -87,31 +89,9 @@ fun SettingsContent(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(
-                title = {
-                    Text(
-                        text = localized(LocalizationKey.SETTINGS_TITLE),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp
-                        )
-                    )
-                },
+            SettingsScreenTopAppBar(
                 scrollBehavior = scrollBehavior,
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Vissza"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                )
+                onBackClick = onBackClick
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -126,122 +106,155 @@ fun SettingsContent(
                 .padding(bottom = paddingValues.calculateBottomPadding()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SettingsSectionLabel(label = localized(LocalizationKey.SETTINGS_SECTION_LANGUAGE))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            ) {
-                val languagesWithKeys = languages.mapNotNull { language ->
-                    LocalizationKey.entries.firstOrNull {
-                        it.key == language.localizationKey
-                    }?.let { key ->
-                        language to key
-                    }
-                }
+            ChangeableSection(
+                languages = languages,
+                onLanguageChange = onLanguageChange,
+                themeMode = themeMode,
+                onThemeChange = onThemeChange,
+                notificationDelay = notificationDelay,
+                onNotificationDelayChange = onNotificationDelayChange
+            )
+            InfoSection()
+            Spacer(modifier = Modifier.height(32.dp))
+            LogoutButton(onClick = onLogout)
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
 
-                Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    languagesWithKeys.forEach { (language, localizationKey) ->
-                        RadioOption(
-                            label = localized(key = localizationKey),
-                            selected = language.isSelected,
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun SettingsScreenTopAppBar(
+    scrollBehavior: TopAppBarScrollBehavior,
+    onBackClick: () -> Unit
+) {
+    LargeTopAppBar(
+        title = {
+            Text(
+                text = localized(LocalizationKey.SETTINGS_TITLE),
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
+                )
+            )
+        },
+        scrollBehavior = scrollBehavior,
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Vissza"
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            scrolledContainerColor = MaterialTheme.colorScheme.background,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+        )
+    )
+}
+
+@Composable
+private fun ChangeableSection(
+    languages: List<Language>,
+    onLanguageChange: (Language) -> Unit,
+    themeMode: ThemeMode,
+    onThemeChange: (ThemeMode) -> Unit,
+    notificationDelay: Int,
+    onNotificationDelayChange: (Int) -> Unit
+) {
+    SettingsSection(
+        sectionTitle = LocalizationKey.SETTINGS_SECTION_LANGUAGE,
+        radioOptions = buildList {
+            languages.forEach { language ->
+                LocalizationKey.entries.firstOrNull {
+                    it.key == language.localizationKey
+                }?.let { key ->
+                    add(
+                        SettingsRadioOption(
+                            label = localized(key),
+                            isSelected = language.isSelected,
                             onClick = { onLanguageChange(language) }
+                        )
+                    )
+                }
+            }
+        },
+    )
+
+    SettingsSection(
+        sectionTitle = LocalizationKey.SETTINGS_SECTION_THEME,
+        radioOptions = ThemeMode.entries.map {
+            SettingsRadioOption(
+                label = localized(
+                    when (it) {
+                        ThemeMode.AUTO -> LocalizationKey.SETTINGS_SECTION_THEME_SYSTEM
+                        ThemeMode.DARK -> LocalizationKey.SETTINGS_SECTION_THEME_DARK
+                        ThemeMode.LIGHT -> LocalizationKey.SETTINGS_SECTION_THEME_LIGHT
+                    }
+                ),
+                isSelected = it == themeMode,
+                onClick = { onThemeChange(it) }
+            )
+        }
+    )
+
+    SettingsSection(
+        sectionTitle = LocalizationKey.SETTINGS_SECTION_TIMETABLE,
+        radioOptions = buildList {
+            repeat(5) { index ->
+                when (index) {
+                    0 -> add(
+                        SettingsRadioOption(
+                            label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_NONE),
+                            isSelected = notificationDelay == -1,
+                            onClick = { onNotificationDelayChange(-1) }
+                        )
+                    )
+
+                    else -> {
+                        val delay = (index * 6)
+                        add(
+                            SettingsRadioOption(
+                                label = localized(
+                                    LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES,
+                                    delay.toString()
+                                ),
+                                isSelected = delay == notificationDelay,
+                                onClick = { onNotificationDelayChange(delay) }
+                            )
                         )
                     }
                 }
             }
+        }
+    )
+}
 
-            SettingsSectionLabel(label = localized(LocalizationKey.SETTINGS_SECTION_THEME),)
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+@Composable
+private fun SettingsSection(
+    sectionTitle: LocalizationKey,
+    radioOptions: List<SettingsRadioOption>,
+) {
+    SettingsSectionLabel(label = localized(sectionTitle))
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+            radioOptions.forEach { option ->
+                RadioOption(
+                    label = option.label,
+                    selected = option.isSelected,
+                    onClick = option.onClick
                 )
-            ) {
-                Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    RadioOption(
-                        label = localized(LocalizationKey.SETTINGS_SECTION_THEME_SYSTEM),
-                        selected = themeMode == ThemeMode.AUTO,
-                        onClick = { onThemeChange(ThemeMode.AUTO) }
-                    )
-                    RadioOption(
-                        label = localized(LocalizationKey.SETTINGS_SECTION_THEME_LIGHT),
-                        selected = themeMode == ThemeMode.LIGHT,
-                        onClick = { onThemeChange(ThemeMode.LIGHT) }
-                    )
-                    RadioOption(
-                        label = localized(LocalizationKey.SETTINGS_SECTION_THEME_DARK),
-                        selected = themeMode == ThemeMode.DARK,
-                        onClick = { onThemeChange(ThemeMode.DARK) }
-                    )
-                }
             }
-
-            SettingsSectionLabel(label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            ) {
-                Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    RadioOption(
-                        label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_NONE),
-                        selected = notificationDelay == -1,
-                        onClick = { onNotificationDelayChange(-1) }
-                    )
-                    RadioOption(
-                        label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES, 5.toString()),
-                        selected = notificationDelay == 5,
-                        onClick = { onNotificationDelayChange(5) }
-                    )
-                    RadioOption(
-                        label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES, 10.toString()),
-                        selected = notificationDelay == 10,
-                        onClick = { onNotificationDelayChange(10) }
-                    )
-                    RadioOption(
-                        label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES, 15.toString()),
-                        selected = notificationDelay == 15,
-                        onClick = { onNotificationDelayChange(15) }
-                    )
-                    RadioOption(
-                        label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES, 30.toString()),
-                        selected = notificationDelay == 30,
-                        onClick = { onNotificationDelayChange(30) }
-                    )
-                }
-            }
-
-            SettingsSectionLabel(label = localized(LocalizationKey.SETTINGS_SECTION_INFORMATION))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    InfoRow(
-                        label = localized(LocalizationKey.SETTINGS_SECTION_INFORMATION_VERSION),
-                        value = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            LogoutButton(onClick = onLogout)
-
-            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
@@ -256,6 +269,26 @@ fun SettingsSectionLabel(label: String) {
             .padding(top = 24.dp, bottom = 8.dp),
         color = MaterialTheme.colorScheme.onBackground
     )
+}
+
+@Composable
+private fun InfoSection() {
+    SettingsSectionLabel(label = localized(LocalizationKey.SETTINGS_SECTION_INFORMATION))
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            InfoRow(
+                label = localized(LocalizationKey.SETTINGS_SECTION_INFORMATION_VERSION),
+                value = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+            )
+        }
+    }
 }
 
 @Composable

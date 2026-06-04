@@ -7,7 +7,9 @@ import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.model.localization.Language
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import kotlinx.serialization.serializer
+import org.koin.core.annotation.Singleton
 
+@Singleton(binds = [SettingsRepository::class])
 internal class SettingsRepositoryImpl(
     private val localDataSource: LocalDataSource,
 ): SettingsRepository {
