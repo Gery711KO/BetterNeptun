@@ -14,6 +14,7 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.toComposeEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -22,7 +23,7 @@ import java.time.temporal.TemporalAdjusters
 
 @KoinViewModel
 class TimetableViewModel(
-    defaultSelected: Long?,
+    @InjectedParam defaultSelected: Long?,
     getEventsUseCase: GetEventsUseCase,
     private val addLocalEventsUseCase: AddLocalEventUseCase,
     private val deleteLocalEventUseCase: DeleteLocalEventUseCase

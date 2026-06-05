@@ -10,8 +10,9 @@ import org.koin.core.annotation.KoinApplication
 import org.koin.core.annotation.Module
 
 
+
 @KoinApplication(modules = [AppModule::class])
-object MyApp
+object App
 
 @Module
 @Configuration

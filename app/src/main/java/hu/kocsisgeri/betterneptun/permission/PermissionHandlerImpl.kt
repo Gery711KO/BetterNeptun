@@ -17,7 +17,7 @@ import org.koin.core.annotation.Singleton
 
 @Singleton
 class PermissionHandlerImpl(
-    @Provided private val handledPermissions: List<PermissionData>,
+    private val handledPermissions: List<PermissionData>,
 ) : PermissionHandler {
 
     private var isConfigured = false

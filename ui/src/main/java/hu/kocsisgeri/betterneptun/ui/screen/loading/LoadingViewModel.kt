@@ -1,11 +1,13 @@
 package hu.kocsisgeri.betterneptun.ui.screen.loading
 
 import androidx.lifecycle.viewModelScope
+import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.domain.initializable.Initializer
 import hu.kocsisgeri.betterneptun.domain.usecase.auth.SilentLoginUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.KoinViewModel
@@ -16,7 +18,7 @@ class LoadingViewModel(
     silentLoginUseCase: SilentLoginUseCase,
 ) : ComposeViewModel() {
 
-    private val silentLoginResult = silentLoginUseCase().map { result ->
+    private val silentLoginResult: Flow<NavKey?> = silentLoginUseCase().map { result ->
         when (result) {
             SilentLoginUseCase.Result.Loading -> null
             SilentLoginUseCase.Result.NavigateToHome -> HomeDestination

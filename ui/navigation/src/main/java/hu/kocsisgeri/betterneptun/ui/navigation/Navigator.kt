@@ -38,8 +38,12 @@ import androidx.navigationevent.NavigationEvent
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoadingDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.registry.NavigationRegistry
+import hu.kocsisgeri.betterneptun.ui.navigation.registry.Destination
+import hu.kocsisgeri.betterneptun.ui.navigation.transition.SharedBoundsTransition
+import hu.kocsisgeri.betterneptun.ui.navigation.transition.SplashTransition
+import hu.kocsisgeri.betterneptun.ui.navigation.transition.Transition
 import hu.kocsisgeri.betterneptun.ui.navigation.utils.checkType
+import hu.kocsisgeri.betterneptun.ui.navigation.utils.isSubclassOf
 import org.koin.core.annotation.KoinExperimentalAPI
 import kotlin.reflect.KClass
 
@@ -65,7 +69,7 @@ interface Navigator {
     companion object {
         fun createNavigator(
             startDestination: NavKey,
-            destinations: List<NavigationRegistry<NavKey>>
+            destinations: Collection<Destination<NavKey>>
         ): Navigator = DefaultNavigator(
             startDestination = startDestination,
             destinations = destinations
@@ -87,7 +91,7 @@ interface Navigator {
             predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.(
                 @NavigationEvent.SwipeEdge Int
             ) -> ContentTransform = defaultPredictivePopTransitionSpec(),
-            destinations: List<NavigationRegistry<NavKey>>
+            destinations: Collection<Destination<NavKey>>
         ) {
             SharedTransitionLayout {
                 provideSharedTransitionScope {
@@ -96,10 +100,10 @@ interface Navigator {
                         backStack = navigator.backStack,
                         onBack = { navigator.navigateBack() },
                         entryProvider = entryProvider {
-                            destinations.forEach { registry ->
+                            destinations.forEach { destination ->
                                 destinationEntry(
-                                    clazz = registry.navKey,
-                                    content = { registry.Content(it) }
+                                    clazz = destination.key,
+                                    content = { destination.content(it) }
                                 )
                             }
                         },
@@ -118,7 +122,7 @@ interface Navigator {
 @Immutable
 private data class DefaultNavigator(
     val startDestination: NavKey,
-    val destinations: List<NavigationRegistry<NavKey>>,
+    val destinations: Collection<Destination<NavKey>>,
 ) : Navigator {
     override val backStack = mutableStateListOf<NavKey>(startDestination)
     override val currentScreen: NavKey by derivedStateOf { backStack.last() }
@@ -131,34 +135,36 @@ private data class DefaultNavigator(
         Navigator.DefaultNavDisplay(
             navigator = this,
             transitionSpec = {
-                val isFromLoading = initialState.checkType(LoadingDestination)
-                val isFromLogin = initialState.checkType(LoginDestination)
-                val isToHome = targetState.checkType(HomeDestination)
-                val isToLogin = targetState.checkType(LoginDestination)
+                val isToSplash = targetState.isSubclassOf(SplashTransition::class)
+                val isFromSplash = targetState.isSubclassOf(SplashTransition::class)
+                val isToShared = targetState.isSubclassOf(SharedBoundsTransition::class)
+                val isFromShared = targetState.isSubclassOf(SharedBoundsTransition::class)
 
-                if ((isFromLogin && isToHome) || isToLogin || isFromLoading) {
-                    fadeIn(animationSpec = tween(500)) + slideIntoContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Down,
-                        animationSpec = tween(500, 300)
-                    ) + scaleIn(
-                        initialScale = 0.6f,
-                        animationSpec = tween(500, 300)
-                    ) togetherWith slideOutOfContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Up,
-                        animationSpec = tween(500, 300),
-                    ) + scaleOut(
-                        targetScale = 0.6f,
-                        animationSpec = tween(500)
-                    ) + fadeOut(animationSpec = tween(500, 500))
-                } else {
-                    slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
+                when {
+                    isToSplash && isFromSplash -> Transition.splashTransition(this)
+                    isToShared && isFromShared -> Transition.sharedTransition(this)
+                    else -> Transition.slideTransition(this)
                 }
             },
             popTransitionSpec = {
-                slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                val isFromSplash = initialState.isSubclassOf(SplashTransition::class)
+                val isFromShared = initialState.isSubclassOf(SharedBoundsTransition::class)
+
+                when {
+                    isFromSplash-> Transition.popSplashTransition(this)
+                    isFromShared -> Transition.sharedTransition(this)
+                    else -> Transition.popSlideTransition(this)
+                }
             },
             predictivePopTransitionSpec = {
-                slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                val isFromSplash = initialState.isSubclassOf(SplashTransition::class)
+                val isFromShared = initialState.isSubclassOf(SharedBoundsTransition::class)
+
+                when {
+                    isFromSplash -> Transition.popSplashTransition(this)
+                    isFromShared -> Transition.sharedTransition(this)
+                    else -> Transition.popSlideTransition(this)
+                }
             },
             destinations = destinations,
             modifier = Modifier
@@ -192,7 +198,7 @@ internal fun <T : NavKey> EntryProviderScope<NavKey>.destinationEntry(
 ) {
     addEntryProvider(
         clazz = clazz,
-        clazzContentKey = { it.toString() },
+        clazzContentKey = { clazz.java },
         content = content
     )
 }

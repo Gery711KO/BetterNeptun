@@ -5,4 +5,4 @@ import org.koin.core.annotation.Module
 
 @Module
 @Configuration
-class UserRelatedDataModule
+class DatasourceModule

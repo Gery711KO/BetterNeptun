@@ -11,6 +11,7 @@ import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toSubjectDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toTermDomain
 import hu.kocsisgeri.betterneptun.data.util.runApiCall
+import hu.kocsisgeri.betterneptun.domain.clearable.BaseClearable
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Average
@@ -30,16 +31,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Singleton
 
-@Singleton(binds = [NeptunRepository::class])
-internal class NeptunRepositoryImpl(
+@Singleton
+class NeptunRepositoryImpl internal constructor(
     private val networkDataSource: NetworkDataSource,
     private val localDataSource: LocalDataSource,
     private val ioDispatcher: CoroutineDispatcher,
-) : NeptunRepository {
+) : NeptunRepository, BaseClearable() {
 
     override var currentMessagePage = 1
 
-    private val remoteEvents = MutableStateFlow<List<CalendarItem.Event>>(listOf())
+    private val remoteEvents = clearableStateFlow<List<CalendarItem.Event>>(listOf())
     private val localEvents = localDataSource.localEventsDb.getData().map { list ->
         list.map { it.toDomain() }
     }
@@ -48,14 +49,14 @@ internal class NeptunRepositoryImpl(
         remote + local
     }
 
-    override val messages = MutableStateFlow(MessagesPager())
-    override val unreadMessagesCount: MutableStateFlow<Int?> = MutableStateFlow(null)
+    override val messages = clearableStateFlow(MessagesPager())
+    override val unreadMessagesCount: MutableStateFlow<Int?> = clearableStateFlow(null)
 
     override val subjects =
-        MutableStateFlow<ApiResult<List<Subject>>>(ApiResult.Loading)
+        clearableStateFlow<ApiResult<List<Subject>>>(ApiResult.Loading)
 
-    override val terms = MutableStateFlow<ApiResult<List<Term>>>(ApiResult.Loading)
-    override val averages = MutableStateFlow<ApiResult<List<Average>>>(ApiResult.Loading)
+    override val terms = clearableStateFlow<ApiResult<List<Term>>>(ApiResult.Loading)
+    override val averages = clearableStateFlow<ApiResult<List<Average>>>(ApiResult.Loading)
 
     override suspend fun checkForMessageUpdates() {
         withContext(ioDispatcher) {
@@ -207,61 +208,10 @@ internal class NeptunRepositoryImpl(
     }
 
     override suspend fun fetchCalendarData() {
-//            val response = networkDataSource.getCourses()
-//            val colorMap = mutableMapOf<String?, Int>()
-//            when (response) {
-//                is ApiResult.Error -> {/* do something about errors */ }
-//                is ApiResult.Progress -> {/* don't need to do anything here */ }
-//                is ApiResult.Success -> {
-//                    response.data.events.filter { event ->
-//                        event.allday != 1
-//                    }.map {
-//                        CalendarEntity.Event(
-//                            it.id?.toLong() ?: 1111111,
-//                            title = it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
-//                            startTime = it.startdate?.split("(")?.get(1)?.split(")")?.get(0)
-//                                ?.toLong()
-//                                ?.let { longTime ->
-//                                    LocalDateTime.ofEpochSecond(
-//                                        longTime / 1000,
-//                                        0,
-//                                        ZoneOffset.UTC
-//                                    )
-//                                }
-//                                ?: LocalDateTime.now(),
-//                            endTime = it.enddate?.split("(")?.get(1)?.split(")")?.get(0)?.toLong()
-//                                ?.let { longTime ->
-//                                    LocalDateTime.ofEpochSecond(
-//                                        longTime / 1000,
-//                                        0,
-//                                        ZoneOffset.UTC
-//                                    )
-//                                }
-//                                ?: LocalDateTime.now(),
-//                            location = it.location.toString(),
-//                            color = getRandomColor(
-//                                it.title?.split("]")?.get(1)?.split("(")?.get(0) ?: "ERROR",
-//                                colorMap
-//                            ),
-//                            isAllDay = it.allday != 0,
-//                            isCanceled = false,
-//                            subjectCode = it.title?.split("(")?.get(1)?.split(")")?.get(0)
-//                                ?: "ERROR",
-//                            courseCode = it.title?.split(" - ")?.get(1)?.split(" ")?.get(0)
-//                                ?: "ERROR",
-//                            teacher = it.title?.split("(")?.get(2)?.split(")")?.get(0) ?: "ERROR"
-//                        )
-//                    }.let { event ->
-//                        dataManager.colors.insertAll(event.map {
-//                            hu.kocsisgeri.betterneptun.data.dao.Color(
-//                                title = it.title.toString(),
-//                                colorInt = it.color
-//                            )
-//                        })
-//                        HomeState.courses.tryEmit(event)
-//                        remoteEvents.tryEmit(event)
-//                    }
-//                }
-//            }
+        // TODO
+    }
+
+    override suspend fun onClear() {
+        currentMessagePage = 1
     }
 }

@@ -59,10 +59,4 @@ interface LoginRepository {
      * @param shouldAutoLogin True if automatic login should be enabled, false otherwise.
      */
     fun saveAutoLoginPreference(shouldAutoLogin: Boolean)
-
-    /**
-     * Clears all stored user credentials, session data, and preferences from local storage.
-     * This effectively logs out the user and resets the repository to its initial state.
-     */
-    suspend fun purge()
 }

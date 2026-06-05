@@ -3,16 +3,17 @@ package hu.kocsisgeri.betterneptun.data.repository.settings
 import androidx.datastore.preferences.core.stringPreferencesKey
 import hu.kocsisgeri.betterneptun.data.datasource.LocalCacheKeys
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
+import hu.kocsisgeri.betterneptun.domain.clearable.BaseClearable
 import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.model.localization.Language
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import kotlinx.serialization.serializer
 import org.koin.core.annotation.Singleton
 
-@Singleton(binds = [SettingsRepository::class])
-internal class SettingsRepositoryImpl(
+@Singleton
+internal class SettingsRepositoryImpl internal constructor(
     private val localDataSource: LocalDataSource,
-): SettingsRepository {
+): SettingsRepository, BaseClearable() {
     override val storedLanguage = localDataSource.getFromPreferencesDataStore(
         key = LANGUAGE_KEY,
         defaultValue = Language.DEFAULT.key,
@@ -53,6 +54,10 @@ internal class SettingsRepositoryImpl(
             value = languageKey,
             serializer = serializer()
         )
+    }
+
+    override suspend fun onClear() {
+        localDataSource.purge()
     }
 
     companion object {

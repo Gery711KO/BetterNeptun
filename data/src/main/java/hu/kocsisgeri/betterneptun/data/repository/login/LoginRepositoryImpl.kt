@@ -6,24 +6,23 @@ import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.data.mapper.toAvatarDomain
 import hu.kocsisgeri.betterneptun.data.util.runApiCall
+import hu.kocsisgeri.betterneptun.domain.clearable.BaseClearable
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.serializer
 import org.koin.core.annotation.Singleton
 
 @Singleton
-internal class LoginRepositoryImpl(
+class LoginRepositoryImpl internal constructor(
     private val localDataSource: LocalDataSource,
     private val networkDataSource: NetworkDataSource,
-) : LoginRepository {
+) : LoginRepository, BaseClearable() {
 
-    override val studentData = MutableStateFlow<StudentData?>(null)
-    override val shouldAutoLogin = MutableSharedFlow<Boolean>(1, 1)
+    override val studentData = clearableStateFlow<StudentData?>(null)
+    override val shouldAutoLogin = clearableSharedFlow<Boolean>(1, 1)
 
     init {
         shouldAutoLogin.tryEmit(
@@ -81,11 +80,5 @@ internal class LoginRepositoryImpl(
             value = shouldAutoLogin,
             serializer = serializer()
         )
-    }
-
-    override suspend fun purge() {
-        studentData.value = null
-        shouldAutoLogin.resetReplayCache()
-        localDataSource.purge()
     }
 }

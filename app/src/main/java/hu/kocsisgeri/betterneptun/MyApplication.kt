@@ -1,12 +1,12 @@
 package hu.kocsisgeri.betterneptun
 
 import android.app.Application
-import hu.kocsisgeri.betterneptun.di.MyApp
+import hu.kocsisgeri.betterneptun.di.App
 import org.koin.android.ext.koin.androidContext
 import org.koin.plugin.module.dsl.startKoin
 import timber.log.Timber
 
-open class MyApplication : Application() {
+class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
@@ -14,15 +14,15 @@ open class MyApplication : Application() {
         initLogging()
     }
 
-    open fun startKoin() {
-        startKoin<MyApp> {
+    fun startKoin() {
+        startKoin<App> {
             androidContext(this@MyApplication)
             printLogger()
         }
 
     }
 
-    open fun initLogging() {
+    fun initLogging() {
         Timber.plant(Timber.DebugTree())
     }
 }
