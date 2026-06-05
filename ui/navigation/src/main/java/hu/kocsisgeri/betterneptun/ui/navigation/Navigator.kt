@@ -57,7 +57,7 @@ interface Navigator {
     companion object {
         fun createNavigator(
             startDestination: NavKey,
-            navigationEntries: Collection<NavigationEntry<NavKey>>
+            navigationEntries: Collection<NavigationEntry>
         ): Navigator = DefaultNavigator(
             startDestination = startDestination,
             navigationEntries = navigationEntries
@@ -79,7 +79,7 @@ interface Navigator {
             predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.(
                 @NavigationEvent.SwipeEdge Int
             ) -> ContentTransform = defaultPredictivePopTransitionSpec(),
-            navigationEntries: Collection<NavigationEntry<NavKey>>
+            navigationEntries: Collection<NavigationEntry>
         ) {
             SharedTransitionLayout {
                 provideSharedTransitionScope {
@@ -110,7 +110,7 @@ interface Navigator {
 @Immutable
 private data class DefaultNavigator(
     val startDestination: NavKey,
-    val navigationEntries: Collection<NavigationEntry<NavKey>>,
+    val navigationEntries: Collection<NavigationEntry>,
 ) : Navigator {
     override val backStack = mutableStateListOf<NavKey>(startDestination)
     override val currentScreen: NavKey by derivedStateOf { backStack.last() }
