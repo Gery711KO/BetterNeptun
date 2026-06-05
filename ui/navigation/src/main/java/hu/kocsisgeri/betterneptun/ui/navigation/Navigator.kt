@@ -4,14 +4,6 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -35,14 +27,10 @@ import androidx.navigation3.ui.defaultPopTransitionSpec
 import androidx.navigation3.ui.defaultPredictivePopTransitionSpec
 import androidx.navigation3.ui.defaultTransitionSpec
 import androidx.navigationevent.NavigationEvent
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoadingDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.destination.LoginDestination
-import hu.kocsisgeri.betterneptun.ui.navigation.registry.Destination
+import hu.kocsisgeri.betterneptun.ui.navigation.registry.NavigationEntry
 import hu.kocsisgeri.betterneptun.ui.navigation.transition.SharedBoundsTransition
 import hu.kocsisgeri.betterneptun.ui.navigation.transition.SplashTransition
 import hu.kocsisgeri.betterneptun.ui.navigation.transition.Transition
-import hu.kocsisgeri.betterneptun.ui.navigation.utils.checkType
 import hu.kocsisgeri.betterneptun.ui.navigation.utils.isSubclassOf
 import org.koin.core.annotation.KoinExperimentalAPI
 import kotlin.reflect.KClass
@@ -69,10 +57,10 @@ interface Navigator {
     companion object {
         fun createNavigator(
             startDestination: NavKey,
-            destinations: Collection<Destination<NavKey>>
+            navigationEntries: Collection<NavigationEntry<NavKey>>
         ): Navigator = DefaultNavigator(
             startDestination = startDestination,
-            destinations = destinations
+            navigationEntries = navigationEntries
         )
 
         @OptIn(KoinExperimentalAPI::class)
@@ -91,7 +79,7 @@ interface Navigator {
             predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.(
                 @NavigationEvent.SwipeEdge Int
             ) -> ContentTransform = defaultPredictivePopTransitionSpec(),
-            destinations: Collection<Destination<NavKey>>
+            navigationEntries: Collection<NavigationEntry<NavKey>>
         ) {
             SharedTransitionLayout {
                 provideSharedTransitionScope {
@@ -100,7 +88,7 @@ interface Navigator {
                         backStack = navigator.backStack,
                         onBack = { navigator.navigateBack() },
                         entryProvider = entryProvider {
-                            destinations.forEach { destination ->
+                            navigationEntries.forEach { destination ->
                                 destinationEntry(
                                     clazz = destination.key,
                                     content = { destination.content(it) }
@@ -122,7 +110,7 @@ interface Navigator {
 @Immutable
 private data class DefaultNavigator(
     val startDestination: NavKey,
-    val destinations: Collection<Destination<NavKey>>,
+    val navigationEntries: Collection<NavigationEntry<NavKey>>,
 ) : Navigator {
     override val backStack = mutableStateListOf<NavKey>(startDestination)
     override val currentScreen: NavKey by derivedStateOf { backStack.last() }
@@ -166,7 +154,7 @@ private data class DefaultNavigator(
                     else -> Transition.popSlideTransition(this)
                 }
             },
-            destinations = destinations,
+            navigationEntries = navigationEntries,
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)

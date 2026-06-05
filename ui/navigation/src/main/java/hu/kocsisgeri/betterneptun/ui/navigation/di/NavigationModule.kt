@@ -16,6 +16,6 @@ class NavigationModule {
         registry: NavigationRegistry
     ): Navigator = Navigator.createNavigator(
         startDestination = LoadingDestination,
-        destinations = registry.destinations
+        navigationEntries = registry.navigationEntries
     )
 }

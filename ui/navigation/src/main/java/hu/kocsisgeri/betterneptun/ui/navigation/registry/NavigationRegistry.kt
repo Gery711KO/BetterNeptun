@@ -5,5 +5,5 @@ import org.koin.core.annotation.Single
 
 @Single
 class NavigationRegistry(
-    val destinations: List<Destination<NavKey>>
+    val navigationEntries: List<NavigationEntry<NavKey>>
 )
