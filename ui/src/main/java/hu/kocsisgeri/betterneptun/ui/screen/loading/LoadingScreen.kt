@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.initializable.Initializer
 import hu.kocsisgeri.betterneptun.ui.R
+import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewTheme
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import kotlinx.coroutines.flow.filterNotNull
@@ -90,10 +91,10 @@ private fun LoadingScreenContent(
 private fun LoadingContent() {
     Column {
         SplashLogo()
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.medium))
         LinearProgressIndicator(
-            modifier = Modifier.width(192.dp),
-            color = MaterialTheme.colorScheme.primary
+            modifier = Modifier.width(BetterNeptunTheme.dimens.splashSize),
+            color = BetterNeptunTheme.colorScheme.primary
         )
     }
 }
@@ -110,22 +111,22 @@ private fun ErrorContent(
         Image(
             imageVector = Icons.Rounded.ErrorOutline,
             contentDescription = null,
-            modifier = Modifier.size(192.dp),
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.error)
+            modifier = Modifier.size(BetterNeptunTheme.dimens.splashSize),
+            colorFilter = ColorFilter.tint(BetterNeptunTheme.colorScheme.error)
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.medium))
         Text(
             text = message,
-            color = MaterialTheme.colorScheme.error,
+            color = BetterNeptunTheme.colorScheme.error,
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.medium))
         IconButton (
-            modifier = Modifier.width(100.dp),
+            modifier = Modifier.width(BetterNeptunTheme.dimens.retryButtonWidth),
             onClick = onRetry,
             colors = IconButtonDefaults.iconButtonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError,
+                containerColor = BetterNeptunTheme.colorScheme.error,
+                contentColor = BetterNeptunTheme.colorScheme.onError,
             ),
             content = {
                 Icon(
@@ -142,7 +143,7 @@ private fun SplashLogo() {
     Image(
         painter = painterResource(id = R.drawable.oe_logo),
         contentDescription = null,
-        modifier = Modifier.size(192.dp)
+        modifier = Modifier.size(BetterNeptunTheme.dimens.splashSize)
     )
 }
 

@@ -50,6 +50,8 @@ import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.model.SubjectsScreenUiModel
 import org.koin.androidx.compose.koinViewModel
@@ -77,10 +79,11 @@ fun SubjectsContent(
     onBackClick: () -> Unit
 ) {
     Scaffold(
+        modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_COURSES),
         topBar = {
             SubjectsScreenTopAppBar(onBackClick)
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = BetterNeptunTheme.colorScheme.background
     ) { paddingValues ->
         subjectsState?.let {
             Column (modifier = Modifier.fillMaxSize().padding(paddingValues)) {
@@ -104,7 +107,7 @@ private fun SubjectsScreenTopAppBar(onBackClick: () -> Unit) {
         title = {
             Text(
                 text = "Kurzusok",
-                style = MaterialTheme.typography.titleLarge.copy(
+                style = BetterNeptunTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.ExtraBold
                 )
             )
@@ -118,10 +121,10 @@ private fun SubjectsScreenTopAppBar(onBackClick: () -> Unit) {
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            scrolledContainerColor = MaterialTheme.colorScheme.background,
-            titleContentColor = MaterialTheme.colorScheme.onBackground,
-            navigationIconContentColor = MaterialTheme.colorScheme.onBackground
+            containerColor = BetterNeptunTheme.colorScheme.background,
+            scrolledContainerColor = BetterNeptunTheme.colorScheme.background,
+            titleContentColor = BetterNeptunTheme.colorScheme.onBackground,
+            navigationIconContentColor = BetterNeptunTheme.colorScheme.onBackground
         )
     )
 }
@@ -137,8 +140,8 @@ private fun FilterItems(
         ApiResult.Loading -> Unit
         is ApiResult.Success<List<SubjectsScreenUiModel.FilterItem>> -> {
             LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                contentPadding = PaddingValues(horizontal = BetterNeptunTheme.dimens.screenPadding),
+                horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.itemSpacing)
             ) {
                 items(filterItems.data.asReversed()) { item ->
                     FilterChip(
@@ -147,7 +150,7 @@ private fun FilterItems(
                         label = {
                             Text(
                                 text = item.name,
-                                style = MaterialTheme.typography.bodyMedium
+                                style = BetterNeptunTheme.typography.bodyMedium
                             )
                         }
                     )
@@ -174,9 +177,9 @@ private fun SubjectsList(listState: ApiResult<List<Subject>>?) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
-                    .clip(MaterialTheme.shapes.large),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(BetterNeptunTheme.dimens.screenPadding)
+                    .clip(BetterNeptunTheme.shapes.large),
+                verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.itemSpacing)
             ) {
                 items(listState.data) { subject ->
                     SubjectItem(subject = subject)
@@ -188,7 +191,7 @@ private fun SubjectsList(listState: ApiResult<List<Subject>>?) {
             Box(Modifier.fillMaxSize()) {
                 Text(
                     text = "Hiba történt az adatok betöltésekor",
-                    color = MaterialTheme.colorScheme.error,
+                    color = BetterNeptunTheme.colorScheme.error,
                     modifier = Modifier.align(Alignment.Center),
                 )
             }
@@ -205,35 +208,35 @@ fun SubjectItem(subject: Subject) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
+        shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = BetterNeptunTheme.colorScheme.surfaceVariant
         ),
         onClick = { expanded = !expanded }
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(BetterNeptunTheme.dimens.screenPadding)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Box(
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.size(BetterNeptunTheme.dimens.large),
                     contentAlignment = Alignment.Center
                 ) {
                     if (subject.isCompleted) {
                         Icon(
                             imageVector = Icons.Rounded.Done,
                             contentDescription = "Teljesítve",
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(28.dp)
+                            tint = BetterNeptunTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(BetterNeptunTheme.dimens.iconLarge)
                         )
                     } else {
                         Surface(
-                            shape = MaterialTheme.shapes.small,
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            modifier = Modifier.size(8.dp)
+                            shape = BetterNeptunTheme.shapes.small,
+                            color = BetterNeptunTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.size(BetterNeptunTheme.dimens.badgeSize)
                         ) {}
                     }
                 }
@@ -241,21 +244,21 @@ fun SubjectItem(subject: Subject) {
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(horizontal = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(horizontal = BetterNeptunTheme.dimens.itemSpacing),
+                    verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.small)
                 ) {
                     Text(
                         text = subject.subjectName,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = BetterNeptunTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = BetterNeptunTheme.colorScheme.onSurface
                     )
                     Text(
                         text = subject.subjectCode,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = BetterNeptunTheme.typography.bodySmall,
+                        color = BetterNeptunTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -263,22 +266,22 @@ fun SubjectItem(subject: Subject) {
                     imageVector = Icons.Default.ExpandMore,
                     contentDescription = null,
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(BetterNeptunTheme.dimens.iconMedium)
                         .rotate(rotation),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = BetterNeptunTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             AnimatedVisibility(visible = expanded) {
                 Column(
                     modifier = Modifier
-                        .padding(top = 16.dp)
+                        .padding(top = BetterNeptunTheme.dimens.medium)
                         .fillMaxWidth()
                 ) {
                     HorizontalDivider(
-                        modifier = Modifier.padding(bottom = 12.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant
+                        modifier = Modifier.padding(bottom = BetterNeptunTheme.dimens.itemSpacing),
+                        thickness = BetterNeptunTheme.dimens.dividerThickness,
+                        color = BetterNeptunTheme.colorScheme.outlineVariant
                     )
                     
                     DetailItem(label = "Kredit", value = subject.subjectCredit.toString())
@@ -295,20 +298,20 @@ fun DetailItem(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = BetterNeptunTheme.dimens.extraSmall),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = BetterNeptunTheme.typography.labelLarge,
+            color = BetterNeptunTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyMedium,
+            style = BetterNeptunTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = BetterNeptunTheme.colorScheme.onSurface,
             textAlign = TextAlign.End
         )
     }

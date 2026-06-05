@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
@@ -29,10 +30,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -43,7 +42,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,8 +59,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.domain.model.TimeDuration
@@ -75,6 +71,7 @@ import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurer
 import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurerScope
+import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.core.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
@@ -153,18 +150,16 @@ private fun HomeContent(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
-            .pullRefresh(pullRefreshState),
+        containerColor = BetterNeptunTheme.colorScheme.background,
+        modifier = Modifier.pullRefresh(pullRefreshState),
     ) { padding ->
         Box {
             LazyColumn(
                 contentPadding = padding,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.groupSpacing),
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(vertical = 16.dp)
+                    .padding(vertical = BetterNeptunTheme.dimens.groupSpacing)
             ) {
                 item("HEADER") {
                     Header(
@@ -209,8 +204,8 @@ private fun HomeContent(
                 modifier = Modifier
                     .padding(padding)
                     .align(Alignment.TopCenter),
-                backgroundColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.primary
+                backgroundColor = BetterNeptunTheme.colorScheme.surface,
+                contentColor = BetterNeptunTheme.colorScheme.primary
             )
         }
     }
@@ -227,8 +222,8 @@ private fun PermissionDisclaimerCarousel(
     if (permissions.isNotEmpty()) {
         SizeMeasurer {
             HorizontalPager(
-                pageSpacing = 10.dp,
-                contentPadding = PaddingValues(horizontal = 16.dp),
+                pageSpacing = BetterNeptunTheme.dimens.paddingSmall,
+                contentPadding = PaddingValues(horizontal = BetterNeptunTheme.dimens.screenPadding),
                 state = lazyListState,
                 modifier = modifier.fillMaxWidth(),
             ) { page ->
@@ -252,36 +247,35 @@ private fun SizeMeasurerScope.PermissionDisclaimerCard(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+            containerColor = BetterNeptunTheme.colorScheme.tertiaryContainer,
+            contentColor = BetterNeptunTheme.colorScheme.onTertiaryContainer
         )
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.padding(BetterNeptunTheme.dimens.paddingLarge)) {
             Text(
                 text = disclaimer.humanReadablePermissionName,
-                fontSize = 18.sp,
+                style = BetterNeptunTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onTertiaryContainer
+                color = BetterNeptunTheme.colorScheme.onTertiaryContainer
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingSmall))
             Text(
                 text = disclaimer.disclaimer,
-                fontSize = 14.sp,
-                lineHeight = 20.sp,
-                color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                style = BetterNeptunTheme.typography.bodyMedium,
+                color = BetterNeptunTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.groupSpacing))
             Spacer(Modifier.weight(1f, isSizeMeasured))
             Button(
                 onClick = onRequest,
                 modifier = Modifier.align(Alignment.End),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiary,
-                    contentColor = MaterialTheme.colorScheme.onTertiary
+                    containerColor = BetterNeptunTheme.colorScheme.tertiary,
+                    contentColor = BetterNeptunTheme.colorScheme.onTertiary
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = BetterNeptunTheme.shapes.medium
             ) {
                 Text(
                     text = localized(LocalizationKey.HOME_PERMISSION_PERMIT),
@@ -298,6 +292,7 @@ private fun NavigationGrid(
     modifier: Modifier = Modifier,
     onNavigate: (NavKey) -> Unit
 ) {
+    val gap = BetterNeptunTheme.dimens.paddingSmall
     Grid(
         config = {
             columns(
@@ -306,31 +301,35 @@ private fun NavigationGrid(
             )
             rows(GridTrackSize.MaxContent)
 
-            gap(8.dp)
+            gap(gap)
         },
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = BetterNeptunTheme.dimens.itemSpacing)
     ) {
         NavButton(
             icon = painterResource(id = R.drawable.ic_mail),
             text = localized(LocalizationKey.HOME_MENU_MESSAGES),
-            onClick = { onNavigate(MessagesDestination) }
+            onClick = { onNavigate(MessagesDestination) },
+            modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_MESSAGES)
         )
         NavButton(
             icon = painterResource(id = R.drawable.ic_calendar),
             text = localized(LocalizationKey.HOME_MENU_TIMETABLE),
-            onClick = { onNavigate(TimetableDestination(null)) }
+            onClick = { onNavigate(TimetableDestination(null)) },
+            modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_TIMETABLE)
         )
         NavButton(
             icon = painterResource(id = R.drawable.ic_courses),
             text = localized(LocalizationKey.HOME_MENU_COURSES),
-            onClick = { onNavigate(SubjectsDestination) }
+            onClick = { onNavigate(SubjectsDestination) },
+            modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_COURSES)
         )
         NavButton(
             icon = painterResource(id = R.drawable.ic_semesters),
             text = localized(LocalizationKey.HOME_MENU_SEMESTERS),
-            onClick = { onNavigate(SemestersDestination) }
+            onClick = { onNavigate(SemestersDestination) },
+            modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_SEMESTERS)
         )
         NavButton(
             icon = painterResource(id = R.drawable.ic_exams),
@@ -361,15 +360,19 @@ private fun CurrentlyOngoingCourses(
         LazyRow(
             modifier = modifier.fillMaxWidth(),
             state = listState,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            contentPadding = PaddingValues(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.extraSmall),
+            contentPadding = PaddingValues(horizontal = BetterNeptunTheme.dimens.itemSpacing),
             flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
         ) {
             items(currentCourses) { course ->
                 CurrentCourseItem(
                     course = course,
-                    modifier = Modifier.fillParentMaxWidth(),
-                    onCourseClick = onCourseClick
+                    onCourseClick = onCourseClick,
+                    modifier = Modifier
+                        .fillParentMaxWidth()
+                        .sharedBoundsAnimation(
+                            key = LocalizationKey.HOME_MENU_TIMETABLE.key + course.id.toString()
+                        )
                 )
             }
         }
@@ -384,64 +387,67 @@ private fun Header(
     onNavigateToScreen: (NavKey) -> Unit,
 ) {
     Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
-            .height(intrinsicSize = IntrinsicSize.Max),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = BetterNeptunTheme.dimens.itemSpacing)
+            .height(intrinsicSize = IntrinsicSize.Max)
     ) {
         Card(
+            shape = BetterNeptunTheme.shapes.large,
+            colors = CardDefaults.cardColors(
+                containerColor = BetterNeptunTheme.colorScheme.primaryContainer,
+                contentColor = BetterNeptunTheme.colorScheme.onPrimaryContainer
+            ),
             modifier = Modifier
                 .weight(1f)
-                .padding(end = 10.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+                .padding(end = BetterNeptunTheme.dimens.paddingSmall)
         ) {
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(horizontal = 20.dp, vertical = 20.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(
+                        horizontal = BetterNeptunTheme.dimens.paddingLarge,
+                        vertical = BetterNeptunTheme.dimens.paddingLarge
+                    )
             ) {
                 studentData?.avatar?.let {
                     AvatarImage(
                         modifier = Modifier
-                            .size(42.dp)
+                            .size(BetterNeptunTheme.dimens.iconHuge)
                             .clip(CircleShape),
                         avatar = studentData.avatar
                     )
-                    Spacer(Modifier.width(12.dp))
+                    Spacer(Modifier.width(BetterNeptunTheme.dimens.itemSpacing))
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = studentData?.name ?: "",
-                        fontSize = 16.sp,
+                        style = BetterNeptunTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = BetterNeptunTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         text = studentData?.neptun ?: "",
-                        fontSize = 14.sp,
+                        style = BetterNeptunTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        color = BetterNeptunTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                     )
                 }
                 if (unreadMessages > 0) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = unreadMessages.toString(),
-                            fontSize = 14.sp,
+                            style = BetterNeptunTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = BetterNeptunTheme.colorScheme.onPrimaryContainer
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(BetterNeptunTheme.dimens.extraSmall))
                         Icon(
                             painter = painterResource(id = R.drawable.ic_mail),
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            modifier = Modifier.size(BetterNeptunTheme.dimens.iconSmall),
+                            tint = BetterNeptunTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
@@ -451,12 +457,14 @@ private fun Header(
         Card(
             modifier = Modifier
                 .fillMaxHeight()
-                .aspectRatio(1f),
-            shape = RoundedCornerShape(20.dp),
+                .aspectRatio(1f)
+                .sharedBoundsAnimation(LocalizationKey.SETTINGS_TITLE),
+            shape = BetterNeptunTheme.shapes.large,
+            enabled = true,
             onClick = { onNavigateToScreen(SettingsDestination) },
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                containerColor = BetterNeptunTheme.colorScheme.secondaryContainer,
+                contentColor = BetterNeptunTheme.colorScheme.onSecondaryContainer,
             )
         ) {
             Box(
@@ -466,8 +474,7 @@ private fun Header(
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
-                    modifier = Modifier.size(32.dp),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                    modifier = Modifier.size(BetterNeptunTheme.dimens.iconExtraLarge),
                 )
             }
         }
@@ -482,25 +489,25 @@ fun CurrentCourseItem(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            containerColor = BetterNeptunTheme.colorScheme.surfaceVariant,
+            contentColor = BetterNeptunTheme.colorScheme.onSurfaceVariant
         ),
         onClick = {
             onCourseClick(course.id)
         }
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.padding(BetterNeptunTheme.dimens.paddingLarge)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.groupSpacing)
             ) {
                 Text(
                     text = localized(LocalizationKey.HOME_ONGOING_COURSE),
-                    fontSize = 18.sp,
+                    style = BetterNeptunTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -508,76 +515,41 @@ fun CurrentCourseItem(
                     progress = { course.progress / 100f },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(8.dp),
+                        .height(BetterNeptunTheme.dimens.badgeSize),
                     color = Color(course.color),
                     trackColor = Color(course.color).copy(alpha = 0.2f),
                     strokeCap = StrokeCap.Round
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.itemSpacing))
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_course),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = course.title.trim(),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.extraSmall)
+                ) {
+                    CourseInfoRow(
+                        icon = R.drawable.ic_course,
+                        text = course.title
+                    )
                     if (course.location.isNullOrBlank().not()) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_location),
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = course.location.trim(),
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
+                        CourseInfoRow(
+                            icon = R.drawable.ic_location,
+                            text = course.location
+                        )
                     }
                 }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_schedule),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                CourseInfoRow(
+                    icon = R.drawable.ic_schedule,
+                    text = localized(
+                        LocalizationKey.HOME_ONGOING_COURSE_MINUTES,
+                        course.remainingTimeMinutes.toString()
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = localized(
-                            LocalizationKey.HOME_ONGOING_COURSE_MINUTES,
-                            course.remainingTimeMinutes.toString()
-                        ),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                }
+                )
             }
         }
     }
@@ -591,21 +563,27 @@ fun NextCourseCard(
 ) {
     course?.let {
         Card(
-            shape = RoundedCornerShape(20.dp),
+            shape = BetterNeptunTheme.shapes.large,
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                containerColor = BetterNeptunTheme.colorScheme.surfaceVariant,
+                contentColor = BetterNeptunTheme.colorScheme.onSurfaceVariant
             ),
             onClick = {
                 onCourseClick(it.id)
             },
             modifier = modifier
+                .sharedBoundsAnimation(
+                    key = LocalizationKey.HOME_MENU_TIMETABLE.key + course.id.toString()
+                )
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp)
+                .padding(horizontal = BetterNeptunTheme.dimens.itemSpacing)
         ) {
             Box(
                 modifier = Modifier
-                    .padding(horizontal = 20.dp, vertical = 20.dp)
+                    .padding(
+                        horizontal = BetterNeptunTheme.dimens.paddingLarge,
+                        vertical = BetterNeptunTheme.dimens.paddingLarge
+                    )
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
@@ -613,77 +591,45 @@ fun NextCourseCard(
                     modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.extraSmall)
+                    ) {
                         Text(
                             text = localized(LocalizationKey.HOME_NEXT_COURSE),
-                            fontSize = 18.sp,
+                            style = BetterNeptunTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = BetterNeptunTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Event,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = when (course.timeUntilEvent.unit) {
-                                    TimeDuration.Unit.MINUTES -> localized(
-                                        LocalizationKey.HOME_NEXT_COURSE_MINUTES,
-                                        course.timeUntilEvent.value.toString()
-                                    )
-
-                                    TimeDuration.Unit.HOURS -> localized(
-                                        LocalizationKey.HOME_NEXT_COURSE_HOURS,
-                                        course.timeUntilEvent.value.toString()
-                                    )
-
-                                    TimeDuration.Unit.DAYS -> localized(
-                                        LocalizationKey.HOME_NEXT_COURSE_DAYS,
-                                        course.timeUntilEvent.value.toString()
-                                    )
-                                },
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_course),
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = course.title.trim(),
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                        if (course.location.isNullOrBlank().not()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_location),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.extraSmall))
+                        CourseInfoRow(
+                            icon = R.drawable.ic_event,
+                            text = when (course.timeUntilEvent.unit) {
+                                TimeDuration.Unit.MINUTES -> localized(
+                                    LocalizationKey.HOME_NEXT_COURSE_MINUTES,
+                                    course.timeUntilEvent.value.toString()
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = course.location.trim(),
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+
+                                TimeDuration.Unit.HOURS -> localized(
+                                    LocalizationKey.HOME_NEXT_COURSE_HOURS,
+                                    course.timeUntilEvent.value.toString()
+                                )
+
+                                TimeDuration.Unit.DAYS -> localized(
+                                    LocalizationKey.HOME_NEXT_COURSE_DAYS,
+                                    course.timeUntilEvent.value.toString()
                                 )
                             }
+                        )
+                        CourseInfoRow(
+                            icon = R.drawable.ic_course,
+                            text = course.title
+                        )
+                        if (course.location.isNullOrBlank().not()) {
+                            CourseInfoRow(
+                                icon = R.drawable.ic_location,
+                                text = course.location
+                            )
                         }
                     }
                     Column(
@@ -691,31 +637,31 @@ fun NextCourseCard(
                         verticalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
                             .fillMaxHeight()
-                            .padding(vertical = 12.dp)
+                            .padding(vertical = BetterNeptunTheme.dimens.itemSpacing)
                     ) {
                         Text(
                             text = "${course.startTime.hour}:${
                                 course.startTime.minute.toString().padStart(2, '0')
                             }",
-                            fontSize = 15.sp,
+                            style = BetterNeptunTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = BetterNeptunTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = "${course.endTime.hour}:${
                                 course.endTime.minute.toString().padStart(2, '0')
                             }",
-                            fontSize = 15.sp,
+                            style = BetterNeptunTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = BetterNeptunTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(BetterNeptunTheme.dimens.itemSpacing))
                     Box(
                         modifier = Modifier
-                            .width(6.dp)
+                            .width(BetterNeptunTheme.dimens.small)
                             .fillMaxHeight()
-                            .padding(vertical = 12.dp)
+                            .padding(vertical = BetterNeptunTheme.dimens.itemSpacing)
                             .background(Color(course.color), CircleShape)
                     )
                 }
@@ -737,42 +683,65 @@ fun NavButton(
         modifier = modifier,
         onClick = onClick,
         enabled = isEnabled,
-        shape = RoundedCornerShape(20.dp),
+        shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            disabledContentColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
-            disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+            containerColor = BetterNeptunTheme.colorScheme.secondaryContainer,
+            contentColor = BetterNeptunTheme.colorScheme.onSecondaryContainer,
+            disabledContentColor = BetterNeptunTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+            disabledContainerColor = BetterNeptunTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
+                .padding(BetterNeptunTheme.dimens.paddingLarge),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 painter = icon,
                 contentDescription = null,
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(BetterNeptunTheme.dimens.iconExtraLarge),
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingSmall))
             Text(
                 text = text,
-                fontSize = 15.sp,
+                style = BetterNeptunTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
             )
             disabledTag?.let {
                 Text(
                     text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(
+                    style = BetterNeptunTheme.typography.labelSmall,
+                    color = BetterNeptunTheme.colorScheme.onSecondaryContainer.copy(
                         alpha = 0.5f
                     )
                 )
             }
         }
+    }
+}
+
+@Composable
+fun CourseInfoRow(
+    @DrawableRes icon: Int,
+    text: String
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.size(BetterNeptunTheme.dimens.iconSmall),
+            tint = BetterNeptunTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        )
+        Spacer(modifier = Modifier.width(BetterNeptunTheme.dimens.paddingSmall))
+        Text(
+            text = text.trim(),
+            style = BetterNeptunTheme.typography.bodyMedium,
+            color = BetterNeptunTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

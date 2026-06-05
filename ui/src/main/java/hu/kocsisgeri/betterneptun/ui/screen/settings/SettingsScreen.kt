@@ -44,6 +44,7 @@ import hu.kocsisgeri.betterneptun.domain.model.localization.Language
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.BuildConfig
+import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.screen.settings.model.SettingsRadioOption
@@ -87,21 +88,23 @@ fun SettingsContent(
     val scrollState = rememberScrollState()
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             SettingsScreenTopAppBar(
                 scrollBehavior = scrollBehavior,
                 onBackClick = onBackClick
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = BetterNeptunTheme.colorScheme.background,
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .sharedBoundsAnimation(LocalizationKey.SETTINGS_TITLE)
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = paddingValues.calculateTopPadding())
-                .padding(horizontal = 16.dp)
-                .clip(MaterialTheme.shapes.large)
+                .padding(horizontal = BetterNeptunTheme.dimens.screenPadding)
+                .clip(BetterNeptunTheme.shapes.large)
                 .verticalScroll(scrollState)
                 .padding(bottom = paddingValues.calculateBottomPadding()),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -115,9 +118,9 @@ fun SettingsContent(
                 onNotificationDelayChange = onNotificationDelayChange
             )
             InfoSection()
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.extraLarge))
             LogoutButton(onClick = onLogout)
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.extraLarge))
         }
     }
 }
@@ -132,9 +135,8 @@ private fun SettingsScreenTopAppBar(
         title = {
             Text(
                 text = localized(LocalizationKey.SETTINGS_TITLE),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
+                style = BetterNeptunTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold
                 )
             )
         },
@@ -148,10 +150,10 @@ private fun SettingsScreenTopAppBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            scrolledContainerColor = MaterialTheme.colorScheme.background,
-            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            containerColor = BetterNeptunTheme.colorScheme.background,
+            scrolledContainerColor = BetterNeptunTheme.colorScheme.background,
+            navigationIconContentColor = BetterNeptunTheme.colorScheme.onSurface,
+            titleContentColor = BetterNeptunTheme.colorScheme.onSurface,
         )
     )
 }
@@ -240,14 +242,14 @@ private fun SettingsSection(
 ) {
     SettingsSectionLabel(label = localized(sectionTitle))
     Card(
-        shape = RoundedCornerShape(20.dp),
+        shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            containerColor = BetterNeptunTheme.colorScheme.surfaceVariant,
+            contentColor = BetterNeptunTheme.colorScheme.onSurfaceVariant
         ),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Column(modifier = Modifier.padding(vertical = BetterNeptunTheme.dimens.paddingSmall)) {
             radioOptions.forEach { option ->
                 RadioOption(
                     label = option.label,
@@ -263,11 +265,11 @@ private fun SettingsSection(
 fun SettingsSectionLabel(label: String) {
     Text(
         text = label,
-        style = MaterialTheme.typography.bodyMedium,
+        style = BetterNeptunTheme.typography.bodyMedium,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp, bottom = 8.dp),
-        color = MaterialTheme.colorScheme.onBackground
+            .padding(top = BetterNeptunTheme.dimens.paddingExtraLarge, bottom = BetterNeptunTheme.dimens.paddingSmall),
+        color = BetterNeptunTheme.colorScheme.onBackground
     )
 }
 
@@ -276,13 +278,13 @@ private fun InfoSection() {
     SettingsSectionLabel(label = localized(LocalizationKey.SETTINGS_SECTION_INFORMATION))
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            containerColor = BetterNeptunTheme.colorScheme.surfaceVariant,
+            contentColor = BetterNeptunTheme.colorScheme.onSurfaceVariant
         )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(BetterNeptunTheme.dimens.paddingMedium)) {
             InfoRow(
                 label = localized(LocalizationKey.SETTINGS_SECTION_INFORMATION_VERSION),
                 value = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
@@ -301,27 +303,27 @@ fun RadioOption(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 12.dp),
+            .padding(horizontal = BetterNeptunTheme.dimens.paddingExtraLarge, vertical = BetterNeptunTheme.dimens.itemSpacing),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyLarge.copy(
+            style = BetterNeptunTheme.typography.bodyLarge.copy(
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
             ),
             color = if (selected) {
-                MaterialTheme.colorScheme.onSurface
+                BetterNeptunTheme.colorScheme.onSurface
             } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
+                BetterNeptunTheme.colorScheme.onSurfaceVariant
             }
         )
         RadioButton(
             selected = selected,
             onClick = null,
             colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary,
-                unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                selectedColor = BetterNeptunTheme.colorScheme.primary,
+                unselectedColor = BetterNeptunTheme.colorScheme.onSurfaceVariant
             )
         )
     }
@@ -332,19 +334,19 @@ fun InfoRow(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .padding(vertical = BetterNeptunTheme.dimens.itemSpacing),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = BetterNeptunTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+            color = BetterNeptunTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = BetterNeptunTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+            color = BetterNeptunTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -353,26 +355,26 @@ fun InfoRow(label: String, value: String) {
 fun LogoutButton(onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(0.7f),
-        shape = RoundedCornerShape(20.dp),
+        shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer,
-            contentColor = MaterialTheme.colorScheme.onErrorContainer
+            containerColor = BetterNeptunTheme.colorScheme.errorContainer,
+            contentColor = BetterNeptunTheme.colorScheme.onErrorContainer
         ),
         onClick = onClick
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(BetterNeptunTheme.dimens.paddingMedium)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = localized(LocalizationKey.SETTINGS_LOGOUT_BUTTON_TITLE),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                style = BetterNeptunTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             )
             Text(
                 text = localized(LocalizationKey.SETTINGS_LOGOUT_BUTTON_DESCRIPTION),
-                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                style = BetterNeptunTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                 textAlign = TextAlign.Center
             )
         }

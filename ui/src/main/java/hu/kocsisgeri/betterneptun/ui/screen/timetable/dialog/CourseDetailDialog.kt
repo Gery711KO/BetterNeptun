@@ -61,18 +61,18 @@ fun CourseDetailDialog(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(BetterNeptunTheme.dimens.screenPadding),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = BetterNeptunTheme.colorScheme.primaryContainer,
+                    contentColor = BetterNeptunTheme.colorScheme.onPrimaryContainer
                 ),
-                shape = MaterialTheme.shapes.extraLarge,
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                shape = BetterNeptunTheme.shapes.extraLarge,
+                elevation = CardDefaults.cardElevation(defaultElevation = BetterNeptunTheme.dimens.default)
             ) {
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
-                        .padding(20.dp)
+                        .padding(BetterNeptunTheme.dimens.paddingLarge)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -80,14 +80,14 @@ fun CourseDetailDialog(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(24.dp)
-                                .clip(MaterialTheme.shapes.small)
+                                .size(BetterNeptunTheme.dimens.iconMedium)
+                                .clip(BetterNeptunTheme.shapes.small)
                                 .background(Color(currentColor))
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(BetterNeptunTheme.dimens.itemSpacing))
                         Text(
                             text = event.title,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = BetterNeptunTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.weight(1f)
                         )
@@ -98,7 +98,7 @@ fun CourseDetailDialog(
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingSmall))
 
                     DetailItem(
                         icon = painterResource(R.drawable.ic_schedule),
@@ -106,7 +106,7 @@ fun CourseDetailDialog(
                         value = getTimeText(event)
                     )
                     if (event.location.isNullOrBlank().not()) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingMedium))
                         DetailItem(
                             icon = painterResource(R.drawable.ic_location),
                             label = "Helyszín",
@@ -114,19 +114,19 @@ fun CourseDetailDialog(
                         )
                     }
                     if (event is CalendarItem.Event) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingMedium))
                         DetailItem(
                             icon = painterResource(R.drawable.ic_event),
                             label = "Oktató",
                             value = event.teacher
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingMedium))
                         DetailItem(
                             icon = painterResource(R.drawable.ic_course),
                             label = "Tárgykód",
                             value = event.subjectCode
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingMedium))
                         DetailItem(
                             icon = painterResource(R.drawable.ic_course),
                             label = "Kurzuskód",
@@ -135,7 +135,7 @@ fun CourseDetailDialog(
                     }
 
                     if (event is CalendarItem.LocalEvent) {
-                        Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(BetterNeptunTheme.dimens.paddingMedium))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End,
@@ -144,22 +144,22 @@ fun CourseDetailDialog(
                             Button(
                                 onClick = { onDeleteLocalEvent(event.id) },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.error,
-                                    contentColor = MaterialTheme.colorScheme.onError
+                                    containerColor = BetterNeptunTheme.colorScheme.error,
+                                    contentColor = BetterNeptunTheme.colorScheme.onError
                                 )
                             ) {
                                 Text(
                                     text = "Törlés",
-                                    style = MaterialTheme.typography.labelMedium
+                                    style = BetterNeptunTheme.typography.labelMedium
                                 )
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(BetterNeptunTheme.dimens.paddingSmall))
                             Button(
                                 onClick = { onEditEvent(event.id) },
                             ) {
                                 Text(
                                     text = "Szerkesztés",
-                                    style = MaterialTheme.typography.labelMedium
+                                    style = BetterNeptunTheme.typography.labelMedium
                                 )
                             }
                         }
@@ -177,31 +177,31 @@ private fun DetailItem(icon: Painter, label: String, value: String) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Surface(
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.size(40.dp)
+            shape = BetterNeptunTheme.shapes.medium,
+            color = BetterNeptunTheme.colorScheme.primaryContainer,
+            modifier = Modifier.size(BetterNeptunTheme.dimens.iconHuge - 8.dp) // 40.dp
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     painter = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    modifier = Modifier.size(BetterNeptunTheme.dimens.paddingLarge), // 20.dp
+                    tint = BetterNeptunTheme.colorScheme.onPrimaryContainer
                 )
             }
         }
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(BetterNeptunTheme.dimens.groupSpacing))
         Column {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                style = BetterNeptunTheme.typography.labelMedium,
+                color = BetterNeptunTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
             )
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleMedium,
+                style = BetterNeptunTheme.typography.titleMedium,
                 fontFamily = Armata,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                color = BetterNeptunTheme.colorScheme.onSecondaryContainer,
                 fontWeight = FontWeight.Bold
             )
         }

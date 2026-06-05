@@ -15,7 +15,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -31,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.tobiasschuerg.weekview.compose.WeekViewActions
 import de.tobiasschuerg.weekview.data.EventConfig
@@ -39,7 +37,9 @@ import de.tobiasschuerg.weekview.data.LocalDateRange
 import de.tobiasschuerg.weekview.data.WeekData
 import de.tobiasschuerg.weekview.data.WeekViewConfig
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.R
+import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.AddEventDialog
@@ -68,6 +68,9 @@ fun TimetableScreen(
     val currentSelectedEvent by viewModel.selectedEvent.collectAsStateWithLifecycle()
 
     TimetableContent(
+        sharedTransitionKey = initialId?.let {
+            LocalizationKey.HOME_MENU_TIMETABLE.key + initialId.toString()
+        }?: LocalizationKey.HOME_MENU_TIMETABLE,
         viewMode = viewMode,
         weeks = weeks,
         currentSelectedEvent = currentSelectedEvent,
@@ -96,6 +99,7 @@ fun TimetableContent(
     onDismissDetail: () -> Unit,
     onDeleteEvent: (Long) -> Unit,
     onAddEvent: (CalendarItem.LocalEvent) -> Unit,
+    sharedTransitionKey: Any,
 ) {
     var showAddEventDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -131,6 +135,7 @@ fun TimetableContent(
     )
 
     Scaffold(
+        modifier = Modifier.sharedBoundsAnimation(sharedTransitionKey),
         topBar = {
             TimeTableScreenTopBar(
                 pagerState = pagerState,
@@ -143,8 +148,8 @@ fun TimetableContent(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddEventDialog = true },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                containerColor = BetterNeptunTheme.colorScheme.primary,
+                contentColor = BetterNeptunTheme.colorScheme.onPrimary
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_event),
@@ -163,8 +168,8 @@ fun TimetableContent(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues)
-                            .padding(horizontal = 16.dp)
-                            .clip(MaterialTheme.shapes.large)
+                            .padding(horizontal = BetterNeptunTheme.dimens.screenPadding)
+                            .clip(BetterNeptunTheme.shapes.large)
                     ) {
                         TimeTableView(
                             weekData = weekData,
@@ -228,7 +233,7 @@ private fun TimeTableScreenTopBar(
         title = {
             Text(
                 text = "Órarend",
-                style = MaterialTheme.typography.titleLarge
+                style = BetterNeptunTheme.typography.titleLarge
             )
         },
         navigationIcon = {
@@ -269,15 +274,15 @@ private fun TimeTableScreenTopBar(
                 Icon(
                     painter = painterResource(id = viewMode.icon),
                     contentDescription = "Nézet váltás",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(BetterNeptunTheme.dimens.iconMedium)
                 )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
-            titleContentColor = MaterialTheme.colorScheme.onBackground,
-            actionIconContentColor = MaterialTheme.colorScheme.onBackground
+            containerColor = BetterNeptunTheme.colorScheme.background,
+            navigationIconContentColor = BetterNeptunTheme.colorScheme.onBackground,
+            titleContentColor = BetterNeptunTheme.colorScheme.onBackground,
+            actionIconContentColor = BetterNeptunTheme.colorScheme.onBackground
         )
     )
 }
@@ -342,6 +347,8 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
     )
 
     TimetableContent(
+        sharedTransitionKey = Unit,
+        viewMode = viewMode,
         weeks = listOf(
             WeekData(
                 dateRange,
@@ -353,7 +360,6 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
                 }
             }
         ),
-        viewMode = viewMode,
         currentSelectedEvent = null,
         onNavigateBack = {},
         onViewModeChange = {},
@@ -362,6 +368,6 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
         onEventClick = {},
         onDismissDetail = {},
         onDeleteEvent = {},
-        onAddEvent = {}
+        onAddEvent = {},
     )
 }

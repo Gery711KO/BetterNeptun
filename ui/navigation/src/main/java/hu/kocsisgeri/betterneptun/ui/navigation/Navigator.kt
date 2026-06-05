@@ -10,11 +10,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavEntryDecorator
@@ -43,9 +49,6 @@ internal val LocalSharedTransitionScope =
 interface Navigator {
     val backStack: List<NavKey>
     val currentScreen: NavKey
-
-    @Composable
-    fun getSharedTransitionScope(): SharedTransitionScope
 
     @Composable
     fun Content()
@@ -79,10 +82,11 @@ interface Navigator {
             predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.(
                 @NavigationEvent.SwipeEdge Int
             ) -> ContentTransform = defaultPredictivePopTransitionSpec(),
-            navigationEntries: Collection<NavigationEntry>
+            navigationEntries: Collection<NavigationEntry>,
+            onCurrentScreenLoaded: (Boolean) -> Unit,
         ) {
             SharedTransitionLayout {
-                provideSharedTransitionScope {
+                ProvideSharedTransitionScope {
                     NavDisplay(
                         sharedTransitionScope = this,
                         backStack = navigator.backStack,
@@ -91,7 +95,15 @@ interface Navigator {
                             navigationEntries.forEach { destination ->
                                 destinationEntry(
                                     clazz = destination.key,
-                                    content = { destination.content(it) }
+                                    content = { screen ->
+                                        ScreenLoadState(
+                                            navigator = navigator,
+                                            currentScreen = screen,
+                                            onCurrentScreenLoaded = onCurrentScreenLoaded
+                                        )
+
+                                        destination.content(screen)
+                                    }
                                 )
                             }
                         },
@@ -104,6 +116,24 @@ interface Navigator {
                 }
             }
         }
+
+        @Composable
+        private fun ScreenLoadState(
+            navigator: Navigator,
+            currentScreen: NavKey,
+            onCurrentScreenLoaded: (Boolean) -> Unit
+        ) {
+            val lifeCycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+            LaunchedEffect(lifeCycleState) {
+                if (currentScreen == navigator.currentScreen) {
+                    onCurrentScreenLoaded(
+                        lifeCycleState.isAtLeast(
+                            state = Lifecycle.State.STARTED
+                        )
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -112,49 +142,20 @@ private data class DefaultNavigator(
     val startDestination: NavKey,
     val navigationEntries: Collection<NavigationEntry>,
 ) : Navigator {
-    override val backStack = mutableStateListOf<NavKey>(startDestination)
+    override val backStack = mutableStateListOf(startDestination)
     override val currentScreen: NavKey by derivedStateOf { backStack.last() }
 
-    @Composable
-    override fun getSharedTransitionScope() = LocalSharedTransitionScope.current
+    private var canNavigate: Boolean by mutableStateOf(true)
 
     @Composable
     override fun Content() {
         Navigator.DefaultNavDisplay(
             navigator = this,
-            transitionSpec = {
-                val isToSplash = targetState.isSubclassOf(SplashTransition::class)
-                val isFromSplash = targetState.isSubclassOf(SplashTransition::class)
-                val isToShared = targetState.isSubclassOf(SharedBoundsTransition::class)
-                val isFromShared = targetState.isSubclassOf(SharedBoundsTransition::class)
-
-                when {
-                    isToSplash && isFromSplash -> Transition.splashTransition(this)
-                    isToShared && isFromShared -> Transition.sharedTransition(this)
-                    else -> Transition.slideTransition(this)
-                }
-            },
-            popTransitionSpec = {
-                val isFromSplash = initialState.isSubclassOf(SplashTransition::class)
-                val isFromShared = initialState.isSubclassOf(SharedBoundsTransition::class)
-
-                when {
-                    isFromSplash-> Transition.popSplashTransition(this)
-                    isFromShared -> Transition.sharedTransition(this)
-                    else -> Transition.popSlideTransition(this)
-                }
-            },
-            predictivePopTransitionSpec = {
-                val isFromSplash = initialState.isSubclassOf(SplashTransition::class)
-                val isFromShared = initialState.isSubclassOf(SharedBoundsTransition::class)
-
-                when {
-                    isFromSplash -> Transition.popSplashTransition(this)
-                    isFromShared -> Transition.sharedTransition(this)
-                    else -> Transition.popSlideTransition(this)
-                }
-            },
             navigationEntries = navigationEntries,
+            transitionSpec = { findTransition(isPopTransition = false) },
+            popTransitionSpec = { findTransition(isPopTransition = true) },
+            predictivePopTransitionSpec = { findTransition(isPopTransition = true) },
+            onCurrentScreenLoaded = { canNavigate = it },
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
@@ -162,25 +163,49 @@ private data class DefaultNavigator(
     }
 
     override fun navigateTo(navigationKey: NavKey) {
-        backStack.add(navigationKey)
+        if (canNavigate) backStack.add(navigationKey)
     }
 
     override fun navigateToInclusive(navigationKey: NavKey) {
-        backStack.add(navigationKey)
-        backStack.removeIf { navigationKey != it }
+        if (canNavigate) {
+            backStack.add(navigationKey)
+            backStack.removeIf { navigationKey != it }
+        }
     }
 
     override fun navigateBack(): Boolean {
-        if (backStack.size > 1) {
+        if (backStack.size > 1 && canNavigate) {
             backStack.removeLastOrNull()
             return true
         } else {
             return false
         }
     }
+
+    private fun AnimatedContentTransitionScope<Scene<NavKey>>.findTransition(
+        isPopTransition: Boolean
+    ): ContentTransform {
+        val isToSplash = targetState.isSubclassOf(SplashTransition::class)
+        val isFromSplash = initialState.isSubclassOf(SplashTransition::class)
+        val isToShared = targetState.isSubclassOf(SharedBoundsTransition::class)
+        val isFromShared = initialState.isSubclassOf(SharedBoundsTransition::class)
+
+        return when {
+            isToSplash && isFromSplash -> {
+                if (isPopTransition) Transition.popSplashTransition(this)
+                else Transition.splashTransition(this)
+            }
+
+            isToShared && isFromShared -> Transition.sharedTransition(this)
+            else -> {
+                if (isPopTransition) Transition.popSlideTransition(this)
+                else Transition.slideTransition(this)
+            }
+        }
+    }
 }
 
-internal fun <T : NavKey> EntryProviderScope<NavKey>.destinationEntry(
+private fun <T : NavKey> EntryProviderScope<NavKey>.destinationEntry(
     clazz: KClass<out T>,
     content: @Composable (T) -> Unit,
 ) {
@@ -192,7 +217,7 @@ internal fun <T : NavKey> EntryProviderScope<NavKey>.destinationEntry(
 }
 
 @Composable
-private fun SharedTransitionScope.provideSharedTransitionScope(content: @Composable () -> Unit) {
+private fun SharedTransitionScope.ProvideSharedTransitionScope(content: @Composable () -> Unit) {
     CompositionLocalProvider(
         LocalSharedTransitionScope provides this,
         content = content

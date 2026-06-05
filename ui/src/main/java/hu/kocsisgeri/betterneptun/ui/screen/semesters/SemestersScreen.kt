@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.ChartColor
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.core.theme.themeBasedColor
@@ -97,6 +99,7 @@ fun SemestersContent(
     Scaffold(
         topBar = { SemestersScreenTopBar(onBackClick) },
         containerColor = colorScheme.background,
+        modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_SEMESTERS),
     ) { paddingValues ->
         Column(
             modifier = Modifier
