@@ -52,6 +52,9 @@ androidxDataStore = "1.2.1"
 
 secretsGradlePlugin = "2.0.1"
 
+kotlinDateTime = "0.8.0"
+calendarKmp = "2.10.1"
+
 [libraries]
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -67,6 +70,7 @@ androidx-lifecycle-extensions = { group = "androidx.lifecycle", name = "lifecycl
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycle" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
@@ -144,6 +148,9 @@ mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "moc
 mockito-kotlin = { group = "com.nhaarman.mockitokotlin2", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinDateTime" }
+calendar-kmp = { module = "com.kizitonwose.calendar:compose-multiplatform", version.ref = "calendarKmp" }
+
 [plugins]
 betterneptun-application = { id = "betterneptun.android.application" }
 betterneptun-library = { id = "betterneptun.android.library" }
@@ -172,7 +179,7 @@ compose = [
     "androidx-compose-material3",
     "androidx-compose-material",
     "androidx-compose-material-iconsExtended",
-    "google-material"
+    "google-material",
 ]
 
 navigation3 = [
@@ -185,7 +192,8 @@ androidx-lifecycle = [
     "androidx-lifecycle-livedata-ktx",
     "androidx-lifecycle-viewmodel-ktx",
     "androidx-lifecycle-runtime-ktx",
-    "androidx-lifecycle-extensions"
+    "androidx-lifecycle-extensions",
+    "androidx-lifecycle-process"
 ]
 
 androidx-room = [
@@ -216,6 +224,7 @@ koin = [
     "koin-workmanager",
     "jakarta-inject"
 ]
+
 networking = [
     "retrofit",
     "retrofit-kotlin-serialization",

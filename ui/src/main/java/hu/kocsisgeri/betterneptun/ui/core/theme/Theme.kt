@@ -1,9 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.core.theme
 
 import android.app.Activity
-import android.content.ComponentCallbacks
-import android.content.Context
-import android.content.res.Configuration
 import android.graphics.Color
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SharedTransitionLayout
@@ -29,8 +26,6 @@ import androidx.compose.ui.tooling.preview.PreviewWrapperProvider
 import androidx.core.view.WindowCompat
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import hu.kocsisgeri.betterneptun.ui.navigation.utils.ProvideSharedTransitionScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import org.koin.core.annotation.Singleton
 
 object BetterNeptunTheme {
     val colorScheme: ColorScheme
@@ -105,31 +100,6 @@ private val LightColorScheme = lightColorScheme(
     onSurfaceVariant = LightOnSurfaceVariant,
     outline = LightOutline
 )
-
-@Singleton
-class BetterNeptunColors(context: Context) {
-
-    val colors = MutableStateFlow(DarkColorScheme)
-
-    private val configCallbacks = object : ComponentCallbacks {
-        override fun onConfigurationChanged(newConfig: Configuration) {
-            colors.value = if (newConfig.uiMode == Configuration.UI_MODE_NIGHT_YES) {
-                DarkColorScheme
-            } else {
-                LightColorScheme
-            }
-
-        }
-
-        @Deprecated("Deprecated in Java")
-        override fun onLowMemory() {
-        }
-    }
-
-    init {
-        context.applicationContext.registerComponentCallbacks(configCallbacks)
-    }
-}
 
 @Composable
 fun BetterNeptunTheme(

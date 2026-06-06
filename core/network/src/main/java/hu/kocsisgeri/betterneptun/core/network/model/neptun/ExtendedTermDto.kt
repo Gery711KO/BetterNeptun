@@ -1,8 +1,7 @@
 package hu.kocsisgeri.betterneptun.core.network.model.neptun
 
-import kotlinx.serialization.Contextual
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
-import java.time.LocalDateTime
 
 @Serializable
 data class ExtendedTermDto(
@@ -11,9 +10,7 @@ data class ExtendedTermDto(
     val termId: String,
     val financialStatus: String,
     val semester: Int,
-    @Contextual
     val registration: LocalDateTime,
-    @Contextual
     val closing: LocalDateTime,
     val usedSupportedSemestersInTotal: Int,
     val studentTrainingTermDataId: String,

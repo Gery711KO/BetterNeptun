@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.ChartColor
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
@@ -195,14 +195,12 @@ private fun AveragesChart(averagesResult: ApiResult<List<LineData>>) {
                 darkColor = Color(0xFF04D9FF),
                 lightColor = Color(0xFF008BA3)
             )
-            val lines by remember(averagesResult) {
-                derivedStateOf {
-                    mapLines(
-                        averagesResult = averagesResult,
-                        primaryColor = primaryColor,
-                        secondaryColor = secondaryColor
-                    )
-                }
+            val lines = remember(averagesResult, primaryColor, secondaryColor) {
+                mapLines(
+                    averagesResult = averagesResult,
+                    primaryColor = primaryColor,
+                    secondaryColor = secondaryColor
+                )
             }
 
             LineChart(
@@ -232,16 +230,17 @@ private fun CreditsChart(creditsResult: ApiResult<List<ColumnBars>>) {
     when (creditsResult) {
         is ApiResult.Loading -> LoadingIndicator()
         is ApiResult.Success -> {
-            val bars by remember(creditsResult) {
-                derivedStateOf {
-                    mapBars(
-                        creditsResult = creditsResult,
-                        colors = colors
-                    )
-                }
+            val bars = remember(creditsResult, colors) {
+                mapBars(
+                    creditsResult = creditsResult,
+                    colors = colors
+                )
             }
-            val availableSizePerBar = LocalWindowInfo.current.containerDpSize.height / bars.size
-            val barThickness = availableSizePerBar / 3
+            val windowInfo = LocalWindowInfo.current
+            val barThickness = remember(bars.size, windowInfo.containerDpSize.height) {
+                val availableSizePerBar = windowInfo.containerDpSize.height / maxOf(1, bars.size)
+                availableSizePerBar / 3
+            }
 
             RowChart(
                 data = bars,
@@ -271,61 +270,95 @@ private fun CreditsChart(creditsResult: ApiResult<List<ColumnBars>>) {
 }
 
 @Composable
-private fun commonLabelProperties() = LabelProperties(
-    enabled = true,
-    textStyle = typography.labelSmall.copy(
-        color = colorScheme.primary
-    ),
-    rotation = LabelProperties.Rotation(degree = 0f)
-)
+private fun commonLabelProperties(): LabelProperties {
+    val primary = colorScheme.primary
+    val typo = typography
+    return remember(primary, typo) {
+        LabelProperties(
+            enabled = true,
+            textStyle = typo.labelSmall.copy(
+                color = primary
+            ),
+            rotation = LabelProperties.Rotation(degree = 0f)
+        )
+    }
+}
 
 @Composable
-private fun commonLabelHelperProperties() = LabelHelperProperties(
-    textStyle = typography.labelSmall.copy(
-        color = colorScheme.primary
-    ),
-    labelCountPerLine = 1
-)
+private fun commonLabelHelperProperties(): LabelHelperProperties {
+    val primary = colorScheme.primary
+    val typo = typography
+    return remember(primary, typo) {
+        LabelHelperProperties(
+            textStyle = typo.labelSmall.copy(
+                color = primary
+            ),
+            labelCountPerLine = 1
+        )
+    }
+}
 
 @Composable
-private fun commonHorizontalIndicatorProperties(steps: Double) = HorizontalIndicatorProperties(
-    textStyle = typography.labelSmall.copy(
-        color = colorScheme.primary
-    ),
-    contentBuilder = { it.roundToInt().toString() },
-    count = IndicatorCount.StepBased(steps),
-)
+private fun commonHorizontalIndicatorProperties(steps: Double): HorizontalIndicatorProperties {
+    val primary = colorScheme.primary
+    val typo = typography
+    return remember(primary, typo, steps) {
+        HorizontalIndicatorProperties(
+            textStyle = typo.labelSmall.copy(
+                color = primary
+            ),
+            contentBuilder = { it.roundToInt().toString() },
+            count = IndicatorCount.StepBased(steps),
+        )
+    }
+}
 
 @Composable
-private fun commonVerticalIndicatorProperties(steps: Double) = VerticalIndicatorProperties(
-    textStyle = typography.labelSmall.copy(
-        color = colorScheme.primary
-    ),
-    contentBuilder = { it.roundToInt().toString() },
-    count = IndicatorCount.StepBased(steps),
-)
+private fun commonVerticalIndicatorProperties(steps: Double): VerticalIndicatorProperties {
+    val primary = colorScheme.primary
+    val typo = typography
+    return remember(primary, typo, steps) {
+        VerticalIndicatorProperties(
+            textStyle = typo.labelSmall.copy(
+                color = primary
+            ),
+            contentBuilder = { it.roundToInt().toString() },
+            count = IndicatorCount.StepBased(steps),
+        )
+    }
+}
 
 
 @Composable
-private fun commonDividerProperties() = DividerProperties(
-    xAxisProperties = LineProperties(
-        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-    ),
-    yAxisProperties = LineProperties(
-        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-    )
-)
+private fun commonDividerProperties(): DividerProperties {
+    val onSurfaceVariant = colorScheme.onSurfaceVariant
+    return remember(onSurfaceVariant) {
+        DividerProperties(
+            xAxisProperties = LineProperties(
+                color = SolidColor(onSurfaceVariant.copy(alpha = 0.3f))
+            ),
+            yAxisProperties = LineProperties(
+                color = SolidColor(onSurfaceVariant.copy(alpha = 0.3f))
+            )
+        )
+    }
+}
 
 @Composable
-private fun commonGridProperties() = GridProperties(
-    xAxisProperties = GridProperties.AxisProperties(
-        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-    ),
-    yAxisProperties = GridProperties.AxisProperties(
-        lineCount = 2,
-        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-    ),
-)
+private fun commonGridProperties(): GridProperties {
+    val onSurfaceVariant = colorScheme.onSurfaceVariant
+    return remember(onSurfaceVariant) {
+        GridProperties(
+            xAxisProperties = GridProperties.AxisProperties(
+                color = SolidColor(onSurfaceVariant.copy(alpha = 0.3f))
+            ),
+            yAxisProperties = GridProperties.AxisProperties(
+                lineCount = 2,
+                color = SolidColor(onSurfaceVariant.copy(alpha = 0.3f))
+            ),
+        )
+    }
+}
 
 @Composable
 private fun LoadingIndicator() {

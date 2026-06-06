@@ -3,8 +3,7 @@ package hu.kocsisgeri.betterneptun.core.database.room
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import hu.kocsisgeri.betterneptun.core.database.localevents.model.LocalEventEntity
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 
 @Entity(tableName = "local_event")
 internal data class RoomLocalEventEntity(

@@ -31,7 +31,6 @@ internal fun Project.configureAndroidEarly(
                 versionCode = projectConfigs.versionCode
                 versionName = projectConfigs.versionName
 
-
                 buildConfigField(
                     type = "String",
                     name = "VERSION_NAME",

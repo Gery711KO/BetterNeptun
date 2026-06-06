@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
+import hu.kocsisgeri.betterneptun.common.utils.getTimeLeft
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.usecase.home.FetchUnreadMessagesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetCurrentCoursesUseCase
@@ -9,7 +10,6 @@ import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.core.helper.ClockMinutesTickReceiver
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
-import hu.kocsisgeri.betterneptun.ui.screen.home.model.getTimeLeft
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.getTimeUntil
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.getPercent
 import kotlinx.coroutines.flow.Flow

@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.screen.timetable
+package hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -13,16 +13,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import de.tobiasschuerg.weekview.compose.WeekBackgroundCompose
-import de.tobiasschuerg.weekview.compose.WeekViewActions
-import de.tobiasschuerg.weekview.compose.style.defaultWeekViewColors
-import de.tobiasschuerg.weekview.compose.style.defaultWeekViewStyle
-import de.tobiasschuerg.weekview.data.EventConfig
-import de.tobiasschuerg.weekview.data.WeekData
-import de.tobiasschuerg.weekview.data.WeekViewConfig
-import de.tobiasschuerg.weekview.util.TimeSpan
-import java.time.Duration
-import java.time.LocalTime
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components.WeekBackgroundCompose
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.EventConfig
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.WeekViewConfig
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.TimeSpan
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekViewActions
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.defaultWeekViewColors
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.defaultWeekViewStyle
+import kotlinx.datetime.LocalTime
+import kotlin.time.Duration.Companion.hours
 
 @Composable
 fun TimeTableView(
@@ -69,8 +69,8 @@ fun TimeTableView(
             dateRange = weekData.dateRange,
             timeRange =
                 weekData.getTimeSpan() ?: TimeSpan.of(
-                    LocalTime.of(6, 0),
-                    Duration.ofHours(12),
+                    LocalTime(6, 0),
+                    12.hours
                 ),
             events = weekData.getSingleEvents(),
             allDayEvents = weekData.getAllDayEvents(),

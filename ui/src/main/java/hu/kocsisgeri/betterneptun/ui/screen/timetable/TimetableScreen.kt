@@ -31,11 +31,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import de.tobiasschuerg.weekview.compose.WeekViewActions
-import de.tobiasschuerg.weekview.data.EventConfig
-import de.tobiasschuerg.weekview.data.LocalDateRange
-import de.tobiasschuerg.weekview.data.WeekData
-import de.tobiasschuerg.weekview.data.WeekViewConfig
+import de.tobiasschuerg.weekview.compose.style.defaultWeekViewColors
+import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.R
@@ -47,16 +44,25 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.AddEventDialog
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.CourseDetailDialog
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.ViewMode
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.toComposeEvent
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.TimeTableView
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.EventConfig
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.WeekViewConfig
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekDataDateRange
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekViewActions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateRange
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.atTime
+import kotlinx.datetime.nextOrSame
+import kotlinx.datetime.previousOrSame
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.temporal.TemporalAdjusters
 
 @Composable
 fun TimetableScreen(
@@ -305,28 +311,28 @@ private fun TimetableDayPreview() {
 @Composable
 private fun TimetablePreviewContent(viewMode: ViewMode) {
     val now = LocalDateTime.now()
-    val today = LocalDate.now()
+    val today = LocalDateTime.now()
     val dateRange = when (viewMode) {
         ViewMode.WEEK -> {
-            val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val friday = monday.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY))
+            val monday = today.date.previousOrSame(DayOfWeek.MONDAY)
+            val friday = monday.nextOrSame(DayOfWeek.FRIDAY)
             LocalDateRange(monday, friday)
         }
 
         ViewMode.FULL_WEEK -> {
-            val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val friday = monday.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
-            LocalDateRange(monday, friday)
+            val monday = today.date.previousOrSame(DayOfWeek.MONDAY)
+            val sunday = monday.nextOrSame(DayOfWeek.SUNDAY)
+            LocalDateRange(monday, sunday)
         }
 
-        ViewMode.DAY -> LocalDateRange(today, today)
+        ViewMode.DAY -> LocalDateRange(today.date, today.date)
     }
     val events = listOf(
         CalendarItem.Event(
             id = 1L,
             title = "Mobil szoftverfejlesztés",
-            startTime = now.withHour(8).withMinute(30),
-            endTime = now.withHour(10).withMinute(0),
+            startTime = LocalDateTime(now.date, LocalTime(8, 30)),
+            endTime = LocalDateTime(now.date, LocalTime(10, 0)),
             location = "IB.028",
             color = 0xFF4CAF50.toInt(),
             courseCode = "VIAUAC00",
@@ -338,12 +344,14 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
         CalendarItem.LocalEvent(
             id = 2L,
             title = "Konzultáció",
-            startTime = now.withHour(12).withMinute(30),
-            endTime = now.withHour(14).withMinute(0),
+            startTime = LocalDateTime(now.date, LocalTime(12, 30)),
+            endTime = LocalDateTime(now.date, LocalTime(14, 0)),
             location = "Online",
             color = 0xFF2196F3.toInt()
         )
     )
+
+    defaultWeekViewColors()
 
     TimetableContent(
         sharedTransitionKey = Unit,
@@ -351,10 +359,10 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
         weeks = listOf(
             WeekData(
                 dateRange,
-                start = LocalTime.of(6, 0),
-                end = LocalTime.of(23, 0)
+                start = LocalTime(6, 0),
+                end = LocalTime(23, 0)
             ).apply {
-                events.filter { it.startTime.toLocalDate() in dateRange }.forEach {
+                events.filter { it.startTime.date in dateRange }.forEach {
                     add(it.toComposeEvent())
                 }
             }

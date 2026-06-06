@@ -1,0 +1,110 @@
+package hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.Dp
+import hu.kocsisgeri.betterneptun.common.utils.isAfter
+import hu.kocsisgeri.betterneptun.common.utils.isBefore
+import hu.kocsisgeri.betterneptun.common.utils.minutesUntil
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.WeekViewStyle
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
+
+@Composable
+internal fun GridCanvas(
+    modifier: Modifier = Modifier,
+    columnCount: Int,
+    rowHeightDp: Dp,
+    totalHours: Float,
+    days: List<LocalDate>,
+    today: LocalDate,
+    showNowIndicator: Boolean,
+    highlightCurrentDay: Boolean,
+    currentTimeLineOnlyToday: Boolean,
+    now: LocalTime,
+    gridStartTime: LocalTime,
+    effectiveEndTime: LocalTime,
+    style: WeekViewStyle,
+) {
+    Canvas(modifier = modifier) {
+        val columnWidthPx = if (columnCount > 0) size.width / columnCount else size.width // Avoid division by zero
+        val rowHeightPx = rowHeightDp.toPx()
+
+        // Vertical lines (day columns)
+        for (i in 0..columnCount) {
+            val x = i * columnWidthPx
+            drawLine(
+                color = style.colors.gridLineColor,
+                start = Offset(x, 0f),
+                end = Offset(x, size.height),
+                strokeWidth = 2f,
+            )
+        }
+
+        // Horizontal lines (hours) - full width
+        val hourLineCount = kotlin.math.ceil(totalHours).toInt()
+        for (i in 0..hourLineCount) {
+            val y = i * rowHeightPx
+            drawLine(
+                color = style.colors.gridLineColor,
+                start = Offset(0f, y),
+                end = Offset(size.width, y),
+                strokeWidth = 2f,
+            )
+        }
+
+        // Today highlight
+        if (highlightCurrentDay && days.contains(today)) {
+            val todayColumnIndex = days.indexOf(today)
+            val left = todayColumnIndex * columnWidthPx
+            drawRect(
+                color = style.colors.todayHighlight,
+                topLeft = Offset(left, 0f),
+                size = Size(columnWidthPx, size.height),
+            )
+        }
+
+        // Now indicator line
+        if (showNowIndicator && now.isAfter(gridStartTime) && now.isBefore(effectiveEndTime)) {
+            val nowPositionMinutes = gridStartTime.minutesUntil(now)
+            val nowY = (nowPositionMinutes / 60f) * rowHeightPx
+            if (nowY >= 0 && nowY <= size.height) {
+                val dotRadius = 8f
+                if (currentTimeLineOnlyToday) {
+                    if (days.contains(today)) {
+                        val todayColumnIndex = days.indexOf(today)
+                        val left = todayColumnIndex * columnWidthPx
+                        val right = left + columnWidthPx
+                        drawLine(
+                            color = style.colors.nowIndicator,
+                            start = Offset(left, nowY),
+                            end = Offset(right, nowY),
+                            strokeWidth = 4f,
+                        )
+                        drawCircle(
+                            color = style.colors.nowIndicator,
+                            radius = dotRadius,
+                            center = Offset(left, nowY),
+                        )
+                    }
+                    // When today is not in view, draw nothing
+                } else {
+                    drawLine(
+                        color = style.colors.nowIndicator,
+                        start = Offset(0f, nowY),
+                        end = Offset(size.width, nowY),
+                        strokeWidth = 4f,
+                    )
+                    drawCircle(
+                        color = style.colors.nowIndicator,
+                        radius = dotRadius,
+                        center = Offset(0f, nowY),
+                    )
+                }
+            }
+        }
+    }
+}

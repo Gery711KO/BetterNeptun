@@ -64,17 +64,31 @@ import com.github.skydoves.colorpicker.compose.AlphaSlider
 import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import hu.kocsisgeri.betterneptun.common.utils.now
+import hu.kocsisgeri.betterneptun.common.utils.plus
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.ui.R
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.format
+import kotlinx.datetime.format.FormatStringsInDatetimeFormats
+import kotlinx.datetime.format.byUnicodePattern
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Instant
 
-private val dateFormatter = DateTimeFormatter.ofPattern("yyyy. MM. dd.")
-private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+@OptIn(FormatStringsInDatetimeFormats::class)
+private val dateFormatter = LocalDateTime.Format {
+    byUnicodePattern("uuuu. MM. dd.")
+}
+
+@OptIn(FormatStringsInDatetimeFormats::class)
+private val timeFormatter = LocalDateTime.Format {
+    byUnicodePattern("HH:mm")
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,7 +128,7 @@ fun AddEventDialog(
         }
         val date = remember {
             DialogData.TextInputData(
-                initialValue = event?.startTime?.toLocalDate() ?: LocalDate.now(),
+                initialValue = event?.startTime ?: LocalDateTime.now(),
                 label = "Dátum",
                 leadingIcon = R.drawable.ic_calendar,
                 format = { it.format(dateFormatter) },
@@ -129,7 +143,7 @@ fun AddEventDialog(
         }
         val startTime = remember {
             DialogData.TextInputData(
-                initialValue = event?.startTime?.toLocalTime() ?: LocalTime.now(),
+                initialValue = event?.startTime ?: LocalDateTime.now(),
                 label = "Kezdés",
                 leadingIcon = R.drawable.ic_schedule,
                 withDialog = { input ->
@@ -144,7 +158,7 @@ fun AddEventDialog(
         }
         val endTime = remember {
             DialogData.TextInputData(
-                initialValue = event?.endTime?.toLocalTime() ?: LocalTime.now().plusMinutes(30),
+                initialValue = event?.startTime ?: LocalDateTime.now().plus(30.minutes),
                 label = "Vége",
                 leadingIcon = R.drawable.ic_schedule,
                 withDialog = { input ->
@@ -174,8 +188,8 @@ fun AddEventDialog(
                 val event = CalendarItem.LocalEvent(
                     id = event?.id ?: (System.currentTimeMillis() % 10000000),
                     title = title.formattedValue,
-                    startTime = LocalDateTime.of(date.value, startTime.value),
-                    endTime = LocalDateTime.of(date.value, endTime.value),
+                    startTime = startTime.value,
+                    endTime = endTime.value,
                     location = location.formattedValue,
                     color = selectedColor.value,
                 )
@@ -546,14 +560,13 @@ private fun ColorPickerAlertDialog(colorInput: DialogData.ColorInput) {
 
 @Composable
 private fun DatePickerAlertDialog(
-    initialDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit,
+    initialDate: LocalDateTime,
+    onDateSelected: (LocalDateTime) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = initialDate
-            .atStartOfDay(ZoneId.systemDefault()).toInstant()
-            .toEpochMilli()
+            .date.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds()
     )
 
     DatePickerDialog(
@@ -564,7 +577,8 @@ private fun DatePickerAlertDialog(
                 onClick = {
                     datePickerState.selectedDateMillis?.let {
                         onDateSelected(
-                            Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                            Instant.fromEpochMilliseconds(it)
+                                .toLocalDateTime(TimeZone.currentSystemDefault())
                         )
                     }
                     onDismissRequest()
@@ -594,8 +608,8 @@ private fun DatePickerAlertDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TimePickerAlertDialog(
-    initialTime: LocalTime,
-    onTimeSelected: (LocalTime) -> Unit,
+    initialTime: LocalDateTime,
+    onTimeSelected: (LocalDateTime) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
     val timePickerState = rememberTimePickerState(
@@ -610,7 +624,7 @@ private fun TimePickerAlertDialog(
             DialogTextButton(
                 text = "OK",
                 onClick = {
-                    onTimeSelected(LocalTime.of(timePickerState.hour, timePickerState.minute))
+                    onTimeSelected(LocalDateTime(initialTime.date, LocalTime(timePickerState.hour, timePickerState.minute)))
                     onDismissRequest()
                 }
             )
@@ -649,9 +663,9 @@ private class DialogData(
     val title: TextInputData<String>,
     val location: TextInputData<String>,
     val color: ColorInput,
-    val date: TextInputData<LocalDate>,
-    val startTime: TextInputData<LocalTime>,
-    val endTime: TextInputData<LocalTime>,
+    val date: TextInputData<LocalDateTime>,
+    val startTime: TextInputData<LocalDateTime>,
+    val endTime: TextInputData<LocalDateTime>,
 ) {
     @Immutable
     data class ColorInput(

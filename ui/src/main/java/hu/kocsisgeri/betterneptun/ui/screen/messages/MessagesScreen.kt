@@ -74,16 +74,18 @@ import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import java.time.LocalDateTime
 
 @Composable
 fun MessagesScreen(
     viewModel: MessagesViewModel = koinViewModel(),
     navigator: Navigator = koinInject()
 ) {
-    val messages by viewModel.listItems.collectAsStateWithLifecycle()
+    val messages by viewModel.listItems.collectAsStateWithLifecycle(
+        minActiveState = Lifecycle.State.RESUMED
+    )
 
     MessagesContent(
         messages = messages,
@@ -245,6 +247,10 @@ private fun LazyListScope.loadingMessage(messages: MessagesPager) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
+                    .then(
+                        if (messages.messages.isEmpty()) Modifier.fillParentMaxHeight()
+                        else Modifier
+                    )
                     .fillMaxWidth()
                     .padding(16.dp),
             ) {
@@ -391,7 +397,7 @@ fun MessagesSuccessPreview() {
                     id = "1",
                     name = "Kovács János",
                     subject = "Vizsga eredmény",
-                    date = LocalDateTime.of(2023, 10, 25, 14, 30),
+                    date = LocalDateTime(2023, 10, 25, 14, 30),
                     isNew = true,
                     senderAvatar = Avatar.MonogramAvatar(
                         monogram = "KJ",
@@ -402,7 +408,7 @@ fun MessagesSuccessPreview() {
                     id = "2",
                     name = "Neptun Rendszer",
                     subject = "Kurzusfelvétel",
-                    date = LocalDateTime.of(2023, 10, 24, 9, 15),
+                    date = LocalDateTime(2023, 10, 24, 9, 15),
                     isNew = false,
                     senderAvatar = Avatar.SystemAvatar
                 ),
@@ -410,7 +416,7 @@ fun MessagesSuccessPreview() {
                     id = "3",
                     name = "Kósa Kálmán",
                     subject = "Elmaradt előadás",
-                    date = LocalDateTime.of(2023, 10, 23, 18, 0),
+                    date = LocalDateTime(2023, 10, 23, 18, 0),
                     isNew = true,
                     senderAvatar = Avatar.MonogramAvatar(
                         monogram = "KK",

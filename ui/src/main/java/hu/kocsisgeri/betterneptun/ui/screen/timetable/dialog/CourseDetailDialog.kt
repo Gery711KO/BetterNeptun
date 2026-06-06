@@ -19,7 +19,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,13 +34,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import java.time.LocalDateTime
-import java.time.format.TextStyle
-import java.util.Locale
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 
 @Composable
 fun CourseDetailDialog(
@@ -209,7 +210,15 @@ private fun DetailItem(icon: Painter, label: String, value: String) {
 }
 
 private fun getTimeText(event: CalendarItem): String {
-    val day = event.startTime.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("hu"))
+    val day =  when (event.startTime.dayOfWeek) {
+        DayOfWeek.MONDAY -> "hétfő"
+        DayOfWeek.TUESDAY -> "kedd"
+        DayOfWeek.WEDNESDAY -> "szerda"
+        DayOfWeek.THURSDAY -> "csütörtök"
+        DayOfWeek.FRIDAY -> "péntek"
+        DayOfWeek.SATURDAY -> "szombat"
+        DayOfWeek.SUNDAY -> "vasárnap"
+    }
     val startMin = event.startTime.minute.let { if (it < 10) "0$it" else it }
     val endMin = event.endTime.minute.let { if (it < 10) "0$it" else it }
     val timeText = "${event.startTime.hour}:${startMin} - ${event.endTime.hour}:${endMin} ($day)"
@@ -233,8 +242,8 @@ fun CourseDetailPreview() {
                 courseCode = "VA1_LA_01_MOBIL",
                 subjectCode = "NIEVA1FBNE",
                 teacher = "Kovács János",
-                startTime = LocalDateTime.now().withHour(8).withMinute(0),
-                endTime = LocalDateTime.now().withHour(10).withMinute(30),
+                startTime = LocalDateTime(LocalDate.now(), LocalTime(8, 0)),
+                endTime = LocalDateTime(LocalDate.now(), LocalTime(10, 30)),
                 location = "BK.1.127",
                 color = Color.Blue.toArgb(),
                 isAllDay = false,
