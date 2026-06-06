@@ -58,6 +58,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.AndroidUiModes.UI_MODE_NIGHT_YES
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,6 +67,7 @@ import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
@@ -154,7 +157,7 @@ private fun LoginContent(
                 contentPadding = PaddingValues(vertical = BetterNeptunTheme.dimens.itemSpacing)
             ) {
                 Text(
-                    text = localized(LocalizationKey.LOGIN_SUBMIT),
+                    text = LocalizationKey.LOGIN_SUBMIT.localized(),
                     style = BetterNeptunTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -205,7 +208,7 @@ private fun LoginContent(
                                     neptunCode = it
                                     onNeptunCodeChange(it)
                                 },
-                                label = { Text(localized(LocalizationKey.LOGIN_INPUT_NEPTUN_CODE)) },
+                                label = { Text(LocalizationKey.LOGIN_INPUT_NEPTUN_CODE.localized()) },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                                 modifier = Modifier.fillMaxWidth(),
@@ -230,7 +233,7 @@ private fun LoginContent(
                                     password = it
                                     onPasswordChange(it)
                                 },
-                                label = { Text(localized(LocalizationKey.LOGIN_INPUT_PASSWORD)) },
+                                label = { Text(LocalizationKey.LOGIN_INPUT_PASSWORD.localized()) },
                                 modifier = Modifier.fillMaxWidth(),
                                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(
@@ -285,7 +288,7 @@ private fun LoginContent(
                                     )
                                 )
                                 Text(
-                                    text = localized(LocalizationKey.LOGIN_CHECKBOX_STAY_LOGGEDIN),
+                                    text = LocalizationKey.LOGIN_CHECKBOX_STAY_LOGGEDIN.localized(),
                                     color = BetterNeptunTheme.colorScheme.onSurface,
                                     modifier = Modifier.padding(start = BetterNeptunTheme.dimens.paddingSmall)
                                 )
@@ -299,34 +302,30 @@ private fun LoginContent(
     }
 }
 
-@Preview(showBackground = true)
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun LoginContentPreview() {
-    BetterNeptunTheme {
-        LoginContent(
-            isButtonEnabled = true,
-            isLoading = false,
-            onLoginClick = {},
-            onNeptunCodeChange = {},
-            onPasswordChange = {},
-            onKeepMeLoggedInChange = {}
-        )
-    }
+    LoginContent(
+        isButtonEnabled = true,
+        isLoading = false,
+        onLoginClick = {},
+        onNeptunCodeChange = {},
+        onPasswordChange = {},
+        onKeepMeLoggedInChange = {}
+    )
 }
 
-@Preview(showBackground = true)
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun LoginContentLoadingPreview() {
-    BetterNeptunTheme {
-        LoginContent(
-            isButtonEnabled = false,
-            isLoading = true,
-            onLoginClick = {},
-            onNeptunCodeChange = {},
-            onPasswordChange = {},
-            onKeepMeLoggedInChange = {}
-        )
-    }
+    LoginContent(
+        isButtonEnabled = false,
+        isLoading = true,
+        onLoginClick = {},
+        onNeptunCodeChange = {},
+        onPasswordChange = {},
+        onKeepMeLoggedInChange = {}
+    )
 }

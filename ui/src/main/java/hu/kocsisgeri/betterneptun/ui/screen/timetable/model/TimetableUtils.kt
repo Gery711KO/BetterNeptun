@@ -45,4 +45,3 @@ fun CalendarItem.getPercent(): Int {
 fun isColorDark(color: Int): Boolean {
     return ColorUtils.calculateLuminance(color) < 0.5;
 }
-

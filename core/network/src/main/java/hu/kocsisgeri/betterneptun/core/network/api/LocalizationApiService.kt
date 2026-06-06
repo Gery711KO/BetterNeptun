@@ -6,9 +6,9 @@ import retrofit2.http.Path
 
 interface LocalizationApiService {
 
-    @GET("_production/_languages")
+    @GET("_languages")
     suspend fun getLanguages(): List<LanguageDto>
 
-    @GET("_production/{languageKey}")
+    @GET("{languageKey}")
     suspend fun getLocalization(@Path("languageKey") languageKey: String): Map<String, String>
 }

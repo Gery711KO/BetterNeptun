@@ -59,6 +59,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.domain.model.TimeDuration
@@ -77,6 +78,7 @@ import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
 import hu.kocsisgeri.betterneptun.ui.core.permission.rememberPermissionLauncher
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessagesDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
@@ -255,14 +257,14 @@ private fun SizeMeasurerScope.PermissionDisclaimerCard(
     ) {
         Column(modifier = Modifier.padding(BetterNeptunTheme.dimens.paddingLarge)) {
             Text(
-                text = disclaimer.humanReadablePermissionName,
+                text = disclaimer.humanReadablePermissionName.localized(),
                 style = BetterNeptunTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = BetterNeptunTheme.colorScheme.onTertiaryContainer
             )
             Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingSmall))
             Text(
-                text = disclaimer.disclaimer,
+                text = disclaimer.disclaimer.localized(),
                 style = BetterNeptunTheme.typography.bodyMedium,
                 color = BetterNeptunTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
             )
@@ -278,7 +280,7 @@ private fun SizeMeasurerScope.PermissionDisclaimerCard(
                 shape = BetterNeptunTheme.shapes.medium
             ) {
                 Text(
-                    text = localized(LocalizationKey.HOME_PERMISSION_PERMIT),
+                    text = LocalizationKey.PERMISSION_BUTTON_PERMIT.localized(),
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -309,40 +311,40 @@ private fun NavigationGrid(
     ) {
         NavButton(
             icon = painterResource(id = R.drawable.ic_mail),
-            text = localized(LocalizationKey.HOME_MENU_MESSAGES),
+            text = LocalizationKey.HOME_MENU_MESSAGES.localized(),
             onClick = { onNavigate(MessagesDestination) },
             modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_MESSAGES)
         )
         NavButton(
             icon = painterResource(id = R.drawable.ic_calendar),
-            text = localized(LocalizationKey.HOME_MENU_TIMETABLE),
+            text = LocalizationKey.HOME_MENU_TIMETABLE.localized(),
             onClick = { onNavigate(TimetableDestination(null)) },
             modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_TIMETABLE)
         )
         NavButton(
             icon = painterResource(id = R.drawable.ic_courses),
-            text = localized(LocalizationKey.HOME_MENU_COURSES),
+            text = LocalizationKey.HOME_MENU_COURSES.localized(),
             onClick = { onNavigate(SubjectsDestination) },
             modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_COURSES)
         )
         NavButton(
             icon = painterResource(id = R.drawable.ic_semesters),
-            text = localized(LocalizationKey.HOME_MENU_SEMESTERS),
+            text = LocalizationKey.HOME_MENU_SEMESTERS.localized(),
             onClick = { onNavigate(SemestersDestination) },
             modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_SEMESTERS)
         )
         NavButton(
             icon = painterResource(id = R.drawable.ic_exams),
-            text = localized(LocalizationKey.HOME_MENU_EXAMS),
+            text = LocalizationKey.HOME_MENU_EXAMS.localized(),
             isEnabled = false,
-            disabledTag = localized(LocalizationKey.HOME_LABEL_UNDERDEVELOPMENT),
+            disabledTag = LocalizationKey.HOME_LABEL_UNDERDEVELOPMENT.localized(),
             onClick = { /* TODO */ }
         )
         NavButton(
             icon = painterResource(id = R.drawable.ic_schedule),
-            text = localized(LocalizationKey.HOME_MENU_PERIODS),
+            text = LocalizationKey.HOME_MENU_PERIODS.localized(),
             isEnabled = false,
-            disabledTag = localized(LocalizationKey.HOME_LABEL_UNDERDEVELOPMENT),
+            disabledTag = LocalizationKey.HOME_LABEL_UNDERDEVELOPMENT.localized(),
             onClick = { /* TODO */ }
         )
     }
@@ -504,7 +506,7 @@ fun CurrentCourseItem(
                 horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.groupSpacing)
             ) {
                 Text(
-                    text = localized(LocalizationKey.HOME_ONGOING_COURSE),
+                    text = LocalizationKey.HOME_ONGOING_COURSE.localized(),
                     style = BetterNeptunTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
@@ -545,10 +547,9 @@ fun CurrentCourseItem(
                 }
                 CourseInfoRow(
                     icon = R.drawable.ic_schedule,
-                    text = localized(
-                        LocalizationKey.HOME_ONGOING_COURSE_MINUTES,
+                    text = LocalizationKey.HOME_ONGOING_COURSE_MINUTES(
                         course.remainingTimeMinutes.toString()
-                    )
+                    ).localized()
                 )
             }
         }
@@ -596,7 +597,7 @@ fun NextCourseCard(
                         verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.extraSmall)
                     ) {
                         Text(
-                            text = localized(LocalizationKey.HOME_NEXT_COURSE),
+                            text = LocalizationKey.HOME_NEXT_COURSE.localized(),
                             style = BetterNeptunTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = BetterNeptunTheme.colorScheme.onSurfaceVariant
@@ -605,20 +606,17 @@ fun NextCourseCard(
                         CourseInfoRow(
                             icon = R.drawable.ic_event,
                             text = when (course.timeUntilEvent.unit) {
-                                TimeDuration.Unit.MINUTES -> localized(
-                                    LocalizationKey.HOME_NEXT_COURSE_MINUTES,
+                                TimeDuration.Unit.MINUTES -> LocalizationKey.HOME_NEXT_COURSE_MINUTES(
                                     course.timeUntilEvent.value.toString()
-                                )
+                                ).localized()
 
-                                TimeDuration.Unit.HOURS -> localized(
-                                    LocalizationKey.HOME_NEXT_COURSE_HOURS,
+                                TimeDuration.Unit.HOURS -> LocalizationKey.HOME_NEXT_COURSE_HOURS(
                                     course.timeUntilEvent.value.toString()
-                                )
+                                ).localized()
 
-                                TimeDuration.Unit.DAYS -> localized(
-                                    LocalizationKey.HOME_NEXT_COURSE_DAYS,
+                                TimeDuration.Unit.DAYS -> LocalizationKey.HOME_NEXT_COURSE_DAYS(
                                     course.timeUntilEvent.value.toString()
-                                )
+                                ).localized()
                             }
                         )
                         CourseInfoRow(
@@ -745,49 +743,48 @@ fun CourseInfoRow(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun HomeScreenPreview() {
-    BetterNeptunTheme {
-        val currentCourse = CurrentCourseDetail(
-            id = 11,
-            title = "Mobil szoftverfejlesztés",
-            location = "BA.F.01",
-            color = 0xFF4285F4.toInt(),
-            progress = 30,
-            remainingTimeMinutes = 30
-        )
+    val currentCourse = CurrentCourseDetail(
+        id = 11,
+        title = "Mobil szoftverfejlesztés",
+        location = "BA.F.01",
+        color = 0xFF4285F4.toInt(),
+        progress = 30,
+        remainingTimeMinutes = 30
+    )
 
-        val nextCourse = NextCourseDetail(
-            id = 16,
-            title = "Full stack fejlesztés",
-            startTime = LocalDateTime.now().plusHours(1),
-            endTime = LocalDateTime.now().plusHours(3),
-            location = "BA.F.02",
-            color = 0xFF4285F4.toInt(),
-            timeUntilEvent = TimeDuration(
-                value = 1,
-                unit = TimeDuration.Unit.DAYS
+    val nextCourse = NextCourseDetail(
+        id = 16,
+        title = "Full stack fejlesztés",
+        startTime = LocalDateTime.now().plusHours(1),
+        endTime = LocalDateTime.now().plusHours(3),
+        location = "BA.F.02",
+        color = 0xFF4285F4.toInt(),
+        timeUntilEvent = TimeDuration(
+            value = 1,
+            unit = TimeDuration.Unit.DAYS
+        )
+    )
+
+    HomeContent(
+        studentData = StudentData(
+            name = "Példa János",
+            neptun = "ABC123",
+            avatar = Avatar.MonogramAvatar(
+                monogram = "PJ",
+                colorLong = 0xFF4285F4
             )
-        )
-
-        HomeContent(
-            studentData = StudentData(
-                name = "Példa János",
-                neptun = "ABC123",
-                avatar = Avatar.MonogramAvatar(
-                    monogram = "PJ",
-                    colorLong = 0xFF4285F4
-                )
-            ),
-            unreadMessages = 5,
-            currentCourses = listOf(currentCourse),
-            nextCourseState = nextCourse,
-            refreshProgress = null,
-            permissions = emptyList(),
-            onRefresh = {},
-            onLaunchPermissionRequest = {},
-            onNavigate = {}
-        )
-    }
+        ),
+        unreadMessages = 5,
+        currentCourses = listOf(currentCourse),
+        nextCourseState = nextCourse,
+        refreshProgress = null,
+        permissions = emptyList(),
+        onRefresh = {},
+        onLaunchPermissionRequest = {},
+        onNavigate = {}
+    )
 }

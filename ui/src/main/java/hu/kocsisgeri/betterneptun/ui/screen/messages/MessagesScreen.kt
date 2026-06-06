@@ -1,6 +1,5 @@
 package hu.kocsisgeri.betterneptun.ui.screen.messages
 
-import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -37,7 +36,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -55,7 +53,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,12 +64,13 @@ import hu.kocsisgeri.betterneptun.domain.model.neptun.Message
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.composable.ScrollBar
 import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -339,7 +339,9 @@ fun MessageItem(
         },
         leadingContent = {
             AvatarImage(
-                modifier = Modifier.size(BetterNeptunTheme.dimens.iconHuge).clip(CircleShape),
+                modifier = Modifier
+                    .size(BetterNeptunTheme.dimens.iconHuge)
+                    .clip(CircleShape),
                 avatar = message.senderAvatar
             )
         },
@@ -378,86 +380,80 @@ fun MessageItem(
     )
 }
 
-@Preview(showBackground = true, name = "Success - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Success - Dark")
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun MessagesSuccessPreview() {
-    BetterNeptunTheme {
-        MessagesContent(
-            messages = MessagesPager(
-                messages = listOf(
-                    Message(
-                        id = "1",
-                        name = "Kovács János",
-                        subject = "Vizsga eredmény",
-                        date = LocalDateTime.of(2023, 10, 25, 14, 30),
-                        isNew = true,
-                        senderAvatar = Avatar.MonogramAvatar(
-                            monogram = "KJ",
-                            colorLong = 0xFF000000
-                        )
-                    ),
-                    Message(
-                        id = "2",
-                        name = "Neptun Rendszer",
-                        subject = "Kurzusfelvétel",
-                        date = LocalDateTime.of(2023, 10, 24, 9, 15),
-                        isNew = false,
-                        senderAvatar = Avatar.SystemAvatar
-                    ),
-                    Message(
-                        id = "3",
-                        name = "Kósa Kálmán",
-                        subject = "Elmaradt előadás",
-                        date = LocalDateTime.of(2023, 10, 23, 18, 0),
-                        isNew = true,
-                        senderAvatar = Avatar.MonogramAvatar(
-                            monogram = "KK",
-                            colorLong = 0xFFFFFFFF
-                        )
+    MessagesContent(
+        messages = MessagesPager(
+            messages = listOf(
+                Message(
+                    id = "1",
+                    name = "Kovács János",
+                    subject = "Vizsga eredmény",
+                    date = LocalDateTime.of(2023, 10, 25, 14, 30),
+                    isNew = true,
+                    senderAvatar = Avatar.MonogramAvatar(
+                        monogram = "KJ",
+                        colorLong = 0xFF000000
                     )
                 ),
-                isLoadingNextMessages = false
+                Message(
+                    id = "2",
+                    name = "Neptun Rendszer",
+                    subject = "Kurzusfelvétel",
+                    date = LocalDateTime.of(2023, 10, 24, 9, 15),
+                    isNew = false,
+                    senderAvatar = Avatar.SystemAvatar
+                ),
+                Message(
+                    id = "3",
+                    name = "Kósa Kálmán",
+                    subject = "Elmaradt előadás",
+                    date = LocalDateTime.of(2023, 10, 23, 18, 0),
+                    isNew = true,
+                    senderAvatar = Avatar.MonogramAvatar(
+                        monogram = "KK",
+                        colorLong = 0xFFFFFFFF
+                    )
+                )
             ),
-            onRetryClick = {},
-            onBackClick = {},
-            onLoadMore = {},
-            onMessageClick = {}
-        )
-    }
+            isLoadingNextMessages = false
+        ),
+        onRetryClick = {},
+        onBackClick = {},
+        onLoadMore = {},
+        onMessageClick = {}
+    )
 }
 
-@Preview(showBackground = true, name = "Loading - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Loading - Dark")
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun MessagesLoadingPreview() {
-    BetterNeptunTheme {
-        MessagesContent(
-            messages = MessagesPager(
-                isLoadingNextMessages = true
-            ),
-            onRetryClick = {},
-            onBackClick = {},
-            onLoadMore = {},
-            onMessageClick = {}
-        )
-    }
+    MessagesContent(
+        messages = MessagesPager(
+            isLoadingNextMessages = true
+        ),
+        onRetryClick = {},
+        onBackClick = {},
+        onLoadMore = {},
+        onMessageClick = {}
+    )
 }
 
-@Preview(showBackground = true, name = "Error - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Error - Dark")
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun MessagesErrorPreview() {
-    BetterNeptunTheme {
-        MessagesContent(
-            messages = MessagesPager(
-                error = "Hiba történt az üzenetek betöltése közben.",
-                isLoadingNextMessages = false
-            ),
-            onRetryClick = {},
-            onBackClick = {},
-            onLoadMore = {},
-            onMessageClick = {}
-        )
-    }
+    MessagesContent(
+        messages = MessagesPager(
+            error = "Hiba történt az üzenetek betöltése közben.",
+            isLoadingNextMessages = false
+        ),
+        onRetryClick = {},
+        onBackClick = {},
+        onLoadMore = {},
+        onMessageClick = {}
+    )
 }

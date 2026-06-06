@@ -12,6 +12,8 @@ dependencies {
     compileOnly(libs.room.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.koin.gradlePlugin)
+
+    implementation(libs.androidSecrets.gradlePlugin)
 }
 
 gradlePlugin {
@@ -44,5 +46,10 @@ enum class PluginStack(
         pluginName = "koinPlugin",
         pluginId = "betterneptun.android.koin",
         pluginImplementationClass = "AndroidKoinConventionPlugin"
+    ),
+    SecretsPlugin(
+        pluginName = "secretsPlugin",
+        pluginId = "betterneptun.android.secrets",
+        pluginImplementationClass = "AndroidSecretsConventionPlugin"
     )
 }

@@ -21,9 +21,8 @@ interface LocalizationService {
 
     /**
      * Retrieves the localized string for a given [Localization] key.
-     * @param key The [Localization] object containing the key and default value.
-     * @param args Optional arguments for string formatting.
-     * @return The translated string, or the default value if no translation is found.
+     * @param key The [Localization] object containing the key.
+     * @return The translated string, or the key if no translation is found.
      */
-    fun localized(key: Localization, vararg args: String): String
+    fun localized(key: Localization): String
 }

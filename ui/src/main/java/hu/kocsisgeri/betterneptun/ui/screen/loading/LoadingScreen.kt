@@ -20,7 +20,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,13 +29,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.initializable.Initializer
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import kotlinx.coroutines.flow.filterNotNull
 import org.koin.androidx.compose.koinViewModel
@@ -147,49 +146,45 @@ private fun SplashLogo() {
     )
 }
 
-@PreviewLightDark
+@Preview
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun IdlePreview() {
-    PreviewTheme {
-        LoadingScreenContent(
-            initializerState = Initializer.State.Idle,
-            onInitialize = {}
-        )
-    }
+    LoadingScreenContent(
+        initializerState = Initializer.State.Idle,
+        onInitialize = {}
+    )
 }
 
-@PreviewLightDark
+@Preview
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun InitializingPreview() {
-    PreviewTheme {
-        LoadingScreenContent(
-            initializerState = Initializer.State.Initializing,
-            onInitialize = {}
-        )
-    }
+    LoadingScreenContent(
+        initializerState = Initializer.State.Initializing,
+        onInitialize = {}
+    )
 }
 
 
-@PreviewLightDark
+@Preview
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun InitializedPreview() {
-    PreviewTheme {
-        LoadingScreenContent(
-            initializerState = Initializer.State.Initialized,
-            onInitialize = {}
-        )
-    }
+    LoadingScreenContent(
+        initializerState = Initializer.State.Initialized,
+        onInitialize = {}
+    )
 }
 
-@PreviewLightDark
+@Preview
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun ErrorPreview() {
-    PreviewTheme {
-        LoadingScreenContent(
-            initializerState = Initializer.State.Error(
-                errorMessage = "Something went wrong"
-            ),
-            onInitialize = {}
-        )
-    }
+    LoadingScreenContent(
+        initializerState = Initializer.State.Error(
+            errorMessage = "Something went wrong"
+        ),
+        onInitialize = {}
+    )
 }

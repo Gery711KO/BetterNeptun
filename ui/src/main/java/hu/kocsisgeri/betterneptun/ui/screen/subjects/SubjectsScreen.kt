@@ -26,7 +26,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -44,14 +43,17 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewWrapper
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
+import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.model.SubjectsScreenUiModel
 import org.koin.androidx.compose.koinViewModel
@@ -86,7 +88,9 @@ fun SubjectsContent(
         containerColor = BetterNeptunTheme.colorScheme.background
     ) { paddingValues ->
         subjectsState?.let {
-            Column (modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)) {
                 FilterItems(
                     selectedTermId = subjectsState.selectedTermId,
                     filterItems = subjectsState.filterBar,
@@ -283,7 +287,7 @@ fun SubjectItem(subject: Subject) {
                         thickness = BetterNeptunTheme.dimens.dividerThickness,
                         color = BetterNeptunTheme.colorScheme.outlineVariant
                     )
-                    
+
                     DetailItem(label = "Kredit", value = subject.subjectCredit.toString())
                     DetailItem(label = "Követelmény", value = subject.subjectRequirement)
                     DetailItem(label = "Tárgytípus", value = "Kötelezően választott")
@@ -381,38 +385,36 @@ private fun SubjectsScreenLoadingPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun SubjectsScreenErrorPreview() {
-    BetterNeptunTheme {
-        SubjectsContent(
-            subjectsState = SubjectsScreenUiModel(
-                selectedTermId = "1",
-                filterBar = ApiResult.Error("Hiba"),
-                listItems = ApiResult.Error("Hiba")
-            ),
-            onSelectTerm = {},
-            onBackClick = {}
-        )
-    }
+    SubjectsContent(
+        subjectsState = SubjectsScreenUiModel(
+            selectedTermId = "1",
+            filterBar = ApiResult.Error("Hiba"),
+            listItems = ApiResult.Error("Hiba")
+        ),
+        onSelectTerm = {},
+        onBackClick = {}
+    )
 }
 
-@Preview(showBackground = true)
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun SubjectItemPreview() {
-    BetterNeptunTheme {
-        Box(modifier = Modifier.padding(16.dp)) {
-            SubjectItem(
-                subject = Subject(
-                    subjectId = "1",
-                    subjectCode = "GKNB_INTM001",
-                    subjectCredit = 5,
-                    subjectName = "Programozás I.",
-                    subjectRequirement = "Vizsga",
-                    termId = "2023/24/1",
-                    isCompleted = true
-                )
+    Box(modifier = Modifier.padding(16.dp)) {
+        SubjectItem(
+            subject = Subject(
+                subjectId = "1",
+                subjectCode = "GKNB_INTM001",
+                subjectCredit = 5,
+                subjectName = "Programozás I.",
+                subjectRequirement = "Vizsga",
+                termId = "2023/24/1",
+                isCompleted = true
             )
-        }
+        )
     }
 }

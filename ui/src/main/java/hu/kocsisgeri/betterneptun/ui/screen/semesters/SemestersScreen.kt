@@ -36,15 +36,17 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.ChartColor
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
-import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
 import hu.kocsisgeri.betterneptun.ui.core.theme.themeBasedColor
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBarData
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBars
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.LineData
@@ -325,7 +327,7 @@ private fun commonGridProperties() = GridProperties(
     ),
 )
 
-    @Composable
+@Composable
 private fun LoadingIndicator() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
@@ -397,15 +399,31 @@ private fun SemestersScreenSuccessPreview() {
                 ColumnBars(
                     barLabel = "Felvett",
                     bars = listOf(
-                        ColumnBarData(label = "2021/2022/1", value = 1.0, color = ChartColor.Primary),
-                        ColumnBarData(label = "2021/2022/1", value = 2.0, color = ChartColor.Primary),
+                        ColumnBarData(
+                            label = "2021/2022/1",
+                            value = 1.0,
+                            color = ChartColor.Primary
+                        ),
+                        ColumnBarData(
+                            label = "2021/2022/1",
+                            value = 2.0,
+                            color = ChartColor.Primary
+                        ),
                     ),
                 ),
                 ColumnBars(
                     barLabel = "Teljesitett",
                     bars = listOf(
-                        ColumnBarData(label = "2021/2022/2", value = 2.0, color = ChartColor.Secondary),
-                        ColumnBarData(label = "2021/2022/2", value = 3.0, color = ChartColor.Secondary),
+                        ColumnBarData(
+                            label = "2021/2022/2",
+                            value = 2.0,
+                            color = ChartColor.Secondary
+                        ),
+                        ColumnBarData(
+                            label = "2021/2022/2",
+                            value = 3.0,
+                            color = ChartColor.Secondary
+                        ),
                     ),
                 ),
             )
@@ -436,29 +454,27 @@ private fun SemestersScreenSuccessPreview() {
 }
 
 @PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun SemestersScreenLoadingPreview() {
-    BetterNeptunTheme {
-        SemestersContent(
-            selectedTab = 0,
-            creditsResult = ApiResult.Loading,
-            averagesResult = ApiResult.Loading,
-            onSelectTab = {},
-            onBackClick = {},
-        )
-    }
+    SemestersContent(
+        selectedTab = 0,
+        creditsResult = ApiResult.Loading,
+        averagesResult = ApiResult.Loading,
+        onSelectTab = {},
+        onBackClick = {},
+    )
 }
 
 @PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun SemestersScreenErrorPreview() {
-    BetterNeptunTheme {
-        SemestersContent(
-            selectedTab = 0,
-            creditsResult = ApiResult.Error("Nem sikerült betölteni a krediteket"),
-            averagesResult = ApiResult.Error("Nem sikerült betölteni az átlagokat"),
-            onSelectTab = {},
-            onBackClick = {},
-        )
-    }
+    SemestersContent(
+        selectedTab = 0,
+        creditsResult = ApiResult.Error("Nem sikerült betölteni a krediteket"),
+        averagesResult = ApiResult.Error("Nem sikerült betölteni az átlagokat"),
+        onSelectTab = {},
+        onBackClick = {},
+    )
 }

@@ -17,7 +17,7 @@ import org.koin.core.annotation.Single
 import retrofit2.Retrofit
 
 private const val BASE_URL = "https://neptun.uni-obuda.hu/ujhallgato/api/"
-private const val LOCALIZATION_BASE_URL = "https://cdn.simplelocalize.io/${BuildConfig.LOCALIZATION_TOKEN}/"
+private const val LOCALIZATION_BASE_URL = "https://cdn.simplelocalize.io/${BuildConfig.LOCALIZATION_TOKEN}/${BuildConfig.LOCALIZATION_SNAPSHOT}/"
 
 @Module
 @Configuration

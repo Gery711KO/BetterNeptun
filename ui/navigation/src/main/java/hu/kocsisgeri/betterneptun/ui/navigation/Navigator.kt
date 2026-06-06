@@ -8,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
@@ -37,6 +36,7 @@ import hu.kocsisgeri.betterneptun.ui.navigation.registry.NavigationEntry
 import hu.kocsisgeri.betterneptun.ui.navigation.transition.SharedBoundsTransition
 import hu.kocsisgeri.betterneptun.ui.navigation.transition.SplashTransition
 import hu.kocsisgeri.betterneptun.ui.navigation.transition.Transition
+import hu.kocsisgeri.betterneptun.ui.navigation.utils.ProvideSharedTransitionScope
 import hu.kocsisgeri.betterneptun.ui.navigation.utils.isSubclassOf
 import org.koin.core.annotation.KoinExperimentalAPI
 import kotlin.reflect.KClass
@@ -212,14 +212,6 @@ private fun <T : NavKey> EntryProviderScope<NavKey>.destinationEntry(
     addEntryProvider(
         clazz = clazz,
         clazzContentKey = { clazz.java },
-        content = content
-    )
-}
-
-@Composable
-private fun SharedTransitionScope.ProvideSharedTransitionScope(content: @Composable () -> Unit) {
-    CompositionLocalProvider(
-        LocalSharedTransitionScope provides this,
         content = content
     )
 }

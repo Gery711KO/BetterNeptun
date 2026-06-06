@@ -10,8 +10,9 @@ interface Localization {
      */
     val key: String
 
+
     /**
-     * The fallback value to use if no translation is found for the [key].
+     * The arguments used for string formatting and placeholders.
      */
-    val defaultValue: String
+    val args: Array<String>
 }

@@ -12,8 +12,8 @@ android {
     defaultConfig {
         buildConfigField(
             type = "String",
-            name = "LOCALIZATION_TOKEN",
-            value = "\"e29780fd764641ea91df2c4b42407bb6\""
+            name = "LOCALIZATION_SNAPSHOT",
+            value = "\"${config.versions.localizationSnapshot.get()}\""
         )
     }
 }

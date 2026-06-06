@@ -1,6 +1,5 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable
 
-import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -29,7 +28,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.tobiasschuerg.weekview.compose.WeekViewActions
 import de.tobiasschuerg.weekview.data.EventConfig
@@ -40,8 +40,9 @@ import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
-import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.AddEventDialog
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.CourseDetailDialog
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.ViewMode
@@ -70,7 +71,7 @@ fun TimetableScreen(
     TimetableContent(
         sharedTransitionKey = initialId?.let {
             LocalizationKey.HOME_MENU_TIMETABLE.key + initialId.toString()
-        }?: LocalizationKey.HOME_MENU_TIMETABLE,
+        } ?: LocalizationKey.HOME_MENU_TIMETABLE,
         viewMode = viewMode,
         weeks = weeks,
         currentSelectedEvent = currentSelectedEvent,
@@ -268,7 +269,7 @@ private fun TimeTableScreenTopBar(
             IconButton(onClick = {
                 val newMode = ViewMode.entries.find {
                     viewMode.ordinal + 1 == it.ordinal
-                }?: ViewMode.FULL_WEEK
+                } ?: ViewMode.FULL_WEEK
                 onViewModeChange(newMode)
             }) {
                 Icon(
@@ -287,22 +288,18 @@ private fun TimeTableScreenTopBar(
     )
 }
 
-@Preview(showBackground = true, name = "Week View - Light")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Week View - Dark")
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun TimetableWeekPreview() {
-    BetterNeptunTheme {
-        TimetablePreviewContent(viewMode = ViewMode.WEEK)
-    }
+    TimetablePreviewContent(viewMode = ViewMode.WEEK)
 }
 
-@Preview(showBackground = true, name = "Day View")
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Day View - Dark")
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun TimetableDayPreview() {
-    BetterNeptunTheme {
-        TimetablePreviewContent(viewMode = ViewMode.DAY)
-    }
+    TimetablePreviewContent(viewMode = ViewMode.DAY)
 }
 
 @Composable
@@ -315,11 +312,13 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
             val friday = monday.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY))
             LocalDateRange(monday, friday)
         }
+
         ViewMode.FULL_WEEK -> {
             val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
             val friday = monday.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
             LocalDateRange(monday, friday)
         }
+
         ViewMode.DAY -> LocalDateRange(today, today)
     }
     val events = listOf(

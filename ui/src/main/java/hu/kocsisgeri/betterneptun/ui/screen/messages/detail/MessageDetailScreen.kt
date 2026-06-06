@@ -30,23 +30,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.AndroidUiModes.UI_MODE_NIGHT_YES
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import hu.kocsisgeri.betterneptun.common.utils.openUrl
-import hu.kocsisgeri.betterneptun.common.utils.sendEmail
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Message
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessageDetail
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.core.composable.HtmlText
-import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -145,6 +144,7 @@ fun MessageDetailContent(
 private fun MessageContent(
     messageDetail: MessageDetail,
 ) {
+    val localUriHandler = LocalUriHandler.current
     val context = LocalContext.current
     val rawHtml = messageDetail.posts.firstOrNull()?.htmlText ?: ""
     val processedHtml = if (rawHtml.contains("}")) {
@@ -161,12 +161,7 @@ private fun MessageContent(
         fontFamily = MaterialTheme.typography.bodyLarge.fontFamily
             ?: Armata,
         onUrlClick = { url ->
-            when {
-                url.contains("http") -> openUrl(url, context)
-                url.contains("mailto:") || url.contains("@") -> {
-                    url.removePrefix("mailto:").trim().sendEmail(context)
-                }
-            }
+            localUriHandler.openUri(url)
         }
     )
 }
@@ -179,7 +174,9 @@ fun DetailItem(avatar: Avatar, value: String) {
     ) {
         AvatarImage(
             avatar = avatar,
-            modifier = Modifier.size(42.dp).clip(CircleShape)
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
@@ -194,33 +191,31 @@ fun DetailItem(avatar: Avatar, value: String) {
     }
 }
 
-@Preview(showBackground = true)
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun MessageDetailContentPreview() {
-    BetterNeptunTheme {
-        MessageDetailContent(
-            message = Message(
-                id = "1",
-                name = "Kovács János",
+    MessageDetailContent(
+        message = Message(
+            id = "1",
+            name = "Kovács János",
+            subject = "Vizsga eredmény",
+            date = LocalDateTime.now(),
+            isNew = false,
+            senderAvatar = Avatar.SystemAvatar,
+            messageDetail = MessageDetail(
                 subject = "Vizsga eredmény",
-                date = LocalDateTime.now(),
-                isNew = false,
-                senderAvatar = Avatar.SystemAvatar,
-                messageDetail = MessageDetail(
-                    subject = "Vizsga eredmény",
-                    sender = "Kovács János",
-                    date = LocalDateTime.of(2023,10,25,14,30),
-                    hasUnreadPost = false,
-                    posts = listOf(
-                        MessageDetail.Post(
-                            id = "1",
-                            htmlText = "Tisztelt Hallgató! <br><br> A vizsgája <b>sikerült</b>. <br><br> Üdvözlettel, <br> Tanár Úr"
-                        )
+                sender = "Kovács János",
+                date = LocalDateTime.of(2023, 10, 25, 14, 30),
+                hasUnreadPost = false,
+                posts = listOf(
+                    MessageDetail.Post(
+                        id = "1",
+                        htmlText = "Tisztelt Hallgató! <br><br> A vizsgája <b>sikerült</b>. <br><br> Üdvözlettel, <br> Tanár Úr"
                     )
                 )
-            ),
-            onBackClick = {},
-        )
-    }
+            )
+        ),
+        onBackClick = {},
+    )
 }

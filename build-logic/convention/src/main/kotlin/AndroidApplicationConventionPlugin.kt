@@ -19,6 +19,7 @@ class AndroidApplicationConventionPlugin: AndroidBaseConventionPlugin() {
             with(pluginManager) {
                 apply("com.android.application")
                 apply("betterneptun.android.koin")
+                apply("betterneptun.android.secrets")
             }
 
             extensions.add(

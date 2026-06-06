@@ -18,6 +18,7 @@ class AndroidLibraryConventionPlugin : AndroidBaseConventionPlugin() {
             pluginManager.apply {
                 apply("com.android.library")
                 apply("betterneptun.android.koin")
+                apply("betterneptun.android.secrets")
             }
 
             extensions.add(

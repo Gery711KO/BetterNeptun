@@ -77,12 +77,3 @@ abstract class UseCase {
         mutex.withLock { block() }
     }
 }
-
-private suspend fun waitThenLog(
-    duration: Duration,
-    jobTitle: String,
-    results: MutableList<String>
-) {
-    delay(duration)
-    results.add("Executed: $jobTitle at ${LocalDateTime.now()}")
-}

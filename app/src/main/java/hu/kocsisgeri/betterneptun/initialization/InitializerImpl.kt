@@ -8,35 +8,29 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Singleton
 
 @Singleton
 internal class InitializerImpl(private val initializables: List<Initializable>): Initializer {
 
-    private val _isInitialized =
+    private val innerState =
         MutableStateFlow<Initializer.State>(Initializer.State.Idle)
 
-    override val initializationState = _isInitialized.asStateFlow()
+    override val initializationState = innerState.asStateFlow()
 
     override fun initialize(scope: CoroutineScope) {
-        if (_isInitialized.value !is Initializer.State.Initializing) {
-            _isInitialized.value = Initializer.State.Initializing
+        if (innerState.value !is Initializer.State.Initializing) {
+            innerState.value = Initializer.State.Initializing
 
             scope.launchReportingErrors(
                 handleError = {
-                    _isInitialized.value = Initializer.State.Error(
+                    innerState.value = Initializer.State.Error(
                         errorMessage = it.message?: "Initialization failed."
                     )
                 }
             ) {
-                _isInitialized.value = initializables
-                    .map { initializable ->
-                        async {
-                            initializable.initialize()
-                            initializable.isInitialized.first()
-                        }
-                    }
+                innerState.value = initializables
+                    .map { async { it.initialize() } }
                     .awaitAll()
                     .all { it }
                     .let {

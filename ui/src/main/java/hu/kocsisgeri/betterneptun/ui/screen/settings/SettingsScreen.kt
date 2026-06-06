@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -20,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
@@ -36,8 +34,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.ThemeMode
 import hu.kocsisgeri.betterneptun.domain.model.localization.Language
@@ -45,8 +42,9 @@ import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.BuildConfig
 import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
-import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.screen.settings.model.SettingsRadioOption
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -134,7 +132,7 @@ private fun SettingsScreenTopAppBar(
     LargeTopAppBar(
         title = {
             Text(
-                text = localized(LocalizationKey.SETTINGS_TITLE),
+                text = LocalizationKey.SETTINGS_TITLE.localized(),
                 style = BetterNeptunTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold
                 )
@@ -169,20 +167,12 @@ private fun ChangeableSection(
 ) {
     SettingsSection(
         sectionTitle = LocalizationKey.SETTINGS_SECTION_LANGUAGE,
-        radioOptions = buildList {
-            languages.forEach { language ->
-                LocalizationKey.entries.firstOrNull {
-                    it.key == language.localizationKey
-                }?.let { key ->
-                    add(
-                        SettingsRadioOption(
-                            label = localized(key),
-                            isSelected = language.isSelected,
-                            onClick = { onLanguageChange(language) }
-                        )
-                    )
-                }
-            }
+        radioOptions = languages.map { language ->
+            SettingsRadioOption(
+                label = localized(language.localizationKey),
+                isSelected = language.isSelected,
+                onClick = { onLanguageChange(language) }
+            )
         },
     )
 
@@ -190,13 +180,11 @@ private fun ChangeableSection(
         sectionTitle = LocalizationKey.SETTINGS_SECTION_THEME,
         radioOptions = ThemeMode.entries.map {
             SettingsRadioOption(
-                label = localized(
-                    when (it) {
-                        ThemeMode.AUTO -> LocalizationKey.SETTINGS_SECTION_THEME_SYSTEM
-                        ThemeMode.DARK -> LocalizationKey.SETTINGS_SECTION_THEME_DARK
-                        ThemeMode.LIGHT -> LocalizationKey.SETTINGS_SECTION_THEME_LIGHT
-                    }
-                ),
+                label = when (it) {
+                    ThemeMode.AUTO -> LocalizationKey.SETTINGS_SECTION_THEME_SYSTEM
+                    ThemeMode.DARK -> LocalizationKey.SETTINGS_SECTION_THEME_DARK
+                    ThemeMode.LIGHT -> LocalizationKey.SETTINGS_SECTION_THEME_LIGHT
+                }.localized(),
                 isSelected = it == themeMode,
                 onClick = { onThemeChange(it) }
             )
@@ -210,7 +198,7 @@ private fun ChangeableSection(
                 when (index) {
                     0 -> add(
                         SettingsRadioOption(
-                            label = localized(LocalizationKey.SETTINGS_SECTION_TIMETABLE_NONE),
+                            label = LocalizationKey.SETTINGS_SECTION_TIMETABLE_NONE.localized(),
                             isSelected = notificationDelay == -1,
                             onClick = { onNotificationDelayChange(-1) }
                         )
@@ -220,10 +208,9 @@ private fun ChangeableSection(
                         val delay = (index * 6)
                         add(
                             SettingsRadioOption(
-                                label = localized(
-                                    LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES,
+                                label = LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES(
                                     delay.toString()
-                                ),
+                                ).localized(),
                                 isSelected = delay == notificationDelay,
                                 onClick = { onNotificationDelayChange(delay) }
                             )
@@ -240,7 +227,7 @@ private fun SettingsSection(
     sectionTitle: LocalizationKey,
     radioOptions: List<SettingsRadioOption>,
 ) {
-    SettingsSectionLabel(label = localized(sectionTitle))
+    SettingsSectionLabel(label = sectionTitle.localized())
     Card(
         shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.cardColors(
@@ -275,7 +262,7 @@ fun SettingsSectionLabel(label: String) {
 
 @Composable
 private fun InfoSection() {
-    SettingsSectionLabel(label = localized(LocalizationKey.SETTINGS_SECTION_INFORMATION))
+    SettingsSectionLabel(label = LocalizationKey.SETTINGS_SECTION_INFORMATION.localized())
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = BetterNeptunTheme.shapes.large,
@@ -286,7 +273,7 @@ private fun InfoSection() {
     ) {
         Column(modifier = Modifier.padding(BetterNeptunTheme.dimens.paddingMedium)) {
             InfoRow(
-                label = localized(LocalizationKey.SETTINGS_SECTION_INFORMATION_VERSION),
+                label = LocalizationKey.SETTINGS_SECTION_INFORMATION_VERSION.localized(),
                 value = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
             )
         }
@@ -369,11 +356,11 @@ fun LogoutButton(onClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = localized(LocalizationKey.SETTINGS_LOGOUT_BUTTON_TITLE),
+                text = LocalizationKey.SETTINGS_LOGOUT_BUTTON_TITLE.localized(),
                 style = BetterNeptunTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             )
             Text(
-                text = localized(LocalizationKey.SETTINGS_LOGOUT_BUTTON_DESCRIPTION),
+                text = LocalizationKey.SETTINGS_LOGOUT_BUTTON_DESCRIPTION.localized(),
                 style = BetterNeptunTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                 textAlign = TextAlign.Center
             )
@@ -381,52 +368,50 @@ fun LogoutButton(onClick: () -> Unit) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun SettingsPreviewLight() {
-    BetterNeptunTheme(darkTheme = false) {
-        SettingsContent(
-            themeMode = ThemeMode.AUTO,
-            languages = listOf(
-                Language.DEFAULT,
-                Language(
-                    key = "en",
-                    localizationKey = LocalizationKey.LANGUAGE_EN.key,
-                    isSelected = false,
-                    isDefault = false
-                )
-            ),
-            notificationDelay = 15,
-            onThemeChange = {},
-            onNotificationDelayChange = {},
-            onLogout = {},
-            onBackClick = {},
-            onLanguageChange = {}
-        )
-    }
+    SettingsContent(
+        themeMode = ThemeMode.AUTO,
+        languages = listOf(
+            Language.DEFAULT,
+            Language(
+                key = "en",
+                localizationKey = LocalizationKey.LANGUAGE_EN.key,
+                isSelected = false,
+                isDefault = false
+            )
+        ),
+        notificationDelay = 15,
+        onThemeChange = {},
+        onNotificationDelayChange = {},
+        onLogout = {},
+        onBackClick = {},
+        onLanguageChange = {}
+    )
 }
 
-@Preview(showBackground = true)
+@Preview
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun SettingsPreviewDark() {
-    BetterNeptunTheme(darkTheme = true) {
-        SettingsContent(
-            themeMode = ThemeMode.DARK,
-            languages = listOf(
-                Language.DEFAULT,
-                Language(
-                    key = "en",
-                    localizationKey = LocalizationKey.LANGUAGE_EN.key,
-                    isSelected = false,
-                    isDefault = false
-                )
-            ),
-            notificationDelay = 30,
-            onThemeChange = {},
-            onNotificationDelayChange = {},
-            onLogout = {},
-            onBackClick = {},
-            onLanguageChange = {}
-        )
-    }
+    SettingsContent(
+        themeMode = ThemeMode.DARK,
+        languages = listOf(
+            Language.DEFAULT,
+            Language(
+                key = "en",
+                localizationKey = LocalizationKey.LANGUAGE_EN.key,
+                isSelected = false,
+                isDefault = false
+            )
+        ),
+        notificationDelay = 30,
+        onThemeChange = {},
+        onNotificationDelayChange = {},
+        onLogout = {},
+        onBackClick = {},
+        onLanguageChange = {}
+    )
 }

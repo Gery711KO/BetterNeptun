@@ -7,9 +7,7 @@ import hu.kocsisgeri.betterneptun.domain.repository.localization.LocalizationRep
 import hu.kocsisgeri.betterneptun.domain.repository.settings.SettingsRepository
 import hu.kocsisgeri.betterneptun.domain.service.Localization
 import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import org.koin.core.annotation.Singleton
 
@@ -30,9 +28,7 @@ internal class LocalizationServiceImpl(
 
     override val languages = MutableStateFlow(emptyList<Language>())
 
-    override val isInitialized = MutableSharedFlow<Boolean>(1, 1)
-
-    override suspend fun initialize() {
+    override suspend fun initialize() : Boolean {
         val storedLanguage = settingsRepository.storedLanguage.firstOrNull()
         val availableLanguages = localizationRepository.getLanguages()
 
@@ -45,7 +41,7 @@ internal class LocalizationServiceImpl(
             changeLanguage(language)
         }
 
-        isInitialized.tryEmit(currentDictionary.value.localizations.isNotEmpty())
+        return currentDictionary.value.localizations.isNotEmpty()
     }
 
     override suspend fun changeLanguage(languageKey: String) {
@@ -58,22 +54,11 @@ internal class LocalizationServiceImpl(
         settingsRepository.saveLanguage(languageKey)
     }
 
-    override fun localized(key: Localization, vararg args: String): String {
+    override fun localized(key: Localization): String {
         val localizedString = currentDictionary.value
             .localizations[key.key]
-            ?.format(*args)
+            ?.format(*key.args)
 
-        return localizedString?: key.defaultValue
-    }
-}
-
-internal fun defaultLocalizationService() = object: LocalizationService {
-    override val languages: StateFlow<List<Language>> =
-        MutableStateFlow(listOf(Language.DEFAULT))
-
-    override suspend fun changeLanguage(languageKey: String) {}
-
-    override fun localized(key: Localization, vararg args: String): String {
-        return key.defaultValue.format(*args)
+        return localizedString?: key.key
     }
 }
