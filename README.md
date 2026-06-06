@@ -63,6 +63,10 @@
 
 <img height="700" alt="Screenshot_20260606_100002_OE Neptun" src="https://github.com/user-attachments/assets/70d92e93-c934-4b1a-afc0-b91025ffb987" />
 
+### Credit and mark averages page
+
+https://github.com/user-attachments/assets/1ea7735f-d185-4bbd-aa7d-12ad1a80f887
+
 ### Lastly the Settings page
 
 #### Nothing to explain here, just plain settings stuff.
