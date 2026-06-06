@@ -13,7 +13,6 @@ import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.ViewMode
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.toComposeEvent
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekDataDateRange
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update

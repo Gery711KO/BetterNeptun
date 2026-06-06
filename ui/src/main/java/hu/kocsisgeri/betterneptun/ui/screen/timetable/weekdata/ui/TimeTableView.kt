@@ -54,7 +54,7 @@ fun TimeTableView(
                                             )
                                     if (newScalingFactor != localScalingFactor) {
                                         localScalingFactor = newScalingFactor
-                                        actions.onScalingFactorChange?.invoke(newScalingFactor)
+                                        actions.onScalingFactorChange(newScalingFactor)
                                     }
                                     event.changes.forEach { it.consume() }
                                 }
@@ -63,21 +63,17 @@ fun TimeTableView(
                     }
                 },
     ) {
-        // Render the background grid with integrated events
         WeekBackgroundCompose(
             modifier = Modifier.fillMaxSize(),
             dateRange = weekData.dateRange,
-            timeRange =
-                weekData.getTimeSpan() ?: TimeSpan.of(
-                    LocalTime(6, 0),
-                    12.hours
-                ),
+            timeRange = weekData.getTimeSpan() ?: TimeSpan.of(LocalTime(6, 0), 12.hours),
             events = weekData.getSingleEvents(),
             allDayEvents = weekData.getAllDayEvents(),
             multiDayEvents = weekData.getMultiDayEvents(),
             eventConfig = eventConfig,
             onEventClick = actions.onEventClick,
             onEventLongPress = actions.onEventLongPress,
+            onTimeSlotClick = actions.onTimeSlotClick,
             weekViewConfig = activeWeekConfig,
             style = defaultWeekViewStyle(
                 defaultWeekViewColors(

@@ -1,17 +1,34 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import hu.kocsisgeri.betterneptun.common.utils.isAfter
 import hu.kocsisgeri.betterneptun.common.utils.isBefore
 import hu.kocsisgeri.betterneptun.common.utils.minutesUntil
+import hu.kocsisgeri.betterneptun.common.utils.plus
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.WeekViewStyle
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.atTime
+import kotlin.math.min
+import kotlin.time.Duration.Companion.hours
 
 @Composable
 internal fun GridCanvas(
@@ -28,12 +45,40 @@ internal fun GridCanvas(
     gridStartTime: LocalTime,
     effectiveEndTime: LocalTime,
     style: WeekViewStyle,
+    onSelectionChanged: (date: LocalDateTime?) -> Unit
 ) {
-    Canvas(modifier = modifier) {
-        val columnWidthPx = if (columnCount > 0) size.width / columnCount else size.width // Avoid division by zero
+    val addIcon = rememberVectorPainter(Icons.Rounded.Add)
+
+    var selectedDay by remember { mutableStateOf<LocalDateTime?>(null) }
+
+    Canvas(
+        modifier = modifier
+            .pointerInput(Unit) {
+                detectTapGestures { offset ->
+                    val columnWidthPx =
+                        if (columnCount > 0) size.width / columnCount else size.width
+                    val rowHeightPx = rowHeightDp.toPx()
+
+                    val clickedColumnIndex = (offset.x / columnWidthPx).toInt()
+
+                    if (clickedColumnIndex in days.indices) {
+                        val clickedDay = days[clickedColumnIndex]
+                        val clickedHoursFromStart = (offset.y / rowHeightPx).toInt()
+
+                        val clickedTime = gridStartTime.plus(clickedHoursFromStart.toLong().hours)
+
+                        selectedDay = clickedDay.atTime(clickedTime)
+                        onSelectionChanged(selectedDay)
+                    } else {
+                        selectedDay = null
+                        onSelectionChanged(null)
+                    }
+                }
+            }
+    ) {
+        val columnWidthPx = if (columnCount > 0) size.width / columnCount else size.width
         val rowHeightPx = rowHeightDp.toPx()
 
-        // Vertical lines (day columns)
         for (i in 0..columnCount) {
             val x = i * columnWidthPx
             drawLine(
@@ -44,7 +89,6 @@ internal fun GridCanvas(
             )
         }
 
-        // Horizontal lines (hours) - full width
         val hourLineCount = kotlin.math.ceil(totalHours).toInt()
         for (i in 0..hourLineCount) {
             val y = i * rowHeightPx
@@ -56,7 +100,6 @@ internal fun GridCanvas(
             )
         }
 
-        // Today highlight
         if (highlightCurrentDay && days.contains(today)) {
             val todayColumnIndex = days.indexOf(today)
             val left = todayColumnIndex * columnWidthPx
@@ -67,7 +110,56 @@ internal fun GridCanvas(
             )
         }
 
-        // Now indicator line
+        selectedDay?.let { selectedDay ->
+            if (days.contains(selectedDay.date)) {
+                val selectionColumnIndex = days.indexOf(selectedDay.date)
+
+                val hoursFromStart = selectedDay.time.hour - gridStartTime.hour
+
+                if (hoursFromStart >= 0 && hoursFromStart < totalHours) {
+                    val boxLeft = selectionColumnIndex * columnWidthPx
+                    val boxTop = hoursFromStart * rowHeightPx
+
+                    val boxHeight = rowHeightPx
+                    val boxSize = Size(columnWidthPx, boxHeight)
+
+                    val selectionColor = style.colors.nowIndicator
+
+                    drawRect(
+                        color = selectionColor.copy(alpha = 0.15f),
+                        topLeft = Offset(boxLeft, boxTop),
+                        size = boxSize
+                    )
+
+                    val iconSize = min(boxSize.width, boxSize.height) / 2f
+
+                    withTransform(
+                        transformBlock = {
+                            translate(
+                                left = boxLeft + (boxSize.width - iconSize) / 2f,
+                                top = boxTop + (boxSize.height - iconSize) / 2f
+                            )
+                        }
+                    ) {
+                        with(addIcon) {
+                            draw(
+                                size = Size(iconSize, iconSize),
+                                colorFilter = ColorFilter.tint(style.colors.nowIndicator)
+                            )
+                        }
+                    }
+
+
+                    drawRect(
+                        color = selectionColor,
+                        topLeft = Offset(boxLeft, boxTop),
+                        size = boxSize,
+                        style = Stroke(width = 4f) // 4px vastag keret
+                    )
+                }
+            }
+        }
+
         if (showNowIndicator && now.isAfter(gridStartTime) && now.isBefore(effectiveEndTime)) {
             val nowPositionMinutes = gridStartTime.minutesUntil(now)
             val nowY = (nowPositionMinutes / 60f) * rowHeightPx
@@ -90,7 +182,6 @@ internal fun GridCanvas(
                             center = Offset(left, nowY),
                         )
                     }
-                    // When today is not in view, draw nothing
                 } else {
                     drawLine(
                         color = style.colors.nowIndicator,

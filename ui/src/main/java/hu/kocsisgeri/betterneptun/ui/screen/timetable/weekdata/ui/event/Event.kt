@@ -1,9 +1,11 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event
 
+import androidx.compose.runtime.Immutable
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlin.time.Duration
 
+@Immutable
 sealed class Event {
     abstract val id: Long
     abstract val date: LocalDate
@@ -43,6 +45,7 @@ sealed class Event {
         val textColor: Int,
         val backgroundColor: Int,
     ) : Event() {
+
         init {
             require(date <= lastDate) { "date ($date) must be <= lastDate ($lastDate)" }
         }

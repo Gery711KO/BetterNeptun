@@ -4,9 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,46 +24,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.Event
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.daysUntil
 
 @Composable
-internal fun MultiDayEventsRow(
+internal fun AllDayEventsRow(
     days: List<LocalDate>,
-    multiDayEvents: List<Event.MultiDay>,
+    allDayEvents: List<Event.AllDay>,
     leftOffsetDp: Dp,
     columnWidth: Dp,
     onEventClick: ((event: Event) -> Unit)? = null,
     onEventLongPress: ((event: Event) -> Unit)? = null,
 ) {
-    if (days.isEmpty() || multiDayEvents.isEmpty()) return
-
-    val firstDay = days.first()
-    val lastDay = days.last()
-
-    // Pack events into rows where events don't horizontally overlap
-    val rows = packEventsIntoRows(multiDayEvents, firstDay, lastDay)
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        rows.forEach { row ->
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(24.dp),
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.width(leftOffsetDp))
+        days.forEach { date ->
+            val eventsForDay = allDayEvents.filter { it.date == date }
+            Column(
+                modifier = Modifier.width(columnWidth).padding(horizontal = 1.dp),
             ) {
-                row.forEach { event ->
-                    val clippedStart = maxOf(event.date, firstDay)
-                    val clippedEnd = minOf(event.lastDate, lastDay)
-                    val startIndex = firstDay.daysUntil(clippedStart)
-                    val spanDays = clippedStart.daysUntil(clippedEnd) + 1
-
+                eventsForDay.forEach { event ->
                     Box(
                         modifier =
                             Modifier
-                                .offset(x = leftOffsetDp + columnWidth * startIndex)
-                                .width(columnWidth * spanDays)
+                                .fillMaxWidth()
                                 .height(24.dp)
-                                .padding(horizontal = 1.dp, vertical = 1.dp)
+                                .padding(vertical = 1.dp)
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(Color(event.backgroundColor))
                                 .pointerInput(event.id) {
@@ -86,44 +71,4 @@ internal fun MultiDayEventsRow(
             }
         }
     }
-}
-
-/**
- * Packs multi-day events into rows where no two events in the same row overlap horizontally.
- * Events are sorted by start date, then by span length (longest first) for stable packing.
- */
-private fun packEventsIntoRows(
-    events: List<Event.MultiDay>,
-    firstDay: LocalDate,
-    lastDay: LocalDate,
-): List<List<Event.MultiDay>> {
-    val sorted =
-        events.sortedWith(
-            compareBy<Event.MultiDay> { it.date }
-                .thenByDescending { it.date.daysUntil(it.lastDate) },
-        )
-
-    val rows = mutableListOf<MutableList<Event.MultiDay>>()
-
-    for (event in sorted) {
-        val clippedStart = maxOf(event.date, firstDay)
-        val clippedEnd = minOf(event.lastDate, lastDay)
-
-        val placed =
-            rows.firstOrNull { row ->
-                row.all { existing ->
-                    val existingStart = maxOf(existing.date, firstDay)
-                    val existingEnd = minOf(existing.lastDate, lastDay)
-                    clippedEnd < existingStart || clippedStart > existingEnd
-                }
-            }
-
-        if (placed != null) {
-            placed.add(event)
-        } else {
-            rows.add(mutableListOf(event))
-        }
-    }
-
-    return rows
 }

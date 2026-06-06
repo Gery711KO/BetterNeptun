@@ -1,10 +1,12 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event
 
+import androidx.compose.runtime.Immutable
 import hu.kocsisgeri.betterneptun.common.utils.isAfter
 import hu.kocsisgeri.betterneptun.common.utils.isBefore
 import kotlinx.datetime.LocalDateRange
 import kotlinx.datetime.LocalTime
 
+@Immutable
 class WeekData(
     val dateRange: LocalDateRange,
     val start: LocalTime,
@@ -24,18 +26,18 @@ class WeekData(
     }
 
     fun add(item: Event.AllDay) {
-        require(dateRange.contains(item.date.date)) { "Event date is outside the allowed range: ${item.date}" }
+        require(dateRange.contains(item.date)) { "Event date is outside the allowed range: ${item.date}" }
         allDays.add(item)
     }
 
     fun add(item: Event.MultiDay) {
-        val overlaps = item.date.date <= dateRange.endInclusive && item.lastDate.date >= dateRange.start
+        val overlaps = item.date <= dateRange.endInclusive && item.lastDate >= dateRange.start
         require(overlaps) { "MultiDay event (${item.date}..${item.lastDate}) does not overlap with the allowed range: $dateRange" }
         multiDayEvents.add(item)
     }
 
     fun add(item: Event.Single) {
-        require(dateRange.contains(item.date.date)) { "Event date ${item.date} is outside the allowed range: $dateRange" }
+        require(dateRange.contains(item.date)) { "Event date ${item.date} is outside the allowed range: $dateRange" }
         singleEvents.add(item)
 
         // Automatically adjust TimeSpan to accommodate the new event

@@ -20,7 +20,7 @@ class ClockMinutesTickReceiverImpl(context: Context): ClockMinutesTickReceiver {
 
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                trySend(Unit) // Jelzés küldése minden perc váltásakor
+                trySend(Unit)
             }
         }
 

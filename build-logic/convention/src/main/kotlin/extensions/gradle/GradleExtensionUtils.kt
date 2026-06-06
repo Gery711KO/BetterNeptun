@@ -62,14 +62,6 @@ fun Project.setupSerialization() {
 fun Project.setNamespace() {
     extensions.getByType(LibraryExtension::class).apply {
         namespace = projectConfigs.namespace
-            .plus(".")
-            .plus(
-                projectDir.path
-                    .split("BetterNeptun\\")
-                    .last()
-                    .split("\\")
-                    .joinToString(".") { it }
-            )
-
+            .plus(project.path.replace(":", "."))
     }
 }

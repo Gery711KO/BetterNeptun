@@ -3,6 +3,7 @@ package hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -47,6 +48,7 @@ internal fun TimeAxisColumn(
     leftOffsetDp: Dp,
     scrollState: ScrollState,
     showNowIndicator: Boolean,
+    contentPadding: PaddingValues,
     style: WeekViewStyle = defaultWeekViewStyle(),
 ) {
     Box(
@@ -57,7 +59,11 @@ internal fun TimeAxisColumn(
         // Total height of the scrollable grid
     ) {
         // Regular time labels (hours)
-        Column(modifier = Modifier.verticalScroll(scrollState)) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .padding(contentPadding)
+        ) {
             timeLabels.forEach { timeLabel ->
                 Box(modifier = Modifier.size(leftOffsetDp, rowHeightDp)) {
                     Text(

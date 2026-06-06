@@ -4,7 +4,7 @@ versionCode = "1"
 namespace = "hu.kocsisgeri.betterneptun"
 
 minSdk = "31"
-compileSdk = "36"
+compileSdk = "37"
 targetSdk = "36"
 javaVersion = "11"
 

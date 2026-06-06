@@ -1,5 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config
 
+import androidx.compose.foundation.layout.PaddingValues
+
 data class EventConfig(
     /** If true, always uses the full event title in both portrait and landscape mode.
      * If false (default), uses short event names in portrait mode and full names in landscape mode. */

@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event
 
+import androidx.compose.runtime.Immutable
 import hu.kocsisgeri.betterneptun.common.utils.isAfter
 import hu.kocsisgeri.betterneptun.common.utils.isBefore
 import hu.kocsisgeri.betterneptun.common.utils.plus
@@ -7,6 +8,7 @@ import kotlinx.datetime.LocalTime
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+@Immutable
 data class TimeSpan(
     val start: LocalTime,
     val endExclusive: LocalTime,

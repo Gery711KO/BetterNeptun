@@ -54,12 +54,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun ThemeMode.toAppCompatMode() = when (this) {
-        ThemeMode.AUTO -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-        ThemeMode.DARK -> AppCompatDelegate.MODE_NIGHT_YES
-        ThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
-    }
-
     @Composable
     private fun NonContentExtras() {
         LaunchedEffect(navigator.currentScreen) {
@@ -76,5 +70,11 @@ class MainActivity : AppCompatActivity() {
                 navigator.Content()
             }
         }
+    }
+
+    private fun ThemeMode.toAppCompatMode() = when (this) {
+        ThemeMode.AUTO -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        ThemeMode.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+        ThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
     }
 }

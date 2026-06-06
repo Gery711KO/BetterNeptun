@@ -1,7 +1,9 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -25,13 +27,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import de.tobiasschuerg.weekview.compose.style.defaultWeekViewColors
 import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
@@ -48,16 +50,13 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.TimeTableView
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.EventConfig
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.WeekViewConfig
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekDataDateRange
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekViewActions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateRange
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
-import kotlinx.datetime.atTime
 import kotlinx.datetime.nextOrSame
 import kotlinx.datetime.previousOrSame
 import org.koin.androidx.compose.koinViewModel
@@ -109,6 +108,8 @@ fun TimetableContent(
     sharedTransitionKey: Any,
 ) {
     var showAddEventDialog by remember { mutableStateOf(false) }
+    var initialDate by remember { mutableStateOf<LocalDateTime?>(null) }
+
     val coroutineScope = rememberCoroutineScope()
     val pagerState = if (weeks.isNotEmpty()) {
         rememberPagerState(1) { weeks.size }
@@ -133,6 +134,7 @@ fun TimetableContent(
 
     AddEventDialog(
         show = showAddEventDialog,
+        startDate = initialDate,
         event = currentSelectedEvent as? CalendarItem.LocalEvent,
         onDismissRequest = {
             showAddEventDialog = false
@@ -152,16 +154,23 @@ fun TimetableContent(
                 onViewModeChange = onViewModeChange
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showAddEventDialog = true },
-                containerColor = BetterNeptunTheme.colorScheme.primary,
-                contentColor = BetterNeptunTheme.colorScheme.onPrimary
+        bottomBar = {
+            Box(
+                contentAlignment = Alignment.BottomEnd,
+                modifier = Modifier
+                    .padding(BetterNeptunTheme.dimens.screenPadding)
+                    .fillMaxWidth()
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_event),
-                    contentDescription = "Esemény hozzáadása"
-                )
+                FloatingActionButton(
+                    onClick = { showAddEventDialog = true },
+                    containerColor = BetterNeptunTheme.colorScheme.primary,
+                    contentColor = BetterNeptunTheme.colorScheme.onPrimary
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_event),
+                        contentDescription = "Esemény hozzáadása"
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -174,7 +183,7 @@ fun TimetableContent(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(paddingValues)
+                            .padding(top = paddingValues.calculateTopPadding())
                             .padding(horizontal = BetterNeptunTheme.dimens.screenPadding)
                             .clip(BetterNeptunTheme.shapes.large)
                     ) {
@@ -182,17 +191,26 @@ fun TimetableContent(
                             weekData = weekData,
                             weekViewConfig = WeekViewConfig(
                                 showCurrentTimeIndicator = true,
-                                highlightCurrentDay = true
+                                highlightCurrentDay = true,
+                                contentPadding = PaddingValues(
+                                    top = BetterNeptunTheme.dimens.small,
+                                    bottom = paddingValues.calculateBottomPadding()
+                                )
                             ),
                             eventConfig = EventConfig(
                                 showSubtitle = true,
                                 showTimeStart = true,
                                 showTimeEnd = true,
-                                eventSpacingDp = 2
+                                eventSpacingDp = 2,
                             ),
                             actions = WeekViewActions(
                                 onEventClick = { event ->
                                     onEventClick(event.id)
+                                },
+                                onTimeSlotClick = {
+                                    if (it == initialDate) showAddEventDialog = true
+
+                                    initialDate = it
                                 }
                             ),
                             modifier = Modifier.fillMaxSize()
@@ -350,8 +368,6 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
             color = 0xFF2196F3.toInt()
         )
     )
-
-    defaultWeekViewColors()
 
     TimetableContent(
         sharedTransitionKey = Unit,

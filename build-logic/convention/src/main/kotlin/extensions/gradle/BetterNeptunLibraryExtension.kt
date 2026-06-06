@@ -112,12 +112,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         }
     }
 
-    private fun Project.moduleStringFromLayerAndSuffix(): String =
-        ":" + projectDir.path
-            .split("BetterNeptun\\")
-            .last()
-            .split("\\")
-            .joinToString(":") { it }
+    private fun Project.moduleStringFromLayerAndSuffix(): String = project.path
 
     private fun Project.includeProjects(projects: List<String>) {
         logger.lifecycle("Auto configure: $projects")

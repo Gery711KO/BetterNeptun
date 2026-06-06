@@ -15,7 +15,7 @@ import kotlin.time.Clock
 fun CalendarItem.toComposeEvent(): Event.Single {
     return Event.Single(
         id = id,
-        date = startTime,
+        date = startTime.date,
         title = title,
         shortTitle = title.take(3),
         subTitle = location,

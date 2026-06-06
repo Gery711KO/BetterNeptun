@@ -4,10 +4,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,13 +18,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import de.tobiasschuerg.weekview.compose.components.AllDayEventsRow
-import de.tobiasschuerg.weekview.compose.components.MultiDayEventsRow
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import hu.kocsisgeri.betterneptun.common.utils.now
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.Event
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.TimeSpan
+import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.EventConfig
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.WeekViewConfig
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.Event
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.TimeSpan
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.metrics.rememberWeekViewMetrics
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.WeekViewStyle
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.defaultWeekViewStyle
@@ -37,15 +41,17 @@ fun WeekBackgroundCompose(
     dateRange: LocalDateRange,
     timeRange: TimeSpan,
     events: List<Event.Single> = emptyList(),
-    allDayEvents: List<Event.AllDay> = emptyList(), // TODO
-    multiDayEvents: List<Event.MultiDay> = emptyList(), // TODO
+    allDayEvents: List<Event.AllDay> = emptyList(),
+    multiDayEvents: List<Event.MultiDay> = emptyList(),
     eventConfig: EventConfig = EventConfig(),
     weekViewConfig: WeekViewConfig,
-    onEventClick: ((event: Event) -> Unit)? = null,
-    onEventLongPress: ((event: Event) -> Unit)? = null,
+    onEventClick: (event: Event) -> Unit = {},
+    onEventLongPress: (event: Event) -> Unit = {},
+    onTimeSlotClick: (LocalDateTime?) -> Unit = {},
     style: WeekViewStyle = defaultWeekViewStyle(),
 ) {
-    val metrics = rememberWeekViewMetrics(dateRange, timeRange, events, weekViewConfig.scalingFactor)
+    val metrics =
+        rememberWeekViewMetrics(dateRange, timeRange, events, weekViewConfig.scalingFactor)
     val scrollState = rememberScrollState()
     val today = LocalDate.now()
     var now by remember { mutableStateOf(LocalDateTime.now().time) }
@@ -59,7 +65,8 @@ fun WeekBackgroundCompose(
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val availableWidth = maxWidth - metrics.leftOffsetDp
-        val dynamicColumnWidthDp = if (metrics.columnCount > 0) (availableWidth / metrics.columnCount) else availableWidth
+        val dynamicColumnWidthDp =
+            if (metrics.columnCount > 0) (availableWidth / metrics.columnCount) else availableWidth
 
         Column(modifier = Modifier.fillMaxSize()) {
             DayHeaderRow(
@@ -97,8 +104,8 @@ fun WeekBackgroundCompose(
 
             Row(modifier = Modifier.weight(1f)) {
                 TimeAxisColumn(
-                    timeLabels = metrics.timeLabels,
                     now = now,
+                    timeLabels = metrics.timeLabels,
                     gridStartTime = metrics.gridStartTime,
                     gridEndTime = metrics.effectiveEndTime,
                     rowHeightDp = metrics.rowHeightDp,
@@ -106,6 +113,7 @@ fun WeekBackgroundCompose(
                     leftOffsetDp = metrics.leftOffsetDp,
                     scrollState = scrollState,
                     showNowIndicator = weekViewConfig.showCurrentTimeIndicator,
+                    contentPadding = weekViewConfig.contentPadding,
                     style = style,
                 )
 
@@ -113,6 +121,7 @@ fun WeekBackgroundCompose(
                     modifier =
                         Modifier
                             .verticalScroll(scrollState)
+                            .padding(weekViewConfig.contentPadding)
                             .weight(1f)
                             .height(metrics.gridHeightDp),
                 ) {
@@ -130,6 +139,7 @@ fun WeekBackgroundCompose(
                         gridStartTime = metrics.gridStartTime,
                         effectiveEndTime = metrics.effectiveEndTime,
                         style = style,
+                        onSelectionChanged = onTimeSlotClick
                     )
                     EventsPane(
                         days = metrics.days,

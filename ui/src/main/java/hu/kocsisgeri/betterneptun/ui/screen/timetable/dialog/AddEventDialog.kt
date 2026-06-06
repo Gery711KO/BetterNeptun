@@ -68,7 +68,6 @@ import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.common.utils.plus
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.ui.R
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -77,7 +76,7 @@ import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
 
 @OptIn(FormatStringsInDatetimeFormats::class)
@@ -94,10 +93,13 @@ private val timeFormatter = LocalDateTime.Format {
 @Composable
 fun AddEventDialog(
     show: Boolean,
+    startDate: LocalDateTime?,
     event: CalendarItem.LocalEvent?,
     onDismissRequest: () -> Unit,
-    onAddEvent: (CalendarItem.LocalEvent) -> Unit
+    onAddEvent: (CalendarItem.LocalEvent) -> Unit,
 ) {
+    val newEventId = remember { System.currentTimeMillis() }
+
     if (show) {
         val title = remember {
             DialogData.TextInputData(
@@ -128,7 +130,7 @@ fun AddEventDialog(
         }
         val date = remember {
             DialogData.TextInputData(
-                initialValue = event?.startTime ?: LocalDateTime.now(),
+                initialValue = event?.startTime ?: startDate?: LocalDateTime.now(),
                 label = "Dátum",
                 leadingIcon = R.drawable.ic_calendar,
                 format = { it.format(dateFormatter) },
@@ -143,7 +145,7 @@ fun AddEventDialog(
         }
         val startTime = remember {
             DialogData.TextInputData(
-                initialValue = event?.startTime ?: LocalDateTime.now(),
+                initialValue = event?.startTime ?: startDate?: LocalDateTime.now(),
                 label = "Kezdés",
                 leadingIcon = R.drawable.ic_schedule,
                 withDialog = { input ->
@@ -158,7 +160,7 @@ fun AddEventDialog(
         }
         val endTime = remember {
             DialogData.TextInputData(
-                initialValue = event?.startTime ?: LocalDateTime.now().plus(30.minutes),
+                initialValue = event?.endTime ?: (startDate ?: LocalDateTime.now()).plus(1.hours),
                 label = "Vége",
                 leadingIcon = R.drawable.ic_schedule,
                 withDialog = { input ->
@@ -186,7 +188,7 @@ fun AddEventDialog(
             onDismissRequest = onDismissRequest,
             onSave = {
                 val event = CalendarItem.LocalEvent(
-                    id = event?.id ?: (System.currentTimeMillis() % 10000000),
+                    id = event?.id ?: newEventId,
                     title = title.formattedValue,
                     startTime = startTime.value,
                     endTime = endTime.value,
