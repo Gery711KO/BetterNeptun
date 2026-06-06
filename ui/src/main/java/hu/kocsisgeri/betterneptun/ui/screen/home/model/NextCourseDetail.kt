@@ -1,7 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home.model
 
 import hu.kocsisgeri.betterneptun.domain.model.TimeDuration
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 
 data class NextCourseDetail(
     val id: Long,

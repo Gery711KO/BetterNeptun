@@ -1,6 +1,6 @@
 package hu.kocsisgeri.betterneptun.core.database.localevents.model
 
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 
 data class LocalEventEntity(
     val id: Long,

@@ -1,18 +1,18 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home.model
 
+import hu.kocsisgeri.betterneptun.common.utils.diffEpochSeconds
+import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.domain.model.TimeDuration
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
+import kotlinx.datetime.LocalDateTime
 import kotlin.math.ceil
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 fun LocalDateTime.getTimeUntil(): TimeDuration {
-    val diff = toEpochSecond(ZoneOffset.UTC)
-        .minus(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
+    val diff = diffEpochSeconds(LocalDateTime.now())
 
-    val hours = TimeUnit.MILLISECONDS.toHours(diff * 1000)
-    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
+    val hours = diff.seconds.inWholeHours
+    val seconds = diff.seconds.inWholeSeconds
     val minutes = ceil(seconds / 60f).roundToInt()
     val days = hours / 24f
 
@@ -32,13 +32,4 @@ fun LocalDateTime.getTimeUntil(): TimeDuration {
             unit = TimeDuration.Unit.DAYS
         )
     }
-}
-
-fun LocalDateTime.getTimeLeft(): Int {
-    val diff = toEpochSecond(ZoneOffset.UTC)
-        .minus(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
-    val seconds = TimeUnit.MILLISECONDS.toSeconds(diff * 1000)
-    val minutes = ceil(seconds / 60f).roundToInt()
-
-    return minutes
 }

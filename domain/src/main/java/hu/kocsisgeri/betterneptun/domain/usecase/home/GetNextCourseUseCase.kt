@@ -1,20 +1,22 @@
 package hu.kocsisgeri.betterneptun.domain.usecase.home
 
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.CalendarRepository
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.Factory
-import java.time.LocalDateTime
+import kotlin.time.Clock
 
 @Factory
-class GetNextCourseUseCase(private val neptunRepository: NeptunRepository) {
+class GetNextCourseUseCase(private val calendarRepository: CalendarRepository) {
 
     operator fun <T> invoke(map: (CalendarItem) -> T) =
-        neptunRepository.events.map { list ->
-            val now = LocalDateTime.now()
+        calendarRepository.events.map { list ->
+            val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
 
             list.sortedBy { it.startTime }.firstOrNull { item ->
-                item.startTime.isAfter(now)
+                item.startTime > now
             }?.let(map)
         }
 }

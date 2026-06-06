@@ -10,7 +10,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.serializer
 import org.koin.core.annotation.Singleton
 
-@Singleton(binds = [TokenManager::class])
+@Singleton
 internal class TokenManagerImpl(
     private val localDataSource: LocalDataSource,
     private val authApiService: AuthApiService

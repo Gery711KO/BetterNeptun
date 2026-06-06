@@ -21,11 +21,14 @@ internal class PreviewLocalizationServiceImpl(context: Context): LocalizationSer
         // NO OP
     }
 
-    override fun localized(key: Localization, ): String {
+    override fun localized(key: Localization): String {
         val currentLocale = AppCompatDelegate.getApplicationLocales()[0]?.language ?: "hu"
-        return dictionaries.value[currentLocale]
+        val localizedString =  dictionaries.value[currentLocale]
             ?.localizations[key.key]
-            ?.format(*key.args) ?: key.key
+            ?.format(*key.args)
+            ?.replace("\\n", "\n")
+
+        return localizedString ?: key.key
     }
 
 

@@ -4,8 +4,8 @@ versionCode = "1"
 namespace = "hu.kocsisgeri.betterneptun"
 
 minSdk = "31"
-compileSdk = "36"
+compileSdk = "37"
 targetSdk = "36"
 javaVersion = "11"
 
-localizationSnapshot = "snapshot_2026-06-06_04-34-49_223_dd2757d8"
+localizationSnapshot = "snapshot_2026-06-06_23-28-04_108_82ab7305"

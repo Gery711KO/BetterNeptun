@@ -11,8 +11,6 @@ class AndroidSecretsConventionPlugin: Plugin<Project> {
 
             extensions.configure<SecretsPluginExtension> {
                 defaultPropertiesFileName = "secrets.defaults.properties"
-
-                ignoreList.add("keyToIgnore")
             }
         }
     }

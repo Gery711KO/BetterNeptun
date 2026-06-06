@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.layout.ContentScale
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import hu.kocsisgeri.betterneptun.ui.navigation.utils.sharedTransitionScope
 
@@ -18,9 +19,16 @@ fun Modifier.sharedBoundsAnimation(key: Any): Modifier = composed {
         sharedBounds(
             sharedContentState = rememberSharedContentState(key),
             animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-            resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+            resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.FillBounds),
             enter = fadeIn(tween(400)),
             exit = fadeOut(tween(200))
         )
+    }
+}
+
+
+fun Modifier.renderShared(): Modifier = composed {
+    with(sharedTransitionScope) {
+        renderInSharedTransitionScopeOverlay()
     }
 }

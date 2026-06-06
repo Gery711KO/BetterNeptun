@@ -19,7 +19,6 @@ class MyApplication : Application() {
             androidContext(this@MyApplication)
             printLogger()
         }
-
     }
 
     fun initLogging() {

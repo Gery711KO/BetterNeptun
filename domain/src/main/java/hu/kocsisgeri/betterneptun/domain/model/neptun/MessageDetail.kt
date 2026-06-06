@@ -1,6 +1,6 @@
 package hu.kocsisgeri.betterneptun.domain.model.neptun
 
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 
 data class MessageDetail(
     val sender: String,

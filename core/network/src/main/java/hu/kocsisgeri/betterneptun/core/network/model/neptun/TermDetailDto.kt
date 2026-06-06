@@ -1,18 +1,16 @@
 package hu.kocsisgeri.betterneptun.core.network.model.neptun
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import java.time.LocalDateTime
 
 @Serializable
 data class TermDetailDto(
     val financialStatus: String,
-    @Contextual
     val registration: LocalDateTime,
     val averagesCreditIndicies: List<Metric>,
     val furtherHalfYearAverages: List<Metric>,
     val furtherCumulativeAverages: List<Metric>,
-    @Contextual
     val closingDate: LocalDateTime
 ) {
 

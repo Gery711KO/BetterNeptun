@@ -62,6 +62,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
+import hu.kocsisgeri.betterneptun.common.utils.now
+import hu.kocsisgeri.betterneptun.common.utils.plus
 import hu.kocsisgeri.betterneptun.domain.model.TimeDuration
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
@@ -87,9 +89,10 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
+import kotlinx.datetime.LocalDateTime
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-import java.time.LocalDateTime
+import kotlin.time.Duration.Companion.hours
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -759,8 +762,8 @@ fun HomeScreenPreview() {
     val nextCourse = NextCourseDetail(
         id = 16,
         title = "Full stack fejlesztés",
-        startTime = LocalDateTime.now().plusHours(1),
-        endTime = LocalDateTime.now().plusHours(3),
+        startTime = LocalDateTime.now().plus(1.hours),
+        endTime = LocalDateTime.now().plus(1.hours),
         location = "BA.F.02",
         color = 0xFF4285F4.toInt(),
         timeUntilEvent = TimeDuration(

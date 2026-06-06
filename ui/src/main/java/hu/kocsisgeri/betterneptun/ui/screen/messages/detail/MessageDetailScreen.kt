@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Message
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessageDetail
@@ -46,10 +47,10 @@ import hu.kocsisgeri.betterneptun.ui.core.composable.HtmlText
 import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import kotlinx.datetime.LocalDateTime
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import java.time.LocalDateTime
 
 @Composable
 fun MessageDetailScreen(
@@ -206,7 +207,7 @@ fun MessageDetailContentPreview() {
             messageDetail = MessageDetail(
                 subject = "Vizsga eredmény",
                 sender = "Kovács János",
-                date = LocalDateTime.of(2023, 10, 25, 14, 30),
+                date = LocalDateTime(2023, 10, 25, 14, 30),
                 hasUnreadPost = false,
                 posts = listOf(
                     MessageDetail.Post(

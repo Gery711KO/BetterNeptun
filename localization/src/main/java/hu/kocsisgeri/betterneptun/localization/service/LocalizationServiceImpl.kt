@@ -58,6 +58,7 @@ internal class LocalizationServiceImpl(
         val localizedString = currentDictionary.value
             .localizations[key.key]
             ?.format(*key.args)
+            ?.replace("\\n", "\n")
 
         return localizedString?: key.key
     }

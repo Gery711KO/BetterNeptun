@@ -1,8 +1,7 @@
 package hu.kocsisgeri.betterneptun.core.network.model.neptun
 
-import kotlinx.serialization.Contextual
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
-import java.time.LocalDateTime
 
 @Serializable
 data class ReceivedMessageDto(
@@ -12,7 +11,6 @@ data class ReceivedMessageDto(
     val senderName: String,
     val isSystemMessage: Boolean,
     val subject: String,
-    @Contextual
     val lastPostDate: LocalDateTime,
     val unreadedPostCount: Int,
     val hasAttachment: Boolean,

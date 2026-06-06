@@ -8,6 +8,5 @@ betterNeptun {
         api(libs.androidx.appcompat)
         api(libs.kotlinx.serialization.json)
         api(libs.retrofit.kotlin.serialization)
-        api(libs.okhttp)
     }
 }

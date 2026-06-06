@@ -51,7 +51,8 @@ val featureDependencies: List<Dependency>
             aliases = listOf(
                 "androidx-appcompat",
                 "androidx-core-ktx",
-                "coil-compose"
+                "coil-compose",
+                "coil-network"
             )
         )
     )

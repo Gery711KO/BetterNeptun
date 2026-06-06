@@ -1,13 +1,13 @@
 package hu.kocsisgeri.betterneptun.domain.usecase.timetable
 
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.CalendarRepository
 import org.koin.core.annotation.Factory
 
 @Factory
-class AddLocalEventUseCase(private val neptunRepository: NeptunRepository) {
+class AddLocalEventUseCase(private val calendarRepository: CalendarRepository) {
 
     suspend operator fun invoke(event: CalendarItem.LocalEvent) {
-        neptunRepository.addLocalEvent(event)
+        calendarRepository.addLocalEvent(event)
     }
 }

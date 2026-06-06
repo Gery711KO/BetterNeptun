@@ -1,15 +1,16 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
+import hu.kocsisgeri.betterneptun.common.utils.getTimeLeft
 import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
 import hu.kocsisgeri.betterneptun.domain.usecase.home.FetchUnreadMessagesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetCurrentCoursesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetNextCourseUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetStudentDataUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
-import hu.kocsisgeri.betterneptun.ui.core.helper.ClockMinutesTickReceiver
+import hu.kocsisgeri.betterneptun.common.utils.TickType
+import hu.kocsisgeri.betterneptun.common.utils.clockTickFlow
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
-import hu.kocsisgeri.betterneptun.ui.screen.home.model.getTimeLeft
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.getTimeUntil
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.getPercent
 import kotlinx.coroutines.flow.Flow
@@ -19,7 +20,6 @@ import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class HomeViewModel(
-    private val clockTickReceiver: ClockMinutesTickReceiver,
     private val fetchUnreadMessagesUseCase: FetchUnreadMessagesUseCase,
     getCurrentCoursesUseCase: GetCurrentCoursesUseCase,
     getNextCourseUseCase: GetNextCourseUseCase,
@@ -67,5 +67,5 @@ class HomeViewModel(
     }
 
     private fun <T> Flow<T>.repeatEveryMinute(): Flow<T> =
-        clockTickReceiver.minuteTick.flatMapLatest { this }
+        clockTickFlow(TickType.MINUTE).flatMapLatest { this }
 }
