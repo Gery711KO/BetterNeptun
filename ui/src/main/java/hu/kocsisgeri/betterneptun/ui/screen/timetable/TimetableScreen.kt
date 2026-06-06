@@ -193,7 +193,6 @@ fun TimetableContent(
                                 showCurrentTimeIndicator = true,
                                 highlightCurrentDay = true,
                                 contentPadding = PaddingValues(
-                                    top = BetterNeptunTheme.dimens.small,
                                     bottom = paddingValues.calculateBottomPadding()
                                 )
                             ),

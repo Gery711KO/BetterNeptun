@@ -69,6 +69,8 @@ fun WeekBackgroundCompose(
             if (metrics.columnCount > 0) (availableWidth / metrics.columnCount) else availableWidth
 
         Column(modifier = Modifier.fillMaxSize()) {
+            MonthHeaderRow(dateRange.start)
+
             DayHeaderRow(
                 days = metrics.days,
                 today = today,

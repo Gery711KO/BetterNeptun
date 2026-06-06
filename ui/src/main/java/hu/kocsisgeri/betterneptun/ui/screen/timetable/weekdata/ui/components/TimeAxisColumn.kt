@@ -22,20 +22,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import hu.kocsisgeri.betterneptun.common.utils.formatTimePickerDate
 import hu.kocsisgeri.betterneptun.common.utils.isAfter
 import hu.kocsisgeri.betterneptun.common.utils.isBefore
 import hu.kocsisgeri.betterneptun.common.utils.minutesUntil
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.WeekViewStyle
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.defaultWeekViewStyle
 import kotlinx.datetime.LocalTime
-import kotlinx.datetime.format
-import kotlinx.datetime.format.char
-
-val formattedTime = LocalTime.Format {
-    hour()
-    char(':')
-    minute()
-}
 
 @Composable
 internal fun TimeAxisColumn(
@@ -68,7 +61,7 @@ internal fun TimeAxisColumn(
                 Box(modifier = Modifier.size(leftOffsetDp, rowHeightDp)) {
                     Text(
                         modifier = Modifier.padding(horizontal = 4.dp),
-                        text = timeLabel.format(formattedTime),
+                        text = timeLabel.formatTimePickerDate(),
                         style = TextStyle(fontSize = 12.sp, color = style.colors.timeLabelTextColor),
                     )
                 }
@@ -90,7 +83,7 @@ internal fun TimeAxisColumn(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = now.format(formattedTime),
+                    text = now.formatTimePickerDate(),
                     style =
                         TextStyle(
                             fontSize = 12.sp,

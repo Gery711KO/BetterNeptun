@@ -11,7 +11,7 @@ import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
 import hu.kocsisgeri.betterneptun.localization.preview.PreviewLocalizationServiceImpl
 import hu.kocsisgeri.betterneptun.localization.service.LocalizationProviderScope
 
-internal val LocalLocalizer =
+val LocalLocalizer =
     compositionLocalWithComputedDefaultOf<LocalizationService> {
         PreviewLocalizationServiceImpl(LocalContext.currentValue)
     }

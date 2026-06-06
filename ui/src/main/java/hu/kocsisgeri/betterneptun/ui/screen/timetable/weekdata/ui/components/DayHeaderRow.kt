@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -18,18 +20,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.EventConfig
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.WeekViewStyle
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.format
-import kotlinx.datetime.format.char
-import kotlin.collections.forEach
-
-private val formatter = LocalDate.Format {
-    monthNumber()
-    char('/')
-    day()
-}
 
 @Composable
 internal fun DayHeaderRow(
@@ -50,6 +46,7 @@ internal fun DayHeaderRow(
                 if (highlightCurrentDay && isToday) {
                     Modifier
                         .size(columnWidth, topOffsetDp)
+                        .clip(CircleShape)
                         .background(style.colors.currentDayBackground)
                         .padding(vertical = 2.dp)
                 } else {
@@ -73,26 +70,22 @@ internal fun DayHeaderRow(
                         textAlign = TextAlign.Center,
                     )
                 }
-            val dayName =
-                if (eventConfig.alwaysUseFullName) {
-                    date.dayOfWeek.name // TODO
-                } else {
-                    date.dayOfWeek.name // TODO
-                }
-            val shortDate = date.format(formatter)
+
             Column(
                 modifier = boxModifier,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = dayName,
+                    text = date.dayOfWeek
+                        .toLocalizationKey(!eventConfig.alwaysUseFullName)
+                        .localized(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = textStyle,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(
-                    text = shortDate,
+                    text =  date.getFormatted(),
                     maxLines = 1,
                     style = textStyle,
                     modifier = Modifier.fillMaxWidth(),
@@ -101,3 +94,17 @@ internal fun DayHeaderRow(
         }
     }
 }
+
+private fun DayOfWeek.toLocalizationKey(abbreviated: Boolean) = when (this) {
+    DayOfWeek.MONDAY -> if (abbreviated) LocalizationKey.DAY_MONDAY_SHORT else LocalizationKey.DAY_MONDAY
+    DayOfWeek.TUESDAY -> if (abbreviated) LocalizationKey.DAY_TUESDAY_SHORT else LocalizationKey.DAY_TUESDAY
+    DayOfWeek.WEDNESDAY -> if (abbreviated) LocalizationKey.DAY_WEDNESDAY_SHORT else LocalizationKey.DAY_WEDNESDAY
+    DayOfWeek.THURSDAY -> if (abbreviated) LocalizationKey.DAY_THURSDAY_SHORT else LocalizationKey.DAY_THURSDAY
+    DayOfWeek.FRIDAY -> if (abbreviated) LocalizationKey.DAY_FRIDAY_SHORT else LocalizationKey.DAY_FRIDAY
+    DayOfWeek.SATURDAY -> if (abbreviated) LocalizationKey.DAY_SATURDAY_SHORT else LocalizationKey.DAY_SATURDAY
+    DayOfWeek.SUNDAY -> if (abbreviated) LocalizationKey.DAY_SUNDAY_SHORT else LocalizationKey.DAY_SUNDAY
+}
+
+private fun LocalDate.getFormatted() = LocalDate.Format {
+    day()
+}.format(this)

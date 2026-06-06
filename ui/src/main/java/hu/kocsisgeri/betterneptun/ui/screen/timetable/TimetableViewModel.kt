@@ -39,13 +39,13 @@ class TimetableViewModel(
 
     private val currentSelected = MutableStateFlow(defaultSelected)
 
-    private val _viewMode = MutableStateFlow(ViewMode.WEEK)
+    private val _viewMode = MutableStateFlow(ViewMode.FULL_WEEK)
     val viewMode = _viewMode.stateWhileSubscribed()
 
     private val _selectedDate = MutableStateFlow(LocalDateTime.now())
     val selectedDate = _selectedDate.stateWhileSubscribed()
 
-    private val _times = MutableStateFlow("6:23")
+    private val _times = MutableStateFlow("0:23")
 
     val weeks = combine(
         selectedDate,

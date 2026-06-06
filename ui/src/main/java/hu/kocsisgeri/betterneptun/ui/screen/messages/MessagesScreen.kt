@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -58,7 +58,7 @@ import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import hu.kocsisgeri.betterneptun.common.utils.DateUtils
+import hu.kocsisgeri.betterneptun.common.utils.formatApiDate
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Message
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
@@ -202,10 +202,10 @@ private fun LazyListScope.messages(
     messages: MessagesPager,
     onMessageClick: (Message) -> Unit
 ) {
-    itemsIndexed(
+    items(
         items = messages.messages,
-        key = { _, message -> message.id }
-    ) { index, message ->
+        key = { message -> message.id }
+    ) {  message ->
         MessageItem(
             modifier = Modifier.animateItem(),
             message = message,
@@ -361,7 +361,7 @@ fun MessageItem(
                     horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.small)
                 ) {
                     Text(
-                        text = DateUtils.formatDate(message.date),
+                        text = message.date.formatApiDate(),
                         style = BetterNeptunTheme.typography.labelSmall.copy(
                             fontWeight = if (message.isNew) {
                                 FontWeight.ExtraBold

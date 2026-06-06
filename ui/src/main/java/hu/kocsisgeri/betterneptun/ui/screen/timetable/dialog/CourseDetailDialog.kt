@@ -36,6 +36,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
+import hu.kocsisgeri.betterneptun.localization.LocalLocalizer
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
@@ -52,6 +55,8 @@ fun CourseDetailDialog(
     onEditEvent: (Long?) -> Unit = {},
     onDeleteLocalEvent: (Long) -> Unit = {}
 ) {
+    val localizer = LocalLocalizer.current
+
     selectedEvent?.let { event ->
         Dialog(
             properties = DialogProperties(
@@ -104,7 +109,9 @@ fun CourseDetailDialog(
                     DetailItem(
                         icon = painterResource(R.drawable.ic_schedule),
                         label = "Időpont",
-                        value = getTimeText(event)
+                        value = getTimeText(event) {
+                            localizer.localized(it)
+                        }
                     )
                     if (event.location.isNullOrBlank().not()) {
                         Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingMedium))
@@ -209,19 +216,22 @@ private fun DetailItem(icon: Painter, label: String, value: String) {
     }
 }
 
-private fun getTimeText(event: CalendarItem): String {
+private fun getTimeText(
+    event: CalendarItem,
+    resolvedLocalization: (LocalizationKey) -> String
+): String {
     val day =  when (event.startTime.dayOfWeek) {
-        DayOfWeek.MONDAY -> "hétfő"
-        DayOfWeek.TUESDAY -> "kedd"
-        DayOfWeek.WEDNESDAY -> "szerda"
-        DayOfWeek.THURSDAY -> "csütörtök"
-        DayOfWeek.FRIDAY -> "péntek"
-        DayOfWeek.SATURDAY -> "szombat"
-        DayOfWeek.SUNDAY -> "vasárnap"
+        DayOfWeek.MONDAY -> LocalizationKey.DAY_MONDAY
+        DayOfWeek.TUESDAY -> LocalizationKey.DAY_TUESDAY
+        DayOfWeek.WEDNESDAY -> LocalizationKey.DAY_WEDNESDAY
+        DayOfWeek.THURSDAY -> LocalizationKey.DAY_THURSDAY
+        DayOfWeek.FRIDAY -> LocalizationKey.DAY_FRIDAY
+        DayOfWeek.SATURDAY -> LocalizationKey.DAY_SATURDAY
+        DayOfWeek.SUNDAY -> LocalizationKey.DAY_SUNDAY
     }
     val startMin = event.startTime.minute.let { if (it < 10) "0$it" else it }
     val endMin = event.endTime.minute.let { if (it < 10) "0$it" else it }
-    val timeText = "${event.startTime.hour}:${startMin} - ${event.endTime.hour}:${endMin} ($day)"
+    val timeText = "${event.startTime.hour}:${startMin} - ${event.endTime.hour}:${endMin} (${resolvedLocalization(day)})"
 
     return timeText
 }
