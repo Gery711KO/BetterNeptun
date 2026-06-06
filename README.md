@@ -1,7 +1,7 @@
 # BetterNeptun for Obuda University Neumann Information Technology students
 
 #### An application which is meant to replace the official Neptun application. 
-(I will make it work for any neptun user univerity student in the long run)
+(I will make it work for any hungarian university student in the long run)
 
 ## The Goal
 
@@ -16,9 +16,12 @@
 - UI element for your currently unread messages
 - Page for reading your messages in better format in a modern material design.
 - Page for all your calendar events.
-- Page for all af yout current courses with relevant informations from them.
-- Page for all your exams, with visual feedback on their status.
-- And other pages which might or might not be helpful, but who knows.
+- Page for all of your current courses with relevant informations from them.
+- Page for all semester averages and credits with cool looking charts.
+
+#### Future pages
+- Page for exams
+- Page for timelines
 
 ## The UI (Dark and Light mode are both available)
 
@@ -26,26 +29,42 @@
 
 #### The home page contains all of the clickable menu navigations that you can access, and some basic information about your data, and your next class or ongoing classes. The white tinted space contains your name, and neptun code.
 
-<img src="https://user-images.githubusercontent.com/96139474/190135696-b17d77f8-c4a1-42ea-89c5-be4e36b20344.jpg" height="500" img/>
+- Current and Ongoing carousels
+  - I tried to keep it very simple, but also pleasing to the eye, with tons of useful features that could help you in your early days at the university.
 
-### Current and Ongoing card
+<img height="700" alt="image" src="https://github.com/user-attachments/assets/f2146699-2ba4-4a05-bb10-16996908fe8c" />
 
-#### I tried to keep it very simple, but also pleasing to the eye, with tons of useful features that could help you in your early days at the university.
-
-#### The main concept was to help students going from one class to another a little bit easier, so i decided to implement a feature which will show you your next class at all times on your Home screen, and if for some reason you are late from your class, no worries, there is a UI element for your ongoing class as well, so you can easily just open the app, and get the location of your current ongoing class.
-
-![2022-09-14_10 59 32](https://user-images.githubusercontent.com/96139474/190110486-3f891453-9a54-4f34-a0a7-b2f6ca3a771d.jpg)
 
 ### Message page
 
-#### On this page, i decided to fetch all of the messages of the user, to then save them locally in a Room database [Click here to learn more about it](https://developer.android.com/training/data-storage/room). Clicking on a message and reading it also marks the message read for neptun, so you dont have to read the message there. New messages have a blue stroke around them so you will not miss any of them. 
+#### On this page, I implemented a paginated API request system that fetches messages 20 at a time. Clicking on a message and reading it also marks the message read for neptun, so you dont have to read the message there. New messages are maked with a small dot and have their title bolded a bit. 
 
-#### The design kinda resembles a any mailing application, but we dont have icons here, we only have text. 
+#### The design kinda resembles any mailing application, but there are no swipe gestures here :D
 
-<img src="https://user-images.githubusercontent.com/96139474/190134635-4694fabc-d5de-442a-9f31-339f2d1f3a7b.jpg" width="500" img/>
+<img height="700" alt="Screenshot_20260606_095635_OE Neptun" src="https://github.com/user-attachments/assets/783fc11d-cc55-437f-8cfb-069e9ca1eb1b" />
+<img height="700" alt="Screenshot_20260606_095703_OE Neptun" src="https://github.com/user-attachments/assets/b566cf34-77ad-4fad-9cc9-ec71a56b5550" />
 
 ### Calendar page 
 
 #### The calendar is quite simple in a way, because it looks almost like any other calendar app, but it only shows your courses exams, and any other event that you add yourself. The calendar itself is customizable, you can add custom events, and customize the colors of the course or exam events.
 
-![2022-09-14_13 10 12](https://user-images.githubusercontent.com/96139474/190138923-1147d38e-bb19-40d9-89da-75a8928e2531.jpg)
+#### Only custom events can be deleted and fully modified. For neptun calendar events only the color can be modified.
+
+<img height="700" alt="Screenshot_20260606_095719_OE Neptun" src="https://github.com/user-attachments/assets/9d40205f-d36e-4016-8f1d-72139f350da6" />
+<img height="700" alt="Screenshot_20260606_095722_OE Neptun" src="https://github.com/user-attachments/assets/d91dfddb-365d-4b40-bb46-cefa2bd2d12d" />
+<img height="700" alt="Screenshot_20260606_095730_OE Neptun" src="https://github.com/user-attachments/assets/dba4471b-e636-459d-b128-69858ef804bd" />
+<img height="700" alt="Screenshot_20260606_095806_OE Neptun" src="https://github.com/user-attachments/assets/0b5b8d86-b6ae-475b-8500-f6348b74243d" />
+<img height="700" alt="Screenshot_20260606_095816_OE Neptun" src="https://github.com/user-attachments/assets/e8aa09d1-cb73-40b9-8348-89af4f51b34c" />
+<img height="700" alt="Screenshot_20260606_095812_OE Neptun" src="https://github.com/user-attachments/assets/8c443fea-eeb9-4ae4-b9c4-b3881c24c488" />
+
+### Subjects page
+
+#### A simple filtering subjects page where subjects can be filtered by the current selected semester.
+
+<img height="700" alt="Screenshot_20260606_100002_OE Neptun" src="https://github.com/user-attachments/assets/70d92e93-c934-4b1a-afc0-b91025ffb987" />
+
+### Lastly the Settings page
+
+#### Nothing to explain here, just plain settings stuff.
+
+<img height="700" alt="Screenshot_20260606_100034_OE Neptun" src="https://github.com/user-attachments/assets/3b68a2d1-3367-4953-bfa4-e5c361599f64" />
