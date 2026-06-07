@@ -20,87 +20,32 @@ import io.ktor.client.request.setBody
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Singleton
 
-@Singleton
-class MainApiService(
-    @Named("MainClient") private val client: HttpClient
-) {
+interface MainApiService {
 
-    suspend fun getUserInfo(): ApiResponseDto<UserInfoDto> {
-        return client.get("UserInfo").body()
-    }
-
-    suspend fun getUnreadMessagesCount(): ApiResponseDto<UnreadMessagesCountDto> {
-        return client.get("Message/GetUnreadedMessagesCount").body()
-    }
+    suspend fun getUserInfo(): ApiResponseDto<UserInfoDto>
+    suspend fun getUnreadMessagesCount(): ApiResponseDto<UnreadMessagesCountDto>
 
     suspend fun getReceivedMessages(
         firstRow: Int,
         lastRow: Int,
         filterType: Int = 0
-    ): ApiResponseDto<MessageListDto> {
-        return client.get("Message/GetReceivedMessages") {
-            parameter("firstRow", firstRow)
-            parameter("lastRow", lastRow)
-            parameter("filterType", filterType)
-        }.body()
-    }
+    ): ApiResponseDto<MessageListDto>
 
     suspend fun getUserAvatars(
         userIds: List<String>,
         type: String = "Thumbnail"
-    ): ApiResponseDto<List<UserAvatarDto>> {
-        return client.get("General/GetUsersAvatar") {
-            // Ktor automatically repeats the key for list items: userIds=1&userIds=2
-            userIds.forEach { id -> parameter("userIds", id) }
-            parameter("imageSizeType", type)
-        }.body()
-    }
+    ): ApiResponseDto<List<UserAvatarDto>>
 
-    suspend fun getMessageDetails(
-        msgId: String,
-        messageId: String
-    ): ApiResponseDto<MessageDetailsDto> {
-        return client.get("Messages/$msgId/Posts") {
-            parameter("messageId", messageId)
-        }.body()
-    }
-
-    suspend fun postMessagePostRead(
-        messageId: String,
-        postIds: PostIdsRequestDto
-    ) {
-        client.post("Messages/$messageId/Posts/Processed") {
-            setBody<PostIdsRequestDto>(postIds)
-        }
-    }
-
-    suspend fun getTermDetails(
-        termId: String
-    ): ApiResponseDto<TermDetailDto> {
-        return client.get("Advancement/GetStudentTrainingTermData") {
-            parameter("studentTrainingTermDataId", termId)
-        }.body()
-    }
-
-    suspend fun getTerms(): ApiResponseDto<List<TermDto>> {
-        return client.get("TakenSubjects/Terms").body()
-    }
-
-    suspend fun getTermAverages(): ApiResponseDto<TermAveragesDto> {
-        return client.get("Advancement/GetTermAveragesByTraining").body()
-    }
+    suspend fun getMessageDetails(msgId: String, messageId: String): ApiResponseDto<MessageDetailsDto>
+    suspend fun postMessagePostRead(messageId: String, postIds: PostIdsRequestDto)
+    suspend fun getTermDetails(termId: String): ApiResponseDto<TermDetailDto>
+    suspend fun getTerms(): ApiResponseDto<List<TermDto>>
+    suspend fun getTermAverages(): ApiResponseDto<TermAveragesDto>
 
     suspend fun getTakenSubjects(
         termId: String,
         firstRow: Int = 0,
         lastRow: Int = 50,
         sort: String = "asc"
-    ): ApiResponseDto<List<SubjectDto>> {
-        return client.get("TakenSubjects") {
-            parameter("request.termId", termId)
-            parameter("sortAndPage.firstRow", firstRow)
-            parameter("sortAndPage.lastRow", lastRow)
-            parameter("sortAndPage.subjectName", sort)
-        }.body()
-    }
+    ): ApiResponseDto<List<SubjectDto>>
 }
