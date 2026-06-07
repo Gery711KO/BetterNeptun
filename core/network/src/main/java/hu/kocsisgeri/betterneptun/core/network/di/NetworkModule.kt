@@ -2,19 +2,25 @@ package hu.kocsisgeri.betterneptun.core.network.di
 
 import hu.kocsisgeri.betterneptun.common.utils.serialization.Serialization
 import hu.kocsisgeri.betterneptun.core.network.BuildConfig
-import hu.kocsisgeri.betterneptun.core.network.api.AuthApiService
-import hu.kocsisgeri.betterneptun.core.network.api.LocalizationApiService
-import hu.kocsisgeri.betterneptun.core.network.api.MainApiService
-import hu.kocsisgeri.betterneptun.core.network.interceptors.token.TokenAuthenticator
-import hu.kocsisgeri.betterneptun.core.network.interceptors.token.TokenInterceptor
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
+import hu.kocsisgeri.betterneptun.domain.token.TokenManager
+import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.engine.okhttp.OkHttpConfig
+import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BearerTokens
+import io.ktor.client.plugins.auth.providers.bearer
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.serialization.kotlinx.json.json
 import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
-import retrofit2.Retrofit
+import timber.log.Timber
 
 private const val BASE_URL = "https://neptun.uni-obuda.hu/ujhallgato/api/"
 private const val LOCALIZATION_BASE_URL = "https://cdn.simplelocalize.io/${BuildConfig.LOCALIZATION_TOKEN}/${BuildConfig.LOCALIZATION_SNAPSHOT}/"
@@ -23,74 +29,68 @@ private const val LOCALIZATION_BASE_URL = "https://cdn.simplelocalize.io/${Build
 @Configuration
 class NetworkModule {
 
-    @Factory
-    internal fun provideLoggingInterceptor(): HttpLoggingInterceptor {
-        return HttpLoggingInterceptor().apply { setLevel(HttpLoggingInterceptor.Level.BODY) }
+    @Single
+    fun provideKtorLogger(): Logger = object : Logger {
+        override fun log(message: String) {
+            // Ez közvetlenül az androidos Log.d-be küldi a sorokat
+            Timber.tag("KtorNetwork").d(message)
+        }
     }
-
     @Single
     @Named("LocalizationClient")
-    internal fun provideLocalizationClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-            .build()
+    fun provideLocalizationHttpClient(ktorLogger: Logger) = HttpClient(OkHttp) {
+        setupApiClient(LOCALIZATION_BASE_URL, ktorLogger)
     }
 
     @Single
     @Named("AuthClient")
-    internal fun provideAuthClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-            .build()
+    fun provideAuthHttpClient(ktorLogger: Logger) = HttpClient(OkHttp) {
+        setupApiClient(BASE_URL, ktorLogger)
     }
 
     @Single
     @Named("MainClient")
-    internal fun provideMainClient(
-        loggingInterceptor: HttpLoggingInterceptor,
-        tokenInterceptor: TokenInterceptor,
-        tokenAuthenticator: TokenAuthenticator
-    ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-            .addInterceptor(tokenInterceptor)
-            .authenticator(tokenAuthenticator)
-            .build()
+    fun provideAuthHttpClient(
+        tokenManager: TokenManager,
+        ktorLogger: Logger
+    ) = HttpClient(OkHttp) {
+        setupApiClient(BASE_URL, ktorLogger)
+        setupTokenLogic(tokenManager)
     }
 
-    @Factory
-    internal fun provideLocalizationApiService(
-        @Named("LocalizationClient") client: OkHttpClient
-    ): LocalizationApiService {
-        return Retrofit.Builder()
-            .baseUrl(LOCALIZATION_BASE_URL)
-            .client(client)
-            .addConverterFactory(Serialization.converterFactory)
-            .build()
-            .create(LocalizationApiService::class.java)
+    private fun HttpClientConfig<OkHttpConfig>.setupApiClient(
+        baseUrl: String,
+        ktorLogger: Logger
+    ) {
+        defaultRequest {
+            url(baseUrl)
+        }
+        install(ContentNegotiation) {
+            json(Serialization.instance)
+        }
+        install(Logging) {
+            logger = ktorLogger
+            level = LogLevel.BODY
+        }
     }
 
-    @Factory
-    internal fun provideAuthApiService(
-        @Named("AuthClient") client: OkHttpClient
-    ): AuthApiService {
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(client)
-            .addConverterFactory(Serialization.converterFactory)
-            .build()
-            .create(AuthApiService::class.java)
-    }
+    private fun HttpClientConfig<OkHttpConfig>.setupTokenLogic(tokenManager: TokenManager) {
+        install(Auth) {
+            bearer {
+                tokenManager.getToken()?.let { token ->
+                    loadTokens {
+                        BearerTokens(
+                            accessToken = token,
+                            refreshToken = null
+                        )
+                    }
+                }
 
-    @Factory
-    internal fun provideMainApiService(
-        @Named("MainClient") client: OkHttpClient
-    ): MainApiService {
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(client)
-            .addConverterFactory(Serialization.converterFactory)
-            .build()
-            .create(MainApiService::class.java)
+                refreshTokens {
+                    val newToken = tokenManager.refreshToken()
+                    BearerTokens(newToken, null)
+                }
+            }
+        }
     }
 }

@@ -11,61 +11,96 @@ import hu.kocsisgeri.betterneptun.core.network.model.neptun.TermDto
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.UnreadMessagesCountDto
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.UserAvatarDto
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.UserInfoDto
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
-import retrofit2.http.Query
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import org.koin.core.annotation.Named
+import org.koin.core.annotation.Singleton
 
-interface MainApiService {
+@Singleton
+class MainApiService(
+    @Named("MainClient") private val client: HttpClient
+) {
 
-    @GET("UserInfo")
-    suspend fun getUserInfo(): ApiResponseDto<UserInfoDto>
+    suspend fun getUserInfo(): ApiResponseDto<UserInfoDto> {
+        return client.get("UserInfo").body()
+    }
 
-    @GET("Message/GetUnreadedMessagesCount")
-    suspend fun getUnreadMessagesCount(): ApiResponseDto<UnreadMessagesCountDto>
+    suspend fun getUnreadMessagesCount(): ApiResponseDto<UnreadMessagesCountDto> {
+        return client.get("Message/GetUnreadedMessagesCount").body()
+    }
 
-    @GET("Message/GetReceivedMessages")
     suspend fun getReceivedMessages(
-        @Query("firstRow") firstRow: Int,
-        @Query("lastRow") lastRow: Int,
-        @Query("filterType") filterType: Int = 0
-    ): ApiResponseDto<MessageListDto>
+        firstRow: Int,
+        lastRow: Int,
+        filterType: Int = 0
+    ): ApiResponseDto<MessageListDto> {
+        return client.get("Message/GetReceivedMessages") {
+            parameter("firstRow", firstRow)
+            parameter("lastRow", lastRow)
+            parameter("filterType", filterType)
+        }.body()
+    }
 
-    @GET("General/GetUsersAvatar")
     suspend fun getUserAvatars(
-        @Query("userIds") userIds: List<String>,
-        @Query("imageSizeType") type: String = "Thumbnail"
-    ): ApiResponseDto<List<UserAvatarDto>>
+        userIds: List<String>,
+        type: String = "Thumbnail"
+    ): ApiResponseDto<List<UserAvatarDto>> {
+        return client.get("General/GetUsersAvatar") {
+            // Ktor automatically repeats the key for list items: userIds=1&userIds=2
+            userIds.forEach { id -> parameter("userIds", id) }
+            parameter("imageSizeType", type)
+        }.body()
+    }
 
-    @GET("Messages/{msgId}/Posts")
     suspend fun getMessageDetails(
-        @Path("msgId") msgId: String,
-        @Query("messageId") messageId: String,
-    ): ApiResponseDto<MessageDetailsDto>
+        msgId: String,
+        messageId: String
+    ): ApiResponseDto<MessageDetailsDto> {
+        return client.get("Messages/$msgId/Posts") {
+            parameter("messageId", messageId)
+        }.body()
+    }
 
-    @POST("Messages/{messageId}/Posts/Processed")
     suspend fun postMessagePostRead(
-        @Path("messageId") messageId: String,
-        @Body postIds: PostIdsRequestDto
-    )
+        messageId: String,
+        postIds: PostIdsRequestDto
+    ) {
+        client.post("Messages/$messageId/Posts/Processed") {
+            setBody<PostIdsRequestDto>(postIds)
+        }
+    }
 
-    @GET("Advancement/GetStudentTrainingTermData")
     suspend fun getTermDetails(
-        @Query("studentTrainingTermDataId") termId: String
-    ): ApiResponseDto<TermDetailDto>
+        termId: String
+    ): ApiResponseDto<TermDetailDto> {
+        return client.get("Advancement/GetStudentTrainingTermData") {
+            parameter("studentTrainingTermDataId", termId)
+        }.body()
+    }
 
-    @GET("TakenSubjects/Terms")
-    suspend fun getTerms(): ApiResponseDto<List<TermDto>>
+    suspend fun getTerms(): ApiResponseDto<List<TermDto>> {
+        return client.get("TakenSubjects/Terms").body()
+    }
 
-    @GET("Advancement/GetTermAveragesByTraining")
-    suspend fun getTermAverages(): ApiResponseDto<TermAveragesDto>
+    suspend fun getTermAverages(): ApiResponseDto<TermAveragesDto> {
+        return client.get("Advancement/GetTermAveragesByTraining").body()
+    }
 
-    @GET("TakenSubjects")
     suspend fun getTakenSubjects(
-        @Query("request.termId") termId: String,
-        @Query("sortAndPage.firstRow") firstRow: Int = 0,
-        @Query("sortAndPage.lastRow") lastRow: Int = 50,
-        @Query("sortAndPage.subjectName") sort: String = "asc",
-    ): ApiResponseDto<List<SubjectDto>>
+        termId: String,
+        firstRow: Int = 0,
+        lastRow: Int = 50,
+        sort: String = "asc"
+    ): ApiResponseDto<List<SubjectDto>> {
+        return client.get("TakenSubjects") {
+            parameter("request.termId", termId)
+            parameter("sortAndPage.firstRow", firstRow)
+            parameter("sortAndPage.lastRow", lastRow)
+            parameter("sortAndPage.subjectName", sort)
+        }.body()
+    }
 }
