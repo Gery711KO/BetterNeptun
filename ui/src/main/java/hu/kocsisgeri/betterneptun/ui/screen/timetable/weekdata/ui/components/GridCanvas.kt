@@ -1,13 +1,19 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -17,12 +23,14 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import hu.kocsisgeri.betterneptun.common.utils.isAfter
 import hu.kocsisgeri.betterneptun.common.utils.isBefore
 import hu.kocsisgeri.betterneptun.common.utils.minutesUntil
 import hu.kocsisgeri.betterneptun.common.utils.plus
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.WeekViewStyle
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -45,33 +53,89 @@ internal fun GridCanvas(
     gridStartTime: LocalTime,
     effectiveEndTime: LocalTime,
     style: WeekViewStyle,
-    onSelectionChanged: (date: LocalDateTime?) -> Unit
+    onZoom: (Float) -> Unit,
+    onSelectionChanged: (date: LocalDateTime?) -> Unit,
 ) {
     val addIcon = rememberVectorPainter(Icons.Rounded.Add)
+    val density = LocalDensity.current
 
     var selectedDay by remember { mutableStateOf<LocalDateTime?>(null) }
+    val animatedColumnIndex = remember { Animatable(0f) }
+    val animatedHourIndex = remember { Animatable(0f) }
+    val rowHeightPx = with(density) { rowHeightDp.toPx() }
+
+    LaunchedEffect(selectedDay) {
+        selectedDay?.let { selectedDay ->
+            val targetColumn = days.indexOf(selectedDay.date).toFloat()
+            val targetHour = (selectedDay.time.hour - gridStartTime.hour).toFloat()
+
+            if (targetColumn >= 0) {
+                launch {
+                    animatedColumnIndex.animateTo(
+                        targetColumn,
+                        spring(stiffness = 400f, dampingRatio = 0.75f)
+                    )
+                }
+                launch {
+                    animatedHourIndex.animateTo(
+                        targetHour,
+                        spring(stiffness = 400f, dampingRatio = 0.75f)
+                    )
+                }
+            }
+        }
+    }
 
     Canvas(
         modifier = modifier
-            .pointerInput(Unit) {
-                detectTapGestures { offset ->
-                    val columnWidthPx =
-                        if (columnCount > 0) size.width / columnCount else size.width
-                    val rowHeightPx = rowHeightDp.toPx()
+            .pointerInput(columnCount, days, rowHeightPx, gridStartTime) {
+                val touchSlop = viewConfiguration.touchSlop
 
-                    val clickedColumnIndex = (offset.x / columnWidthPx).toInt()
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    var isMultiTouch = false
+                    var hasMovedTooMuch = false
+                    val startPosition = down.position
 
-                    if (clickedColumnIndex in days.indices) {
-                        val clickedDay = days[clickedColumnIndex]
-                        val clickedHoursFromStart = (offset.y / rowHeightPx).toInt()
+                    do {
+                        val event = awaitPointerEvent()
 
-                        val clickedTime = gridStartTime.plus(clickedHoursFromStart.toLong().hours)
+                        if (event.changes.size >= 2) {
+                            isMultiTouch = true
+                            val zoom = event.calculateZoom()
+                            if (zoom != 1f) {
+                                onZoom(event.calculateZoom())
+                                event.changes.forEach { it.consume() }
+                            }
+                        } else if (event.changes.size == 1) {
+                            val currentPosition = event.changes.first().position
+                            val distance = (currentPosition - startPosition).getDistance()
 
-                        selectedDay = clickedDay.atTime(clickedTime)
-                        onSelectionChanged(selectedDay)
-                    } else {
-                        selectedDay = null
-                        onSelectionChanged(null)
+                            if (distance > touchSlop) {
+                                hasMovedTooMuch = true
+                            }
+                        }
+                    } while (event.changes.any { it.pressed })
+
+                    if (!isMultiTouch && !hasMovedTooMuch && !down.isConsumed) {
+                        val offset = down.position
+                        val columnWidthPx =
+                            if (columnCount > 0) size.width / columnCount else size.width
+                        val clickedColumnIndex = (offset.x / columnWidthPx).toInt()
+
+                        if (clickedColumnIndex in days.indices) {
+                            val clickedDay = days[clickedColumnIndex]
+                            val clickedHoursFromStart = (offset.y / rowHeightPx).toInt()
+                            val clickedTime = gridStartTime.plus(clickedHoursFromStart.toLong().hours)
+
+                            val newSelection = clickedDay.atTime(clickedTime)
+                            selectedDay = newSelection
+                            onSelectionChanged(newSelection)
+                        } else {
+                            selectedDay = null
+                            onSelectionChanged(null)
+                        }
+                        down.consume()
                     }
                 }
             }
@@ -112,17 +176,15 @@ internal fun GridCanvas(
 
         selectedDay?.let { selectedDay ->
             if (days.contains(selectedDay.date)) {
-                val selectionColumnIndex = days.indexOf(selectedDay.date)
-
                 val hoursFromStart = selectedDay.time.hour - gridStartTime.hour
 
                 if (hoursFromStart >= 0 && hoursFromStart < totalHours) {
-                    val boxLeft = selectionColumnIndex * columnWidthPx
-                    val boxTop = hoursFromStart * rowHeightPx
+
+                    val boxLeft = animatedColumnIndex.value * columnWidthPx
+                    val boxTop = animatedHourIndex.value * rowHeightPx
 
                     val boxHeight = rowHeightPx
                     val boxSize = Size(columnWidthPx, boxHeight)
-
                     val selectionColor = style.colors.nowIndicator
 
                     drawRect(
@@ -143,18 +205,20 @@ internal fun GridCanvas(
                     ) {
                         with(addIcon) {
                             draw(
-                                size = Size(iconSize, iconSize),
+                                size = Size(
+                                    iconSize.coerceAtLeast(1f),
+                                    iconSize.coerceAtLeast(1f)
+                                ),
                                 colorFilter = ColorFilter.tint(style.colors.nowIndicator)
                             )
                         }
                     }
 
-
                     drawRect(
                         color = selectionColor,
                         topLeft = Offset(boxLeft, boxTop),
                         size = boxSize,
-                        style = Stroke(width = 4f) // 4px vastag keret
+                        style = Stroke(width = 4f)
                     )
                 }
             }

@@ -1,163 +1,151 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components
 
-import androidx.compose.foundation.layout.Box
+import android.annotation.SuppressLint
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import hu.kocsisgeri.betterneptun.common.utils.now
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.EventConfig
+import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurer
+import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurerScope
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.WeekViewConfig
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.Event
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.TimeSpan
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.metrics.WeekViewMetrics
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.metrics.rememberWeekViewMetrics
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.WeekViewStyle
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.defaultWeekViewStyle
-import kotlinx.coroutines.delay
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateRange
 import kotlinx.datetime.LocalDateTime
-import kotlin.time.Duration.Companion.seconds
+import kotlinx.datetime.LocalTime
+import kotlin.time.Duration.Companion.hours
 
+@SuppressLint("FrequentlyChangingValue")
 @Composable
-fun WeekBackgroundCompose(
-    modifier: Modifier = Modifier,
-    dateRange: LocalDateRange,
-    timeRange: TimeSpan,
-    events: List<Event.Single> = emptyList(),
-    allDayEvents: List<Event.AllDay> = emptyList(),
-    multiDayEvents: List<Event.MultiDay> = emptyList(),
-    eventConfig: EventConfig = EventConfig(),
+internal fun WeekBackgroundCompose(
     weekViewConfig: WeekViewConfig,
-    onEventClick: (event: Event) -> Unit = {},
-    onEventLongPress: (event: Event) -> Unit = {},
-    onTimeSlotClick: (LocalDateTime?) -> Unit = {},
-    style: WeekViewStyle = defaultWeekViewStyle(),
+    weekData: (page: Int) -> WeekData,
+    modifier: Modifier = Modifier,
+    topContent: @Composable BoxWithConstraintsScope.(PagerState) -> Unit,
+    sideContent: @Composable SizeMeasurerScope.(ScrollState, WeekDataHolder) -> Unit,
+    gridContent: @Composable ColumnScope.(PagerState, ScrollState, Dp) -> Unit,
 ) {
-    val metrics =
-        rememberWeekViewMetrics(dateRange, timeRange, events, weekViewConfig.scalingFactor)
-    val scrollState = rememberScrollState()
-    val today = LocalDate.now()
-    var now by remember { mutableStateOf(LocalDateTime.now().time) }
+    val density = LocalDensity.current
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            now = LocalDateTime.now().time
-            delay(1.seconds)
-        }
+    val maxPages = Int.MAX_VALUE
+    val scrollState = rememberScrollState()
+    val pagerState = rememberPagerState(initialPage = maxPages / 2) { maxPages }
+    val syncedPager = rememberPagerState(initialPage = maxPages / 2) { maxPages }
+
+    val currentItem by remember(pagerState.currentPage) {
+        derivedStateOf { weekData(pagerState.currentPage) }
     }
 
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val availableWidth = maxWidth - metrics.leftOffsetDp
-        val dynamicColumnWidthDp =
-            if (metrics.columnCount > 0) (availableWidth / metrics.columnCount) else availableWidth
+    var disabledInitialScroll by remember { mutableStateOf(false) }
 
-        Column(modifier = Modifier.fillMaxSize()) {
-            MonthHeaderRow(dateRange.start)
+    val metrics = rememberWeekViewMetrics(
+        dateRange = currentItem.dateRange,
+        timeRange = currentItem.getTimeSpan() ?: TimeSpan.of(LocalTime(6, 0), 12.hours),
+        events = currentItem.getSingleEvents(),
+        scalingFactor = weekViewConfig.scalingFactor
+    )
 
-            DayHeaderRow(
-                days = metrics.days,
-                today = today,
-                leftOffsetDp = metrics.leftOffsetDp,
-                topOffsetDp = metrics.topOffsetDp,
-                columnWidth = dynamicColumnWidthDp,
-                style = style,
-                highlightCurrentDay = weekViewConfig.highlightCurrentDay,
-                eventConfig = eventConfig,
+    val holder = remember(currentItem, metrics) {
+        WeekDataHolder(
+            week = currentItem,
+            metrics = metrics,
+            maxWidth = 0.dp
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        if (disabledInitialScroll.not()) {
+            scrollState.scrollTo(
+                with(density) {
+                    (metrics.rowHeightDp * LocalDateTime.now().hour).roundToPx()
+                }
             )
+        }
+        disabledInitialScroll = true
+    }
 
-            if (multiDayEvents.isNotEmpty()) {
-                MultiDayEventsRow(
-                    days = metrics.days,
-                    multiDayEvents = multiDayEvents,
-                    leftOffsetDp = metrics.leftOffsetDp,
-                    columnWidth = dynamicColumnWidthDp,
-                    onEventClick = onEventClick,
-                    onEventLongPress = onEventLongPress,
-                )
-            }
+    InfinitePagerHandler(
+        pagerState = pagerState,
+        syncedPager = syncedPager,
+    )
 
-            if (allDayEvents.isNotEmpty()) {
-                AllDayEventsRow(
-                    days = metrics.days,
-                    allDayEvents = allDayEvents,
-                    leftOffsetDp = metrics.leftOffsetDp,
-                    columnWidth = dynamicColumnWidthDp,
-                    onEventClick = onEventClick,
-                    onEventLongPress = onEventLongPress,
-                )
-            }
-
-            Row(modifier = Modifier.weight(1f)) {
-                TimeAxisColumn(
-                    now = now,
-                    timeLabels = metrics.timeLabels,
-                    gridStartTime = metrics.gridStartTime,
-                    gridEndTime = metrics.effectiveEndTime,
-                    rowHeightDp = metrics.rowHeightDp,
-                    gridHeightDp = metrics.gridHeightDp,
-                    leftOffsetDp = metrics.leftOffsetDp,
-                    scrollState = scrollState,
-                    showNowIndicator = weekViewConfig.showCurrentTimeIndicator,
-                    contentPadding = weekViewConfig.contentPadding,
-                    style = style,
-                )
-
-                Box(
-                    modifier =
-                        Modifier
-                            .verticalScroll(scrollState)
-                            .padding(weekViewConfig.contentPadding)
-                            .weight(1f)
-                            .height(metrics.gridHeightDp),
-                ) {
-                    GridCanvas(
-                        modifier = Modifier.fillMaxSize(),
-                        columnCount = metrics.columnCount,
-                        rowHeightDp = metrics.rowHeightDp,
-                        totalHours = metrics.totalHours,
-                        days = metrics.days,
-                        today = today,
-                        showNowIndicator = weekViewConfig.showCurrentTimeIndicator,
-                        highlightCurrentDay = weekViewConfig.highlightCurrentDay,
-                        currentTimeLineOnlyToday = weekViewConfig.currentTimeLineOnlyToday,
-                        now = now,
-                        gridStartTime = metrics.gridStartTime,
-                        effectiveEndTime = metrics.effectiveEndTime,
-                        style = style,
-                        onSelectionChanged = onTimeSlotClick
-                    )
-                    EventsPane(
-                        days = metrics.days,
-                        events = events,
-                        eventConfig = eventConfig,
-                        onEventClick = onEventClick,
-                        onEventLongPress = onEventLongPress,
-                        columnWidth = dynamicColumnWidthDp,
-                        gridHeightDp = metrics.gridHeightDp,
-                        gridStartTime = metrics.gridStartTime,
-                        effectiveEndTime = metrics.effectiveEndTime,
-                        scalingFactor = weekViewConfig.scalingFactor,
-                        style = style,
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val measuredThenPlaced = remember(syncedPager) {
+            movableContentOf {
+                Column {
+                    topContent(
+                        this@BoxWithConstraints,
+                        syncedPager,
                     )
                 }
             }
         }
+        SizeMeasurer(
+            measured = { measuredThenPlaced() }
+        ) {
+            Row(modifier = Modifier.fillMaxSize()) {
+                sideContent(
+                    scrollState,
+                    holder.copy(maxWidth = this@BoxWithConstraints.maxWidth)
+                )
+
+                Column(modifier = Modifier.weight(1f)) {
+                    measuredThenPlaced()
+                    gridContent(
+                        pagerState,
+                        scrollState,
+                        this@BoxWithConstraints.maxWidth
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun InfinitePagerHandler(
+    pagerState: PagerState,
+    syncedPager: PagerState,
+) {
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow {
+            pagerState.currentPageOffsetFraction
+        }.collect {
+            syncedPager.scrollToPage(pagerState.currentPage, it)
+        }
+    }
+}
+
+internal data class WeekDataHolder(
+    val week: WeekData,
+    val metrics: WeekViewMetrics,
+    val maxWidth: Dp,
+) {
+
+    fun getDynamicWidth(): Dp {
+        val availableWidth = maxWidth - metrics.leftOffsetDp
+        return if (metrics.columnCount > 0) (availableWidth / metrics.columnCount) else availableWidth
     }
 }

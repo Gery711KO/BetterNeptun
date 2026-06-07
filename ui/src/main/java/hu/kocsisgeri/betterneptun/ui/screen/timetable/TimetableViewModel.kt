@@ -35,42 +35,16 @@ class TimetableViewModel(
     private val deleteLocalEventUseCase: DeleteLocalEventUseCase
 ) : ComposeViewModel() {
 
-    private val events = getEventsUseCase()
+    private val maxPageCount = Int.MAX_VALUE
+    private val initialPage = maxPageCount / 2
+    private val baseDate = LocalDateTime.now()
 
+    private val events = getEventsUseCase()
+        .stateWhileSubscribed(emptyList())
     private val currentSelected = MutableStateFlow(defaultSelected)
 
-    private val _viewMode = MutableStateFlow(ViewMode.FULL_WEEK)
+    private val _viewMode = MutableStateFlow(ViewMode.WEEK)
     val viewMode = _viewMode.stateWhileSubscribed()
-
-    private val _selectedDate = MutableStateFlow(LocalDateTime.now())
-    val selectedDate = _selectedDate.stateWhileSubscribed()
-
-    private val _times = MutableStateFlow("0:23")
-
-    val weeks = combine(
-        selectedDate,
-        viewMode,
-        _times,
-        events,
-    ) { selectedDate, mode, times, events ->
-        listOf(
-            createWeekData(
-                times = times,
-                dateRange = findDateRange(mode, selectedDate.previous(mode)),
-                events = events
-            ),
-            createWeekData(
-                times = times,
-                dateRange = findDateRange(mode, selectedDate),
-                events = events
-            ),
-            createWeekData(
-                times = times,
-                dateRange = findDateRange(mode, selectedDate.next(mode)),
-                events = events
-            )
-        )
-    }.stateWhileSubscribed(emptyList())
 
     val selectedEvent = combine(
         currentSelected,
@@ -81,56 +55,29 @@ class TimetableViewModel(
         }
     }.stateWhileSubscribed(null)
 
-    fun selectEvent(eventId: Long?) {
-        currentSelected.value = eventId
-    }
-
-    fun clearSelectedEvent() {
-        currentSelected.tryEmit(null)
-    }
-
-    fun addEvent(event: CalendarItem.LocalEvent) {
-        viewModelScope.launchReportingErrors {
-            addLocalEventsUseCase(event)
+    fun getWeekDataForPage(page: Int): WeekData {
+        val offset = (page - initialPage).toLong()
+        val targetDate = when (viewMode.value) {
+            ViewMode.WEEK -> baseDate.plus((offset * 7).days)
+            ViewMode.DAY -> baseDate.plus(offset.days)
         }
-    }
 
-    fun deleteEvent(eventId: Long) {
-        viewModelScope.launchReportingErrors {
-            deleteLocalEventUseCase(eventId)
-            clearSelectedEvent()
-        }
-    }
+        val dateRange = findDateRange(viewMode.value, targetDate)
 
-    fun next() {
-        _selectedDate.update { it.next(viewMode.value) }
-    }
-
-    fun previous() {
-        _selectedDate.update { it.previous(viewMode.value) }
-    }
-
-    fun setViewMode(mode: ViewMode) {
-        _viewMode.value = mode
+        return createWeekData(
+            times = "0:23",
+            dateRange = dateRange,
+            events = events.value
+        )
     }
 
     fun findDateRange(
         mode: ViewMode,
         date: LocalDateTime
     ): LocalDateRange = when (mode) {
-        ViewMode.FULL_WEEK -> {
-            val monday = date.date.previousOrSame(DayOfWeek.MONDAY)
-            val sunday = monday.nextOrSame(DayOfWeek.SUNDAY)
-
-            LocalDateRange(
-                start = monday,
-                endInclusive = sunday
-            )
-        }
-
         ViewMode.WEEK -> {
             val monday = date.date.previousOrSame(DayOfWeek.MONDAY)
-            val friday = monday.nextOrSame(DayOfWeek.FRIDAY)
+            val friday = monday.nextOrSame(DayOfWeek.SUNDAY)
 
             LocalDateRange(
                 start = monday,
@@ -153,7 +100,7 @@ class TimetableViewModel(
         return WeekData(
             dateRange = dateRange,
             start = LocalTime(minHour, 0),
-            end = LocalTime(maxHour, 0)
+            end = LocalTime(maxHour, 59)
         ).apply {
             events.filter { it.startTime.date in dateRange }.forEach {
                 add(it.toComposeEvent())
@@ -161,17 +108,18 @@ class TimetableViewModel(
         }
     }
 
-    private fun LocalDateTime.previous(viewMode: ViewMode): LocalDateTime {
-        return when(viewMode) {
-            ViewMode.WEEK, ViewMode.FULL_WEEK -> minus(7.days)
-            ViewMode.DAY -> minus(1.days)
-        }
+    fun selectEvent(eventId: Long?) { currentSelected.value = eventId }
+    fun clearSelectedEvent() { currentSelected.tryEmit(null) }
+    fun setViewMode(mode: ViewMode) { _viewMode.value = mode }
+
+    fun addEvent(event: CalendarItem.LocalEvent) {
+        viewModelScope.launchReportingErrors { addLocalEventsUseCase(event) }
     }
 
-    private fun LocalDateTime.next(viewMode: ViewMode): LocalDateTime {
-        return when(viewMode) {
-            ViewMode.WEEK, ViewMode.FULL_WEEK -> plus(7.days)
-            ViewMode.DAY -> plus(1.days)
+    fun deleteEvent(eventId: Long) {
+        viewModelScope.launchReportingErrors {
+            deleteLocalEventUseCase(eventId)
+            clearSelectedEvent()
         }
     }
 }

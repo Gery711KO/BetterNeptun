@@ -8,7 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import hu.kocsisgeri.betterneptun.common.utils.formatMonth
+import hu.kocsisgeri.betterneptun.common.utils.formatYearMonth
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
@@ -28,7 +28,7 @@ fun MonthHeaderRow(
             .padding(BetterNeptunTheme.dimens.medium),
     ) {
         Text(
-            text = today.formatMonth(
+            text = today.formatYearMonth(
                 MonthNames(
                     january = LocalizationKey.MONTH_JANUARY.localized(),
                     february = LocalizationKey.MONTH_FEBRUARY.localized(),

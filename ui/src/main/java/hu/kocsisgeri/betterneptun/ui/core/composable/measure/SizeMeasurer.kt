@@ -57,6 +57,36 @@ fun SizeMeasurer(
     }
 }
 
+@Composable
+fun SizeMeasurer(
+    measured: @Composable () -> Unit,
+    content: @Composable SizeMeasurerScope.() -> Unit
+) {
+    val scope = rememberSaveable(saver = SizeMeasurerScopeImpl.SAVER) { SizeMeasurerScopeImpl() }
+
+    SubcomposeLayout { constraints ->
+        val measured = subcompose(SizeMeasurerScopeImpl.Slot.MEASURE) {
+            measured()
+        }.firstOrNull()?.measure(constraints)
+
+        val placed = subcompose(SizeMeasurerScopeImpl.Slot.PLACE) {
+            content(scope)
+        }.firstOrNull()?.measure(constraints)
+
+        scope.size = DpSize(
+            width = measured?.width?.toDp() ?: 0.dp,
+            height = measured?.height?.toDp() ?: 0.dp
+        )
+
+        layout(
+            height = measured?.height?: constraints.minHeight,
+            width = measured?.width?: constraints.minWidth
+        ) {
+            placed?.place(x = 0, y = 0)
+        }
+    }
+}
+
 interface SizeMeasurerScope {
 
     val size: DpSize

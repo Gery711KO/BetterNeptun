@@ -33,7 +33,9 @@ internal object DateUtils {
         minute()
     }
 
-    internal fun monthFormatter(names: MonthNames) = LocalDate.Format {
+    internal fun monthYearFormatter(names: MonthNames) = LocalDate.Format {
+        year()
+        char(' ')
         monthName(names)
     }
 }
@@ -55,7 +57,7 @@ fun LocalDateTime.formatDatePickerDate(): String = DateUtils.datePickerFormatter
  * Format the [LocalDate].
  * @return The formatted string. Example: '2000. 03. 01'
  */
-fun LocalDate.formatMonth(names: MonthNames): String = DateUtils.monthFormatter(names).format(this)
+fun LocalDate.formatYearMonth(names: MonthNames): String = DateUtils.monthYearFormatter(names).format(this)
 
 /**
  * Format the [LocalTime].

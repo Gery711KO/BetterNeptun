@@ -6,12 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -21,11 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,8 +43,6 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.EventCo
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.WeekViewConfig
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekViewActions
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDateRange
 import kotlinx.datetime.LocalDateTime
@@ -70,7 +60,6 @@ fun TimetableScreen(
     navigator: Navigator = koinInject()
 ) {
     val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
-    val weeks by viewModel.weeks.collectAsStateWithLifecycle()
     val currentSelectedEvent by viewModel.selectedEvent.collectAsStateWithLifecycle()
 
     TimetableContent(
@@ -78,16 +67,16 @@ fun TimetableScreen(
             LocalizationKey.HOME_MENU_TIMETABLE.key + initialId.toString()
         } ?: LocalizationKey.HOME_MENU_TIMETABLE,
         viewMode = viewMode,
-        weeks = weeks,
         currentSelectedEvent = currentSelectedEvent,
         onNavigateBack = navigator::navigateBack,
         onViewModeChange = viewModel::setViewMode,
-        onNext = viewModel::next,
-        onPrevious = viewModel::previous,
         onEventClick = viewModel::selectEvent,
         onDismissDetail = viewModel::clearSelectedEvent,
         onDeleteEvent = viewModel::deleteEvent,
-        onAddEvent = viewModel::addEvent
+        onAddEvent = viewModel::addEvent,
+        onGetWeekData = { page ->
+            viewModel.getWeekDataForPage(page = page)
+        }
     )
 }
 
@@ -95,12 +84,10 @@ fun TimetableScreen(
 @Composable
 fun TimetableContent(
     viewMode: ViewMode,
-    weeks: List<WeekData>,
     currentSelectedEvent: CalendarItem?,
     onNavigateBack: () -> Unit,
     onViewModeChange: (ViewMode) -> Unit,
-    onNext: () -> Unit,
-    onPrevious: () -> Unit,
+    onGetWeekData: (page: Int) -> WeekData,
     onEventClick: (Long) -> Unit,
     onDismissDetail: () -> Unit,
     onDeleteEvent: (Long) -> Unit,
@@ -109,20 +96,6 @@ fun TimetableContent(
 ) {
     var showAddEventDialog by remember { mutableStateOf(false) }
     var initialDate by remember { mutableStateOf<LocalDateTime?>(null) }
-
-    val coroutineScope = rememberCoroutineScope()
-    val pagerState = if (weeks.isNotEmpty()) {
-        rememberPagerState(1) { weeks.size }
-    } else {
-        null
-    }
-
-    InfinitePagerHandler(
-        weeks = weeks,
-        pagerState = pagerState,
-        onPrevious = onPrevious,
-        onNext = onNext
-    )
 
     CourseDetailDialog(
         selectedEvent = currentSelectedEvent,
@@ -147,9 +120,7 @@ fun TimetableContent(
         modifier = Modifier.sharedBoundsAnimation(sharedTransitionKey),
         topBar = {
             TimeTableScreenTopBar(
-                pagerState = pagerState,
                 viewMode = viewMode,
-                coroutineScope = coroutineScope,
                 onNavigateBack = onNavigateBack,
                 onViewModeChange = onViewModeChange
             )
@@ -174,72 +145,40 @@ fun TimetableContent(
             }
         }
     ) { paddingValues ->
-        pagerState?.let {
-            HorizontalPager(
-                state = pagerState,
-                key = { page -> weeks.getOrNull(page)?.dateRange?.toString() ?: page }
-            ) { page ->
-                weeks.getOrNull(page)?.let { weekData ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = paddingValues.calculateTopPadding())
-                            .padding(horizontal = BetterNeptunTheme.dimens.screenPadding)
-                            .clip(BetterNeptunTheme.shapes.large)
-                    ) {
-                        TimeTableView(
-                            weekData = weekData,
-                            weekViewConfig = WeekViewConfig(
-                                showCurrentTimeIndicator = true,
-                                highlightCurrentDay = true,
-                                contentPadding = PaddingValues(
-                                    bottom = paddingValues.calculateBottomPadding()
-                                )
-                            ),
-                            eventConfig = EventConfig(
-                                showSubtitle = true,
-                                showTimeStart = true,
-                                showTimeEnd = true,
-                                eventSpacingDp = 2,
-                            ),
-                            actions = WeekViewActions(
-                                onEventClick = { event ->
-                                    onEventClick(event.id)
-                                },
-                                onTimeSlotClick = {
-                                    if (it == initialDate) showAddEventDialog = true
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = paddingValues.calculateTopPadding())
+                .padding(horizontal = BetterNeptunTheme.dimens.screenPadding)
+                .clip(BetterNeptunTheme.shapes.large)
+        ) {
+            TimeTableView(
+                weekData = onGetWeekData,
+                weekViewConfig = WeekViewConfig(
+                    showCurrentTimeIndicator = true,
+                    highlightCurrentDay = true,
+                    contentPadding = PaddingValues(
+                        bottom = paddingValues.calculateBottomPadding()
+                    )
+                ),
+                eventConfig = EventConfig(
+                    showSubtitle = true,
+                    showTimeStart = true,
+                    showTimeEnd = true,
+                    eventSpacingDp = 2,
+                ),
+                actions = WeekViewActions(
+                    onEventClick = { event ->
+                        onEventClick(event.id)
+                    },
+                    onTimeSlotClick = {
+                        if (it == initialDate) showAddEventDialog = true
 
-                                    initialDate = it
-                                }
-                            ),
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun InfinitePagerHandler(
-    pagerState: PagerState?,
-    weeks: List<WeekData>,
-    onPrevious: () -> Unit,
-    onNext: () -> Unit
-) {
-    LaunchedEffect(pagerState?.currentPage) {
-        if (weeks.size == 3) {
-            when (pagerState?.currentPage) {
-                0 -> onPrevious()
-                2 -> onNext()
-            }
-        }
-    }
-
-    LaunchedEffect(pagerState?.settledPage) {
-        if (pagerState?.settledPage != 1) {
-            pagerState?.scrollToPage(1)
+                        initialDate = it
+                    },
+                ),
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }
@@ -247,8 +186,6 @@ private fun InfinitePagerHandler(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TimeTableScreenTopBar(
-    pagerState: PagerState?,
-    coroutineScope: CoroutineScope,
     viewMode: ViewMode,
     onNavigateBack: () -> Unit,
     onViewModeChange: (ViewMode) -> Unit
@@ -270,29 +207,9 @@ private fun TimeTableScreenTopBar(
         },
         actions = {
             IconButton(onClick = {
-                coroutineScope.launch {
-                    pagerState?.animateScrollToPage(0)
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    contentDescription = "Előző"
-                )
-            }
-            IconButton(onClick = {
-                coroutineScope.launch {
-                    pagerState?.animateScrollToPage(2)
-                }
-            }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = "Következő"
-                )
-            }
-            IconButton(onClick = {
                 val newMode = ViewMode.entries.find {
                     viewMode.ordinal + 1 == it.ordinal
-                } ?: ViewMode.FULL_WEEK
+                } ?: ViewMode.WEEK
                 onViewModeChange(newMode)
             }) {
                 Icon(
@@ -332,14 +249,8 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
     val dateRange = when (viewMode) {
         ViewMode.WEEK -> {
             val monday = today.date.previousOrSame(DayOfWeek.MONDAY)
-            val friday = monday.nextOrSame(DayOfWeek.FRIDAY)
+            val friday = monday.nextOrSame(DayOfWeek.SUNDAY)
             LocalDateRange(monday, friday)
-        }
-
-        ViewMode.FULL_WEEK -> {
-            val monday = today.date.previousOrSame(DayOfWeek.MONDAY)
-            val sunday = monday.nextOrSame(DayOfWeek.SUNDAY)
-            LocalDateRange(monday, sunday)
         }
 
         ViewMode.DAY -> LocalDateRange(today.date, today.date)
@@ -371,7 +282,14 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
     TimetableContent(
         sharedTransitionKey = Unit,
         viewMode = viewMode,
-        weeks = listOf(
+        currentSelectedEvent = null,
+        onNavigateBack = {},
+        onViewModeChange = {},
+        onEventClick = {},
+        onDismissDetail = {},
+        onDeleteEvent = {},
+        onAddEvent = {},
+        onGetWeekData = {
             WeekData(
                 dateRange,
                 start = LocalTime(6, 0),
@@ -381,15 +299,6 @@ private fun TimetablePreviewContent(viewMode: ViewMode) {
                     add(it.toComposeEvent())
                 }
             }
-        ),
-        currentSelectedEvent = null,
-        onNavigateBack = {},
-        onViewModeChange = {},
-        onNext = {},
-        onPrevious = {},
-        onEventClick = {},
-        onDismissDetail = {},
-        onDeleteEvent = {},
-        onAddEvent = {},
+        }
     )
 }

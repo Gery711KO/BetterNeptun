@@ -42,11 +42,12 @@ internal fun TimeAxisColumn(
     scrollState: ScrollState,
     showNowIndicator: Boolean,
     contentPadding: PaddingValues,
+    modifier: Modifier = Modifier,
     style: WeekViewStyle = defaultWeekViewStyle(),
 ) {
     Box(
         modifier =
-            Modifier
+            modifier
                 .width(leftOffsetDp)
                 .height(gridHeightDp),
         // Total height of the scrollable grid
