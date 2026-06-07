@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import hu.kocsisgeri.betterneptun.common.utils.now
+import hu.kocsisgeri.betterneptun.ui.core.helper.ClockMinutesTickReceiver
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components.AllDayEventsRow
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components.DayHeaderRow
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components.EventsPane
@@ -43,6 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
+import org.koin.compose.koinInject
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
@@ -54,6 +56,7 @@ fun TimeTableView(
     eventConfig: EventConfig = EventConfig(),
     actions: WeekViewActions = WeekViewActions(),
 ) {
+    val clockTick: ClockMinutesTickReceiver = koinInject()
     var localScalingFactor by remember { mutableFloatStateOf(weekViewConfig.scalingFactor) }
     val activeWeekConfig = weekViewConfig.copy(scalingFactor = localScalingFactor)
 
@@ -89,9 +92,8 @@ fun TimeTableView(
         var now by remember { mutableStateOf(LocalDateTime.now().time) }
 
         LaunchedEffect(Unit) {
-            while (true) {
+            clockTick.minuteTick.collect {
                 now = LocalDateTime.now().time
-                delay(1.seconds)
             }
         }
 
