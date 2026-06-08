@@ -1,5 +1,6 @@
-package hu.kocsisgeri.betterneptun.core.network.api
+package hu.kocsisgeri.betterneptun.core.network.impl
 
+import hu.kocsisgeri.betterneptun.core.network.api.MainApiService
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.ApiResponseDto
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.MessageDetailsDto
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.MessageListDto

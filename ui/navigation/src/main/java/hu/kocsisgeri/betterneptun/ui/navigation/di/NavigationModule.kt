@@ -9,6 +9,7 @@ import hu.kocsisgeri.betterneptun.ui.navigation.registry.navigationEntry
 import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Module
+import org.koin.core.annotation.Provided
 import org.koin.core.annotation.Qualifier
 import org.koin.core.annotation.Single
 
@@ -18,7 +19,7 @@ class NavigationModule {
 
     @Single
     fun provideNavigator(
-        registry: NavigationRegistry
+        @Provided registry: NavigationRegistry
     ): Navigator = Navigator.createNavigator(
         startDestination = LoadingDestination,
         navigationEntries = registry.navigationEntries

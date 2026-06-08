@@ -1,5 +1,6 @@
-package hu.kocsisgeri.betterneptun.core.network.api
+package hu.kocsisgeri.betterneptun.core.network.impl
 
+import hu.kocsisgeri.betterneptun.core.network.api.LocalizationApiService
 import hu.kocsisgeri.betterneptun.core.network.model.localization.LanguageDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

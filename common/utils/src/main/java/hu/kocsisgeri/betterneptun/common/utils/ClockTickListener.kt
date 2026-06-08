@@ -4,6 +4,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 fun clockTickFlow(tickType: TickType = TickType.MINUTE) = flow {
     while(true) {
@@ -14,11 +16,17 @@ fun clockTickFlow(tickType: TickType = TickType.MINUTE) = flow {
                 (1000 - now.nanosecond / 1_000_000).toLong()
             }
             TickType.MINUTE -> {
-                val nextMinute = LocalDateTime(now.date, LocalTime(now.hour, now.minute + 1, 0))
+                val nextMinute = LocalDateTime(
+                    date = now.date,
+                    time = LocalTime(now.hour, now.minute, 0).plus(1.minutes)
+                )
                 nextMinute.diffEpochSeconds(now)
             }
             TickType.HOUR -> {
-                val nextHour = LocalDateTime(now.date, LocalTime(now.hour + 1, 0, 0))
+                val nextHour = LocalDateTime(
+                    date = now.date,
+                    time = LocalTime(now.hour, 0, 0).plus(1.hours)
+                )
                 nextHour.diffEpochSeconds(now)
             }
         }

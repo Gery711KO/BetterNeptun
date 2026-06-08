@@ -13,14 +13,12 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-fun LocalDateTime.Companion.now(): LocalDateTime {
-    return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+fun LocalDateTime.Companion.now(timeZone: TimeZone = TimeZone.currentSystemDefault()): LocalDateTime {
+    return Clock.System.now().toLocalDateTime(timeZone)
 }
 
-fun LocalDate.Companion.now(
-    timeZone: TimeZone = TimeZone.currentSystemDefault()
-): LocalDate {
-    return Clock.System.now().toLocalDateTime(timeZone).date
+fun LocalDate.Companion.now(timeZone: TimeZone = TimeZone.currentSystemDefault()): LocalDate {
+    return LocalDateTime.now(timeZone).date
 }
 
 fun LocalDateTime.plus(duration: Duration): LocalDateTime {
@@ -31,12 +29,12 @@ fun LocalDateTime.minus(duration: Duration): LocalDateTime {
     return toInstant(TimeZone.UTC).minus(duration).toLocalDateTime(TimeZone.UTC)
 }
 
-fun LocalDateTime.getTimeLeft(): Int {
-    val diff = diffEpochSeconds(LocalDateTime.now())
-    val seconds = diff.seconds.inWholeSeconds
-    val minutes = ceil(seconds / 60f).roundToInt()
+fun LocalDateTime.isBefore(other: LocalDateTime): Boolean {
+    return toInstant(TimeZone.currentSystemDefault()) < other.toInstant(TimeZone.currentSystemDefault())
+}
 
-    return minutes
+fun LocalDateTime.isAfter(other: LocalDateTime): Boolean {
+    return toInstant(TimeZone.currentSystemDefault()) > other.toInstant(TimeZone.currentSystemDefault())
 }
 
 fun LocalDateTime.diffEpochSeconds(other: LocalDateTime): Long {
@@ -44,12 +42,12 @@ fun LocalDateTime.diffEpochSeconds(other: LocalDateTime): Long {
         .minus(other.toInstant(TimeZone.UTC).epochSeconds)
 }
 
-fun LocalDateTime.isBefore(other: LocalDateTime): Boolean {
-    return toInstant(TimeZone.currentSystemDefault()) < other.toInstant(TimeZone.currentSystemDefault())
-}
+fun LocalDateTime.getTimeLeft(): Int {
+    val diff = diffEpochSeconds(LocalDateTime.now())
+    val seconds = diff.seconds.inWholeSeconds
+    val minutes = ceil(seconds / 60f).roundToInt()
 
-fun LocalDateTime.isAfter(other: LocalDateTime): Boolean {
-    return toInstant(TimeZone.currentSystemDefault()) > other.toInstant(TimeZone.currentSystemDefault())
+    return minutes
 }
 
 fun LocalTime.isBefore(other: LocalTime): Boolean {

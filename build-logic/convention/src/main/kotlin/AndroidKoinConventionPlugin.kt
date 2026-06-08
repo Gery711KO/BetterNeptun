@@ -14,7 +14,7 @@ class AndroidKoinConventionPlugin : Plugin<Project> {
             pluginManager.apply("io.insert-koin.compiler.plugin")
 
             extensions.configure<KoinGradleExtension> {
-                compileSafety.set(false)
+                compileSafety.set(true)
                 strictSafety.set(false)
             }
 
