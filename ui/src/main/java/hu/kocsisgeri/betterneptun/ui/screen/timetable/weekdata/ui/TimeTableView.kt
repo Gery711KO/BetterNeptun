@@ -12,17 +12,16 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.common.utils.now
-import hu.kocsisgeri.betterneptun.ui.core.helper.ClockMinutesTickReceiver
+import hu.kocsisgeri.betterneptun.common.utils.clockTickFlow
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components.AllDayEventsRow
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components.DayHeaderRow
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components.EventsPane
@@ -40,13 +39,9 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekView
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.metrics.rememberWeekViewMetrics
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.defaultWeekViewColors
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.defaultWeekViewStyle
-import kotlinx.coroutines.delay
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
-import org.koin.compose.koinInject
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun TimeTableView(
@@ -56,7 +51,6 @@ fun TimeTableView(
     eventConfig: EventConfig = EventConfig(),
     actions: WeekViewActions = WeekViewActions(),
 ) {
-    val clockTick: ClockMinutesTickReceiver = koinInject()
     var localScalingFactor by remember { mutableFloatStateOf(weekViewConfig.scalingFactor) }
     val activeWeekConfig = weekViewConfig.copy(scalingFactor = localScalingFactor)
 
@@ -88,14 +82,8 @@ fun TimeTableView(
                     }
                 },
     ) {
-        val today = LocalDate.now()
-        var now by remember { mutableStateOf(LocalDateTime.now().time) }
-
-        LaunchedEffect(Unit) {
-            clockTick.minuteTick.collect {
-                now = LocalDateTime.now().time
-            }
-        }
+        val now by remember { clockTickFlow() }
+            .collectAsStateWithLifecycle(LocalDateTime.now())
 
         val style = defaultWeekViewStyle(
             defaultWeekViewColors(
@@ -129,7 +117,7 @@ fun TimeTableView(
                         Column {
                             DayHeaderRow(
                                 days = metrics.days,
-                                today = today,
+                                today = now.date,
                                 leftOffsetDp = 0.dp,
                                 topOffsetDp = metrics.topOffsetDp,
                                 columnWidth = width,
@@ -164,7 +152,7 @@ fun TimeTableView(
             },
             sideContent = { scrollState, weekData ->
                 TimeAxisColumn(
-                    now = now,
+                    now = now.time,
                     timeLabels = weekData.metrics.timeLabels,
                     gridStartTime = weekData.metrics.gridStartTime,
                     gridEndTime = weekData.metrics.effectiveEndTime,
@@ -204,11 +192,11 @@ fun TimeTableView(
                             rowHeightDp = metrics.rowHeightDp,
                             totalHours = metrics.totalHours,
                             days = metrics.days,
-                            today = today,
+                            today = now.date,
                             showNowIndicator = activeWeekConfig.showCurrentTimeIndicator,
                             highlightCurrentDay = activeWeekConfig.highlightCurrentDay,
                             currentTimeLineOnlyToday = activeWeekConfig.currentTimeLineOnlyToday,
-                            now = now,
+                            now = now.time,
                             gridStartTime = metrics.gridStartTime,
                             effectiveEndTime = metrics.effectiveEndTime,
                             style = style,
