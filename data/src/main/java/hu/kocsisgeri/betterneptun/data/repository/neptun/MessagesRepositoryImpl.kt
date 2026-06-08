@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Singleton
 
 @Singleton
-class MessagesRepositoryImpl internal constructor(
+internal class MessagesRepositoryImpl internal constructor(
     private val networkDataSource: NetworkDataSource,
     private val ioDispatcher: CoroutineDispatcher,
 ) : MessagesRepository, BaseClearable() {

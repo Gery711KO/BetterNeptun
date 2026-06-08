@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Singleton
 
 @Singleton
-class LocalizationRepositoryImpl(
+internal class LocalizationRepositoryImpl(
     private val localizationDataSource: LocalizationDataSource,
     private val ioDispatcher: CoroutineDispatcher,
 ) : LocalizationRepository {

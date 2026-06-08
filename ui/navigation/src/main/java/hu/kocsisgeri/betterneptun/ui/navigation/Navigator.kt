@@ -46,18 +46,69 @@ internal val LocalSharedTransitionScope =
         error("No shared transition scope provided")
     }
 
+/**
+ * Interface defining the navigation operations and state management for the application.
+ *
+ * It manages a backstack of [NavKey]s and provides methods for forward and backward
+ * navigation, as well as high-level UI rendering via the [Content] composable.
+ */
 interface Navigator {
+
+    /**
+     * The current stack of navigation keys representing the history of screens.
+     * The last element in the list represents the currently active screen.
+     */
     val backStack: List<NavKey>
+
+    /**
+     * Represents the key of the screen currently at the top of the [backStack].
+     */
     val currentScreen: NavKey
 
+    /**
+     * Renders the UI content corresponding to the current state of the navigation backstack.
+     *
+     * This function acts as the primary entry point for displaying screens, managing
+     * their lifecycle, and applying the appropriate transitions between destinations.
+     */
     @Composable
     fun Content()
 
+    /**
+     * Navigates to a new destination by adding the provided [navigationKey] to the backstack.
+     * The navigation only occurs if the current state allows navigation (e.g., the current screen is loaded).
+     *
+     * @param navigationKey The key representing the destination screen to navigate to.
+     */
     fun navigateTo(navigationKey: NavKey)
+
+    /**
+     * Navigates to the specified [navigationKey] and clears the entire backstack,
+     * making the new destination the only entry in the stack.
+     *
+     * @param navigationKey The key representing the destination screen to navigate to.
+     */
     fun navigateToInclusive(navigationKey: NavKey)
+
+    /**
+     * Navigates one step back in the backstack if possible.
+     *
+     * @return `true` if a screen was successfully removed from the backstack,
+     * `false` if the backstack contains only the start destination or if navigation is currently disabled.
+     */
     fun navigateBack(): Boolean
 
     companion object {
+
+        /**
+         * Creates and returns an instance of the [Navigator] with the specified starting destination
+         * and available navigation entries.
+         *
+         * @param startDestination The initial [NavKey] to be placed on the backstack.
+         * @param navigationEntries A collection of [NavigationEntry] objects that define the mapping
+         * between keys and their respective Composable screens.
+         * @return A new [Navigator] instance initialized with the provided configuration.
+         */
         fun createNavigator(
             startDestination: NavKey,
             navigationEntries: Collection<NavigationEntry>
@@ -66,6 +117,21 @@ interface Navigator {
             navigationEntries = navigationEntries
         )
 
+        /**
+         * A composable function that provides the default implementation for displaying navigation content.
+         * It integrates with [NavDisplay] and supports shared element transitions via [SharedTransitionLayout].
+         *
+         * @param modifier The modifier to be applied to the navigation display container.
+         * @param navigator The [Navigator] instance managing the backstack and navigation state.
+         * @param entryDecorators A list of [NavEntryDecorator]s used to provide additional functionality
+         * (like SaveableState or ViewModels) to the navigation entries.
+         * @param transitionSpec The transition animation used when navigating forward.
+         * @param popTransitionSpec The transition animation used when navigating back.
+         * @param predictivePopTransitionSpec The transition animation used for predictive back gestures.
+         * @param navigationEntries A collection of [NavigationEntry] objects defining the available routes and their content.
+         * @param onCurrentScreenLoaded A callback triggered when the current screen's lifecycle state changes,
+         * returning true if the screen is at least in the [Lifecycle.State.STARTED] state.
+         */
         @OptIn(KoinExperimentalAPI::class)
         @Composable
         fun DefaultNavDisplay(

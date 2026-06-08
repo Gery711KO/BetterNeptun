@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Singleton
 
 @Singleton
-class CalendarRepositoryImpl internal constructor(
+internal class CalendarRepositoryImpl internal constructor(
     private val localDataSource: LocalDataSource,
     private val ioDispatcher: CoroutineDispatcher,
 ) : CalendarRepository, BaseClearable() {

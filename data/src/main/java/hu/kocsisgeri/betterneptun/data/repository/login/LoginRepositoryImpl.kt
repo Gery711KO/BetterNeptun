@@ -16,7 +16,7 @@ import kotlinx.serialization.serializer
 import org.koin.core.annotation.Singleton
 
 @Singleton
-class LoginRepositoryImpl internal constructor(
+internal class LoginRepositoryImpl internal constructor(
     private val localDataSource: LocalDataSource,
     private val networkDataSource: NetworkDataSource,
 ) : LoginRepository, BaseClearable() {

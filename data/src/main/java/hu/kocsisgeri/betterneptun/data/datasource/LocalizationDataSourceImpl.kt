@@ -6,7 +6,7 @@ import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Singleton
 
 @Singleton
-class LocalizationDataSourceImpl(
+internal class LocalizationDataSourceImpl(
     private val api: LocalizationApiService,
     private val ioDispatcher: CoroutineDispatcher,
 ): LocalizationDataSource {

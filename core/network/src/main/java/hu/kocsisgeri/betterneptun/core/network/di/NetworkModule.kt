@@ -32,10 +32,10 @@ class NetworkModule {
     @Single
     fun provideKtorLogger(): Logger = object : Logger {
         override fun log(message: String) {
-            // Ez közvetlenül az androidos Log.d-be küldi a sorokat
             Timber.tag("KtorNetwork").d(message)
         }
     }
+
     @Single
     @Named("LocalizationClient")
     fun provideLocalizationHttpClient(ktorLogger: Logger) = HttpClient(OkHttp) {

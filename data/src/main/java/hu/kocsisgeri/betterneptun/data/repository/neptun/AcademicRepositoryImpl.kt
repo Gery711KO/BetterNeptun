@@ -15,7 +15,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import org.koin.core.annotation.Singleton
 
 @Singleton
-class AcademicRepositoryImpl internal constructor(
+internal class AcademicRepositoryImpl internal constructor(
     private val networkDataSource: NetworkDataSource,
     private val ioDispatcher: CoroutineDispatcher,
 ) : AcademicRepository, BaseClearable() {
