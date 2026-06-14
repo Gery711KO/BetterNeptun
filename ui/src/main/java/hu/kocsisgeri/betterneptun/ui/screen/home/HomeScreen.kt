@@ -974,7 +974,6 @@ private fun HomeScreenPreviewContent() {
 @Preview(
     name = "Phone - Landscape",
     device = "spec:width=411dp,height=891dp,orientation=landscape,dpi=420",
-    showSystemUi = true,
 )
 @PreviewWrapper(PreviewThemeProvider::class)
 @Composable

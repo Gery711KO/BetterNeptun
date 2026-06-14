@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -163,6 +164,10 @@ private fun ErrorScreenContent(
 
 @PreviewWrapper(PreviewThemeProvider::class)
 @PreviewLightDark
+@Preview(
+    name = "Phone - Landscape",
+    device = "spec:width=411dp,height=891dp,orientation=landscape,dpi=420",
+)
 @Composable
 private fun GeneralErrorScreenPreview() {
     ErrorScreenContent(

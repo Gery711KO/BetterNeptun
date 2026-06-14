@@ -113,7 +113,7 @@ fun MessageDetailContent(
                     .then(
                         if (isLandscape()) {
                             Modifier.padding(
-                                start = BetterNeptunTheme.dimens.itemSpacing,
+                                start = BetterNeptunTheme.dimens.extraSmall,
                                 end = paddingValues.calculateEndPadding(
                                     LocalLayoutDirection.current
                                 ),

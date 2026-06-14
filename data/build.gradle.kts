@@ -6,5 +6,6 @@ betterNeptun {
     setupDataLayer(useRoom = true) {
         implementation(libs.bundles.datastore)
         implementation(libs.androidx.work.runtime)
+        implementation(libs.bundles.networking)
     }
 }

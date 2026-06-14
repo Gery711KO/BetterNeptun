@@ -30,7 +30,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun rememberShimmerProgress(
     isLoading: Boolean = true,
-    duration: Duration = 1.seconds
+    duration: Duration = 2.seconds
 ): State<Float> {
     return if (isLoading) {
         val transition = rememberInfiniteTransition(label = "SharedShimmerTransition")

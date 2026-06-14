@@ -9,11 +9,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -23,6 +30,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
@@ -41,8 +50,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.tooling.preview.PreviewWrapper
@@ -51,12 +63,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.ChartColor
 import hu.kocsisgeri.betterneptun.domain.model.UiResult
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.ui.designsystem.R
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.LoadingLottie
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.RandomWidthBox
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.randomTextSize
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.rememberShimmerProgress
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.sharedShimmer
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.isLandscape
 import hu.kocsisgeri.betterneptun.ui.navigation.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBarData
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBars
@@ -114,25 +128,70 @@ fun SemestersContent(
         "Átlagok"
     )
 
-    Scaffold(
-        topBar = { SemestersScreenTopBar(onBackClick) },
-        containerColor = colorScheme.background,
-        modifier = Modifier.sharedBoundsAnimation(LocalizationKey.HOME_MENU_SEMESTERS),
-    ) { paddingValues ->
-        Column(
+    if (isLandscape()) {
+        Row(
             modifier = Modifier
-                .padding(paddingValues)
                 .fillMaxSize()
+                .sharedBoundsAnimation(LocalizationKey.HOME_MENU_SEMESTERS)
         ) {
-            TabSelector(
-                selectedTab = selectedTab,
-                tabs = tabs,
-                onSelectTab = onSelectTab
-            )
+            Scaffold(
+                topBar = { SemestersScreenTopBar(onBackClick) },
+                containerColor = colorScheme.background,
+                modifier = Modifier.weight(2/5f),
+            ) { paddingValues ->
+                TabSelector(
+                    selectedTab = selectedTab,
+                    tabs = tabs,
+                    onSelectTab = onSelectTab,
+                    isVertical = true,
+                    modifier = Modifier.padding(
+                        start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
+                        end = BetterNeptunTheme.dimens.extraSmall,
+                        top = paddingValues.calculateTopPadding(),
+                        bottom = paddingValues.calculateBottomPadding()
+                    )
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .weight(3/5f)
+                    .systemBarsPadding()
+                    .padding(
+                        start = BetterNeptunTheme.dimens.extraSmall,
+                        end = WindowInsets.safeContent.asPaddingValues()
+                            .calculateEndPadding(LocalLayoutDirection.current)
+                    ),
+            ) {
+                when (selectedTab) {
+                    0 -> CreditsChart(creditsResult)
+                    1 -> AveragesChart(averagesResult)
+                }
+            }
+        }
+    } else {
+        Scaffold(
+            topBar = { SemestersScreenTopBar(onBackClick) },
+            containerColor = colorScheme.background,
+            modifier = Modifier
+                .fillMaxSize()
+                .sharedBoundsAnimation(LocalizationKey.HOME_MENU_SEMESTERS)
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+            ) {
+                TabSelector(
+                    selectedTab = selectedTab,
+                    tabs = tabs,
+                    onSelectTab = onSelectTab,
+                    isVertical = false
+                )
 
-            when (selectedTab) {
-                0 -> CreditsChart(creditsResult)
-                1 -> AveragesChart(averagesResult)
+                when (selectedTab) {
+                    0 -> CreditsChart(creditsResult)
+                    1 -> AveragesChart(averagesResult)
+                }
             }
         }
     }
@@ -149,8 +208,7 @@ private fun SemestersScreenTopBar(onBackClick: () -> Unit) {
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = colorScheme.background,
-            scrolledContainerColor = colorScheme.background,
+            containerColor = Color.Transparent,
             titleContentColor = colorScheme.onSurface,
             navigationIconContentColor = colorScheme.onSurface
         )
@@ -161,39 +219,86 @@ private fun SemestersScreenTopBar(onBackClick: () -> Unit) {
 private fun TabSelector(
     selectedTab: Int,
     tabs: List<String>,
-    onSelectTab: (Int) -> Unit
+    modifier: Modifier = Modifier,
+    onSelectTab: (Int) -> Unit,
+    isVertical: Boolean = false
 ) {
-    SecondaryTabRow(
-        selectedTabIndex = selectedTab,
-        containerColor = colorScheme.background,
-        contentColor = colorScheme.primary,
-        indicator = {
-            TabRowDefaults.SecondaryIndicator(
-                Modifier.tabIndicatorOffset(selectedTab),
-                color = colorScheme.primary
-            )
+    if (isVertical) {
+        Column(
+            modifier = modifier
+                .fillMaxHeight()
+                .padding(horizontal = BetterNeptunTheme.dimens.paddingSmall),
+            verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.paddingSmall)
+        ) {
+            Spacer(Modifier.height(BetterNeptunTheme.dimens.paddingMedium))
+            tabs.forEachIndexed { index, title ->
+                val isSelected = selectedTab == index
+                NavigationDrawerItem(
+                    selected = isSelected,
+                    onClick = { onSelectTab(index) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(
+                                if (index == 0) R.drawable.ic_courses else R.drawable.ic_semesters
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.size(BetterNeptunTheme.dimens.iconMedium)
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = title,
+                            style = typography.bodyLarge.copy(
+                                fontWeight = if (isSelected) FontWeight.Bold
+                                else FontWeight.Normal
+                            )
+                        )
+                    },
+                    colors = NavigationDrawerItemDefaults.colors(
+                        selectedContainerColor = colorScheme.primaryContainer,
+                        unselectedContainerColor = Color.Transparent,
+                        selectedIconColor = colorScheme.primary,
+                        unselectedIconColor = colorScheme.onSurfaceVariant,
+                        selectedTextColor = colorScheme.primary,
+                        unselectedTextColor = colorScheme.onSurfaceVariant,
+                    ),
+                    shape = BetterNeptunTheme.shapes.medium
+                )
+            }
         }
-    ) {
-        tabs.forEachIndexed { index, title ->
-            val isSelected = selectedTab == index
-            Tab(
-                selected = isSelected,
-                onClick = { onSelectTab(index) },
-                text = {
-                    Text(
-                        text = title,
-                        style = typography.bodyLarge.copy(
-                            fontWeight = if (isSelected) FontWeight.Bold
-                            else FontWeight.Normal
-                        ),
-                        color = if (isSelected) {
-                            colorScheme.primary
-                        } else {
-                            colorScheme.onSurfaceVariant
-                        }
-                    )
-                }
-            )
+    } else {
+        SecondaryTabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = colorScheme.background,
+            contentColor = colorScheme.primary,
+            indicator = {
+                TabRowDefaults.SecondaryIndicator(
+                    Modifier.tabIndicatorOffset(selectedTab),
+                    color = colorScheme.primary
+                )
+            }
+        ) {
+            tabs.forEachIndexed { index, title ->
+                val isSelected = selectedTab == index
+                Tab(
+                    selected = isSelected,
+                    onClick = { onSelectTab(index) },
+                    text = {
+                        Text(
+                            text = title,
+                            style = typography.bodyLarge.copy(
+                                fontWeight = if (isSelected) FontWeight.Bold
+                                else FontWeight.Normal
+                            ),
+                            color = if (isSelected) {
+                                colorScheme.primary
+                            } else {
+                                colorScheme.onSurfaceVariant
+                            }
+                        )
+                    }
+                )
+            }
         }
     }
 }
@@ -593,4 +698,15 @@ private fun SemestersScreenLoadingPreview() {
         onSelectTab = {},
         onBackClick = {},
     )
+}
+
+@Preview(
+    name = "Phone - Landscape",
+    device = "spec:width=411dp,height=891dp,orientation=landscape,dpi=420",
+    showSystemUi = true,
+)
+@PreviewWrapper(PreviewThemeProvider::class)
+@Composable
+private fun SemestersScreenLandscapePreview() {
+    SemestersScreenSuccessPreview()
 }

@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.data.util
 
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import io.ktor.serialization.ContentConvertException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -28,6 +29,8 @@ suspend fun <T : Any> MutableStateFlow<ApiResult<T>>.runApiCall(
             value = ApiResult.Error(errorMessage?: exception.message ?: "Serialization error.")
         } catch (exception: CancellationException) {
             value = ApiResult.Error(errorMessage?: exception.message ?: "Operation canceled.")
+        } catch (exception: ContentConvertException) {
+            value = ApiResult.Error(errorMessage?: exception.message ?: "Json content error.")
         }
     }
 }
@@ -48,6 +51,8 @@ suspend fun <T : Any> MutableSharedFlow<ApiResult<T>>.runApiCall(
             emit(ApiResult.Error(exception.message ?: "Serialization error."))
         } catch (exception: CancellationException) {
             emit(ApiResult.Error(exception.message ?: "Operation canceled."))
+        } catch (exception: ContentConvertException) {
+            emit(ApiResult.Error(exception.message ?: "Json content error."))
         }
     }
 }
@@ -71,5 +76,7 @@ fun <T : Any> runApiCall(
         emit(ApiResult.Error(exception.message ?: "Operation canceled."))
     } catch (exception: Exception) {
         emit(ApiResult.Error(exception.message ?: "Unknown error."))
+    } catch (exception: ContentConvertException) {
+        emit(ApiResult.Error(exception.message ?: "Json content error."))
     }
 }

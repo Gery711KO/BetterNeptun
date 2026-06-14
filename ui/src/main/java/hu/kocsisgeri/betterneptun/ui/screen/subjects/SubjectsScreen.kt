@@ -34,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,15 +51,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.UiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
-import hu.kocsisgeri.betterneptun.ui.designsystem.composable.LoadingLottie
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.randomTextSize
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.rememberShimmerProgress
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.sharedShimmer
-import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.model.SubjectsScreenUiModel
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import kotlin.random.Random
@@ -94,9 +92,11 @@ fun SubjectsContent(
         containerColor = BetterNeptunTheme.colorScheme.background
     ) { paddingValues ->
         subjectsState?.let {
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
                 FilterItems(
                     selectedTermId = subjectsState.selectedTermId,
                     filterItems = subjectsState.filterBar,
@@ -166,8 +166,9 @@ private fun FilterItems(
                     )
                 }
             }
+
             is UiResult.Loading -> {
-                items(Random.nextInt(5, 10)) {
+                items(1) {
                     Box(
                         modifier = Modifier
                             .sharedShimmer(progress)
@@ -205,6 +206,7 @@ private fun SubjectsList(listState: UiResult<List<Subject>>?) {
             is UiResult.Success -> items(listState.data) { subject ->
                 SubjectItem(subject = subject)
             }
+
             null -> {}
         }
     }
