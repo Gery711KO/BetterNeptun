@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -32,8 +31,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,16 +49,21 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.UiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
-import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.LoadingLottie
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.randomTextSize
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.rememberShimmerProgress
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.sharedShimmer
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.screen.subjects.model.SubjectsScreenUiModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import kotlin.random.Random
 
 @Composable
 fun SubjectsScreen(
@@ -136,17 +142,17 @@ private fun SubjectsScreenTopAppBar(onBackClick: () -> Unit) {
 @Composable
 private fun FilterItems(
     selectedTermId: String,
-    filterItems: ApiResult<List<SubjectsScreenUiModel.FilterItem>>?,
+    filterItems: UiResult<List<SubjectsScreenUiModel.FilterItem>>?,
     onSelectTerm: (String) -> Unit
 ) {
-    when (filterItems) {
-        is ApiResult.Error -> Unit
-        ApiResult.Loading -> Unit
-        is ApiResult.Success<List<SubjectsScreenUiModel.FilterItem>> -> {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = BetterNeptunTheme.dimens.screenPadding),
-                horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.itemSpacing)
-            ) {
+    val progress by rememberShimmerProgress(isLoading = filterItems is UiResult.Loading)
+
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = BetterNeptunTheme.dimens.screenPadding),
+        horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.itemSpacing)
+    ) {
+        when (filterItems) {
+            is UiResult.Success<List<SubjectsScreenUiModel.FilterItem>> -> {
                 items(filterItems.data.asReversed()) { item ->
                     FilterChip(
                         selected = item.id == selectedTermId,
@@ -160,48 +166,47 @@ private fun FilterItems(
                     )
                 }
             }
-        }
+            is UiResult.Loading -> {
+                items(Random.nextInt(5, 10)) {
+                    Box(
+                        modifier = Modifier
+                            .sharedShimmer(progress)
+                            .padding(BetterNeptunTheme.dimens.small)
+                    ) {
+                        Text(
+                            text = randomTextSize(),
+                            style = BetterNeptunTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
 
-        null -> Unit
+            null -> Unit
+        }
     }
 }
 
 @Composable
-private fun SubjectsList(listState: ApiResult<List<Subject>>?) {
-    when (listState) {
-        is ApiResult.Loading -> {
-            Box(Modifier.fillMaxSize()) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-        }
+private fun SubjectsList(listState: UiResult<List<Subject>>?) {
+    val loadingProgress = rememberShimmerProgress(isLoading = listState is UiResult.Loading)
 
-        is ApiResult.Success -> {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(BetterNeptunTheme.dimens.screenPadding)
-                    .clip(BetterNeptunTheme.shapes.large),
-                verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.itemSpacing)
-            ) {
-                items(listState.data) { subject ->
-                    SubjectItem(subject = subject)
-                }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(BetterNeptunTheme.dimens.screenPadding)
+            .clip(BetterNeptunTheme.shapes.large),
+        verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.itemSpacing)
+    ) {
+        when (listState) {
+            is UiResult.Loading -> items(Random.nextInt(5, 10)) {
+                SubjectItemLoading(loadingProgress)
             }
-        }
 
-        is ApiResult.Error -> {
-            Box(Modifier.fillMaxSize()) {
-                Text(
-                    text = "Hiba történt az adatok betöltésekor",
-                    color = BetterNeptunTheme.colorScheme.error,
-                    modifier = Modifier.align(Alignment.Center),
-                )
+            is UiResult.Success -> items(listState.data) { subject ->
+                SubjectItem(subject = subject)
             }
+            null -> {}
         }
-
-        null -> {}
     }
 }
 
@@ -298,6 +303,65 @@ fun SubjectItem(subject: Subject) {
 }
 
 @Composable
+fun SubjectItemLoading(progress: State<Float>) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = BetterNeptunTheme.shapes.large,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = BetterNeptunTheme.colorScheme.surfaceVariant
+        ),
+    ) {
+        Column(modifier = Modifier.padding(BetterNeptunTheme.dimens.screenPadding)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(
+                    modifier = Modifier.size(BetterNeptunTheme.dimens.large),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(BetterNeptunTheme.dimens.badgeSize)
+                            .clip(BetterNeptunTheme.shapes.small)
+                            .sharedShimmer(progress.value)
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = BetterNeptunTheme.dimens.itemSpacing),
+                    verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.small)
+                ) {
+                    Text(
+                        text = randomTextSize(),
+                        style = BetterNeptunTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        color = BetterNeptunTheme.colorScheme.onSurface,
+                        modifier = Modifier.sharedShimmer(progress.value),
+                    )
+                    Text(
+                        text = randomTextSize(),
+                        style = BetterNeptunTheme.typography.bodySmall,
+                        color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.sharedShimmer(progress.value),
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(BetterNeptunTheme.dimens.iconExtraLarge)
+                        .sharedShimmer(progress.value)
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun DetailItem(label: String, value: String) {
     Row(
         modifier = Modifier
@@ -328,7 +392,7 @@ private fun SubjectsScreenSuccessPreview() {
         SubjectsContent(
             subjectsState = SubjectsScreenUiModel(
                 selectedTermId = "1",
-                filterBar = ApiResult.Success(
+                filterBar = UiResult.Success(
                     listOf(
                         SubjectsScreenUiModel.FilterItem(
                             id = "1",
@@ -340,7 +404,7 @@ private fun SubjectsScreenSuccessPreview() {
                         )
                     )
                 ),
-                listItems = ApiResult.Success(
+                listItems = UiResult.Success(
                     listOf(
                         Subject(
                             subjectId = "1",
@@ -376,28 +440,13 @@ private fun SubjectsScreenLoadingPreview() {
         SubjectsContent(
             subjectsState = SubjectsScreenUiModel(
                 selectedTermId = "1",
-                filterBar = ApiResult.Loading,
-                listItems = ApiResult.Loading
+                filterBar = UiResult.Loading,
+                listItems = UiResult.Loading
             ),
             onSelectTerm = {},
             onBackClick = {}
         )
     }
-}
-
-@PreviewLightDark
-@PreviewWrapper(PreviewThemeProvider::class)
-@Composable
-private fun SubjectsScreenErrorPreview() {
-    SubjectsContent(
-        subjectsState = SubjectsScreenUiModel(
-            selectedTermId = "1",
-            filterBar = ApiResult.Error("Hiba"),
-            listItems = ApiResult.Error("Hiba")
-        ),
-        onSelectTerm = {},
-        onBackClick = {}
-    )
 }
 
 @PreviewLightDark

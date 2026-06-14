@@ -62,34 +62,37 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
+import hu.kocsisgeri.betterneptun.common.utils.now
+import hu.kocsisgeri.betterneptun.common.utils.plus
 import hu.kocsisgeri.betterneptun.domain.model.TimeDuration
-import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.UiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
-import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
-import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurer
-import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurerScope
-import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.core.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionDisclaimer
 import hu.kocsisgeri.betterneptun.ui.core.permission.rememberPermissionLauncher
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.designsystem.R
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.AvatarImage
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.measure.SizeMeasurer
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.measure.SizeMeasurerScope
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessagesDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
+import kotlinx.datetime.LocalDateTime
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-import java.time.LocalDateTime
+import kotlin.time.Duration.Companion.hours
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -132,12 +135,12 @@ private fun HomeContent(
     currentCourses: List<CurrentCourseDetail>,
     nextCourseState: NextCourseDetail?,
     permissions: List<PermissionData>,
-    refreshProgress: ApiResult<Unit>?,
+    refreshProgress: UiResult<Unit>?,
     onLaunchPermissionRequest: (PermissionData) -> Unit,
     onRefresh: () -> Unit,
     onNavigate: (NavKey) -> Unit,
 ) {
-    val isRefreshing = refreshProgress is ApiResult.Loading
+    val isRefreshing = refreshProgress is UiResult.Loading
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
         onRefresh = onRefresh
@@ -759,8 +762,8 @@ fun HomeScreenPreview() {
     val nextCourse = NextCourseDetail(
         id = 16,
         title = "Full stack fejlesztés",
-        startTime = LocalDateTime.now().plusHours(1),
-        endTime = LocalDateTime.now().plusHours(3),
+        startTime = LocalDateTime.now().plus(1.hours),
+        endTime = LocalDateTime.now().plus(1.hours),
         location = "BA.F.02",
         color = 0xFF4285F4.toInt(),
         timeUntilEvent = TimeDuration(

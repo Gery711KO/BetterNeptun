@@ -22,6 +22,12 @@ val composeDependencies: List<Dependency>
             type = Dependency.Type.BUNDLE,
             aliases = listOf("compose")
         ),
+        Dependency(
+            aliases = listOf(
+                "coil-compose",
+                "coil-network"
+            )
+        )
     )
 
 val navigation3dependencies: List<Dependency>
@@ -50,8 +56,7 @@ val featureDependencies: List<Dependency>
             type = Dependency.Type.DEPENDENCY,
             aliases = listOf(
                 "androidx-appcompat",
-                "androidx-core-ktx",
-                "coil-compose"
+                "androidx-core-ktx"
             )
         )
     )

@@ -2,15 +2,19 @@ package hu.kocsisgeri.betterneptun.ui.screen.login
 
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
+import hu.kocsisgeri.betterneptun.domain.error.ErrorRegistry
 import hu.kocsisgeri.betterneptun.domain.usecase.auth.LoginUseCase
-import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
+import hu.kocsisgeri.betterneptun.ui.core.ErrorHandlingComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-class LoginViewModel(private val loginUseCase: LoginUseCase) : ComposeViewModel() {
+class LoginViewModel(
+    private val loginUseCase: LoginUseCase,
+    errorRegistry: ErrorRegistry,
+) : ErrorHandlingComposeViewModel(errorRegistry) {
 
     private val neptunCode = MutableStateFlow<String?>(null)
     private val password = MutableStateFlow<String?>(null)
@@ -39,14 +43,21 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ComposeViewModel(
                     password = password.value,
                     stayLoggedIn = stayLoggedIn.value,
                 )
-            ).collect { result ->
-                when(result) {
+            ).registerToGeneralErrors { result ->
+                when (result) {
+                    is LoginUseCase.Result.Error -> result.errorContent
+                    else -> null
+                }
+            }.collect { result ->
+                when (result) {
                     is LoginUseCase.Result.Error -> {
-                        forcedState.tryEmit(LoginState.Error(result.message))
+                        forcedState.tryEmit(null)
                     }
+
                     is LoginUseCase.Result.Success -> {
                         forcedState.tryEmit(LoginState.Success(result.studentData))
                     }
+
                     LoginUseCase.Result.Loading -> {
                         forcedState.tryEmit(LoginState.Loading)
                     }

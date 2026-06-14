@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.ui.navigation.transition
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -12,9 +13,21 @@ import androidx.compose.animation.togetherWith
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.scene.Scene
 
+/**
+ * Defines a collection of pre-configured navigation transitions for the application's UI.
+ *
+ * This interface provides a set of static helper methods within its companion object
+ * to create [ContentTransform] animations used by the navigation system to animate transitions
+ * between different [Scene]s.
+ */
 interface Transition {
 
     companion object {
+
+        fun crossFadeTransition(scope: AnimatedContentTransitionScope<Scene<NavKey>>) =
+            with(scope) {
+                fadeIn(tween(400)) togetherWith fadeOut(tween(400))
+            }
 
         fun sharedTransition(scope: AnimatedContentTransitionScope<Scene<NavKey>>) =
             with(scope) {

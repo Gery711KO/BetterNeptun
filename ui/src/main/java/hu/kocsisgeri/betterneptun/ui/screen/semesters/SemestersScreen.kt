@@ -2,14 +2,21 @@ package hu.kocsisgeri.betterneptun.ui.screen.semesters
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,32 +31,39 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.ChartColor
-import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.UiResult
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
-import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
-import hu.kocsisgeri.betterneptun.ui.core.theme.themeBasedColor
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.LoadingLottie
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.RandomWidthBox
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.randomTextSize
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.rememberShimmerProgress
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.sharedShimmer
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBarData
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBars
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.LineData
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.theme.themeBasedColor
 import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.RowChart
 import ir.ehsannarmani.compose_charts.models.AnimationMode
@@ -74,14 +88,13 @@ fun SemestersScreen(
     viewModel: SemestersViewModel = koinViewModel(),
     navigator: Navigator = koinInject(),
 ) {
-    val creditsResult by viewModel.credits.collectAsStateWithLifecycle()
-    val averagesResult by viewModel.averages.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableIntStateOf(0) }
 
     SemestersContent(
         selectedTab = selectedTab,
-        creditsResult = creditsResult,
-        averagesResult = averagesResult,
+        creditsResult = uiState.first,
+        averagesResult = uiState.second,
         onSelectTab = { selectedTab = it },
         onBackClick = { navigator.navigateBack() }
     )
@@ -91,12 +104,15 @@ fun SemestersScreen(
 @Composable
 fun SemestersContent(
     selectedTab: Int,
-    creditsResult: ApiResult<List<ColumnBars>>,
-    averagesResult: ApiResult<List<LineData>>,
+    creditsResult: UiResult<List<ColumnBars>>,
+    averagesResult: UiResult<List<LineData>>,
     onSelectTab: (Int) -> Unit,
     onBackClick: () -> Unit,
 ) {
-    val tabs = listOf("Kreditek", "Átlagok")
+    val tabs = listOfNotNull(
+        "Kreditek",
+        "Átlagok"
+    )
 
     Scaffold(
         topBar = { SemestersScreenTopBar(onBackClick) },
@@ -183,10 +199,10 @@ private fun TabSelector(
 }
 
 @Composable
-private fun AveragesChart(averagesResult: ApiResult<List<LineData>>) {
+private fun AveragesChart(averagesResult: UiResult<List<LineData>>) {
     when (averagesResult) {
-        is ApiResult.Loading -> LoadingIndicator()
-        is ApiResult.Success -> {
+        is UiResult.Loading -> LoadingChart()
+        is UiResult.Success -> {
             val primaryColor = themeBasedColor(
                 darkColor = Color(0xFF00D138),
                 lightColor = Color(0xFF00751F)
@@ -195,14 +211,12 @@ private fun AveragesChart(averagesResult: ApiResult<List<LineData>>) {
                 darkColor = Color(0xFF04D9FF),
                 lightColor = Color(0xFF008BA3)
             )
-            val lines by remember(averagesResult) {
-                derivedStateOf {
-                    mapLines(
-                        averagesResult = averagesResult,
-                        primaryColor = primaryColor,
-                        secondaryColor = secondaryColor
-                    )
-                }
+            val lines = remember(averagesResult, primaryColor, secondaryColor) {
+                mapLines(
+                    averagesResult = averagesResult,
+                    primaryColor = primaryColor,
+                    secondaryColor = secondaryColor
+                )
             }
 
             LineChart(
@@ -220,28 +234,27 @@ private fun AveragesChart(averagesResult: ApiResult<List<LineData>>) {
                 gridProperties = commonGridProperties(),
             )
         }
-
-        is ApiResult.Error -> ErrorMessage(averagesResult.error)
     }
 }
 
 @Composable
-private fun CreditsChart(creditsResult: ApiResult<List<ColumnBars>>) {
+private fun CreditsChart(creditsResult: UiResult<List<ColumnBars>>) {
     val colors = colorScheme
 
     when (creditsResult) {
-        is ApiResult.Loading -> LoadingIndicator()
-        is ApiResult.Success -> {
-            val bars by remember(creditsResult) {
-                derivedStateOf {
-                    mapBars(
-                        creditsResult = creditsResult,
-                        colors = colors
-                    )
-                }
+        is UiResult.Loading -> LoadingChart()
+        is UiResult.Success -> {
+            val bars = remember(creditsResult, colors) {
+                mapBars(
+                    creditsResult = creditsResult,
+                    colors = colors
+                )
             }
-            val availableSizePerBar = LocalWindowInfo.current.containerDpSize.height / bars.size
-            val barThickness = availableSizePerBar / 3
+            val windowInfo = LocalWindowInfo.current
+            val barThickness = remember(bars.size, windowInfo.containerDpSize.height) {
+                val availableSizePerBar = windowInfo.containerDpSize.height / maxOf(1, bars.size)
+                availableSizePerBar / 3
+            }
 
             RowChart(
                 data = bars,
@@ -265,91 +278,205 @@ private fun CreditsChart(creditsResult: ApiResult<List<ColumnBars>>) {
                 ),
             )
         }
-
-        is ApiResult.Error -> ErrorMessage(creditsResult.error)
     }
 }
 
 @Composable
-private fun commonLabelProperties() = LabelProperties(
-    enabled = true,
-    textStyle = typography.labelSmall.copy(
-        color = colorScheme.primary
-    ),
-    rotation = LabelProperties.Rotation(degree = 0f)
-)
+private fun LoadingChart() {
+    val shimmerProgress by rememberShimmerProgress()
+    val verticalData = 10
+    val horizontalData = 8
+    val labels = 2
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+    ) {
+        Column {
+            repeat(labels) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.small)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(BetterNeptunTheme.dimens.small)
+                            .sharedShimmer(shimmerProgress),
+                    )
+                    Text(
+                        text = randomTextSize(),
+                        style = BetterNeptunTheme.typography.labelSmall,
+                        modifier = Modifier.sharedShimmer(shimmerProgress)
+                    )
+                }
+                Spacer(Modifier.height(BetterNeptunTheme.dimens.extraSmall / 2))
+            }
+            Spacer(Modifier.height(BetterNeptunTheme.dimens.medium))
+            Row(modifier = Modifier.weight(1f)) {
+                Column(
+                    modifier = Modifier.fillMaxHeight(),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    repeat(verticalData) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Box(
+                                modifier = Modifier
+                                    .size(BetterNeptunTheme.dimens.small)
+                                    .sharedShimmer(shimmerProgress),
+                            )
+                        }
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .padding(start = BetterNeptunTheme.dimens.small)
+                        .fillMaxHeight()
+                        .weight(1f)
+                        .border(
+                            BorderStroke(
+                                width = 1.dp,
+                                color = BetterNeptunTheme.colorScheme.onSurfaceVariant
+                                    .copy(alpha = 0.3f)
+                            )
+                        ),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    repeat(verticalData) {
+                        RandomWidthBox(
+                            height = BetterNeptunTheme.dimens.large,
+                            modifier = Modifier
+                                .clip(BetterNeptunTheme.shapes.large.copy(
+                                    topStart = CornerSize(0f),
+                                    bottomStart = CornerSize(0f)
+                                ))
+                                .sharedShimmer(
+                                    progress = shimmerProgress,
+                                    cornerRadius = CornerRadius(0f)
+                                )
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(BetterNeptunTheme.dimens.small))
+            Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                repeat(horizontalData) {
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(BetterNeptunTheme.dimens.small)
+                                .sharedShimmer(shimmerProgress),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
-private fun commonLabelHelperProperties() = LabelHelperProperties(
-    textStyle = typography.labelSmall.copy(
-        color = colorScheme.primary
-    ),
-    labelCountPerLine = 1
-)
+private fun commonLabelProperties(): LabelProperties {
+    val primary = colorScheme.primary
+    val typo = typography
+    return remember(primary, typo) {
+        LabelProperties(
+            enabled = true,
+            textStyle = typo.labelSmall.copy(
+                color = primary
+            ),
+            rotation = LabelProperties.Rotation(degree = 0f)
+        )
+    }
+}
 
 @Composable
-private fun commonHorizontalIndicatorProperties(steps: Double) = HorizontalIndicatorProperties(
-    textStyle = typography.labelSmall.copy(
-        color = colorScheme.primary
-    ),
-    contentBuilder = { it.roundToInt().toString() },
-    count = IndicatorCount.StepBased(steps),
-)
+private fun commonLabelHelperProperties(): LabelHelperProperties {
+    val primary = colorScheme.primary
+    val typo = typography
+    return remember(primary, typo) {
+        LabelHelperProperties(
+            textStyle = typo.labelSmall.copy(
+                color = primary
+            ),
+            labelCountPerLine = 1
+        )
+    }
+}
 
 @Composable
-private fun commonVerticalIndicatorProperties(steps: Double) = VerticalIndicatorProperties(
-    textStyle = typography.labelSmall.copy(
-        color = colorScheme.primary
-    ),
-    contentBuilder = { it.roundToInt().toString() },
-    count = IndicatorCount.StepBased(steps),
-)
+private fun commonHorizontalIndicatorProperties(steps: Double): HorizontalIndicatorProperties {
+    val primary = colorScheme.primary
+    val typo = typography
+    return remember(primary, typo, steps) {
+        HorizontalIndicatorProperties(
+            textStyle = typo.labelSmall.copy(
+                color = primary
+            ),
+            contentBuilder = { it.roundToInt().toString() },
+            count = IndicatorCount.StepBased(steps),
+        )
+    }
+}
+
+@Composable
+private fun commonVerticalIndicatorProperties(steps: Double): VerticalIndicatorProperties {
+    val primary = colorScheme.primary
+    val typo = typography
+    return remember(primary, typo, steps) {
+        VerticalIndicatorProperties(
+            textStyle = typo.labelSmall.copy(
+                color = primary
+            ),
+            contentBuilder = { it.roundToInt().toString() },
+            count = IndicatorCount.StepBased(steps),
+        )
+    }
+}
 
 
 @Composable
-private fun commonDividerProperties() = DividerProperties(
-    xAxisProperties = LineProperties(
-        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-    ),
-    yAxisProperties = LineProperties(
-        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-    )
-)
+private fun commonDividerProperties(): DividerProperties {
+    val onSurfaceVariant = colorScheme.onSurfaceVariant
+    return remember(onSurfaceVariant) {
+        DividerProperties(
+            xAxisProperties = LineProperties(
+                color = SolidColor(onSurfaceVariant.copy(alpha = 0.3f))
+            ),
+            yAxisProperties = LineProperties(
+                color = SolidColor(onSurfaceVariant.copy(alpha = 0.3f))
+            )
+        )
+    }
+}
 
 @Composable
-private fun commonGridProperties() = GridProperties(
-    xAxisProperties = GridProperties.AxisProperties(
-        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-    ),
-    yAxisProperties = GridProperties.AxisProperties(
-        lineCount = 2,
-        color = SolidColor(colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-    ),
-)
+private fun commonGridProperties(): GridProperties {
+    val onSurfaceVariant = colorScheme.onSurfaceVariant
+    return remember(onSurfaceVariant) {
+        GridProperties(
+            xAxisProperties = GridProperties.AxisProperties(
+                color = SolidColor(onSurfaceVariant.copy(alpha = 0.3f))
+            ),
+            yAxisProperties = GridProperties.AxisProperties(
+                lineCount = 2,
+                color = SolidColor(onSurfaceVariant.copy(alpha = 0.3f))
+            ),
+        )
+    }
+}
 
 @Composable
 private fun LoadingIndicator() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(50.dp),
-            color = colorScheme.primary
-        )
-    }
-}
-
-@Composable
-private fun ErrorMessage(message: String?) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(
-            text = message ?: "Hiba történt",
-            color = colorScheme.error,
-            modifier = Modifier.padding(16.dp)
-        )
+        LoadingLottie()
     }
 }
 
 private fun mapLines(
-    averagesResult: ApiResult.Success<List<LineData>>,
+    averagesResult: UiResult.Success<List<LineData>>,
     primaryColor: Color,
     secondaryColor: Color
 ): List<Line> = averagesResult.data.map { domainLine ->
@@ -369,7 +496,7 @@ private fun mapLines(
 }
 
 private fun mapBars(
-    creditsResult: ApiResult.Success<List<ColumnBars>>,
+    creditsResult: UiResult.Success<List<ColumnBars>>,
     colors: ColorScheme
 ): List<Bars> = creditsResult.data.map { domainBars ->
     Bars(
@@ -391,10 +518,11 @@ private fun mapBars(
 }
 
 @PreviewLightDark
+@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 private fun SemestersScreenSuccessPreview() {
     BetterNeptunTheme {
-        val creditsResult = ApiResult.Success(
+        val creditsResult = UiResult.Success(
             listOf(
                 ColumnBars(
                     barLabel = "Felvett",
@@ -428,7 +556,7 @@ private fun SemestersScreenSuccessPreview() {
                 ),
             )
         )
-        val averagesResult = ApiResult.Success(
+        val averagesResult = UiResult.Success(
             listOf(
                 LineData(
                     label = "Átlagok",
@@ -455,25 +583,13 @@ private fun SemestersScreenSuccessPreview() {
 
 @PreviewLightDark
 @PreviewWrapper(PreviewThemeProvider::class)
+@PreviewScreenSizes
 @Composable
 private fun SemestersScreenLoadingPreview() {
     SemestersContent(
         selectedTab = 0,
-        creditsResult = ApiResult.Loading,
-        averagesResult = ApiResult.Loading,
-        onSelectTab = {},
-        onBackClick = {},
-    )
-}
-
-@PreviewLightDark
-@PreviewWrapper(PreviewThemeProvider::class)
-@Composable
-private fun SemestersScreenErrorPreview() {
-    SemestersContent(
-        selectedTab = 0,
-        creditsResult = ApiResult.Error("Nem sikerült betölteni a krediteket"),
-        averagesResult = ApiResult.Error("Nem sikerült betölteni az átlagokat"),
+        creditsResult = UiResult.Loading,
+        averagesResult = UiResult.Loading,
         onSelectTab = {},
         onBackClick = {},
     )

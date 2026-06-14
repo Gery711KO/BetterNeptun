@@ -2,6 +2,8 @@ package hu.kocsisgeri.betterneptun.data.datasource
 
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.UserInfoDto
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.ApiResponseDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.AuthenticationRequestDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.AuthenticationResponseDto
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.MessageDetailsDto
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.MessageListDto
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.TermDetailDto
@@ -13,6 +15,10 @@ import hu.kocsisgeri.betterneptun.core.network.model.neptun.UnreadMessagesCountD
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.UserAvatarDto
 
 internal interface NetworkDataSource {
+
+    suspend fun getUserToken(
+        body: AuthenticationRequestDto
+    ): ApiResponseDto<AuthenticationResponseDto>
 
     suspend fun getUserInfo(): ApiResponseDto<UserInfoDto>
 

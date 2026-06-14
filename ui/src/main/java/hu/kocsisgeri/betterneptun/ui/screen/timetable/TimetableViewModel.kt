@@ -1,9 +1,9 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable
 
 import androidx.lifecycle.viewModelScope
-import de.tobiasschuerg.weekview.data.LocalDateRange
-import de.tobiasschuerg.weekview.data.WeekData
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
+import hu.kocsisgeri.betterneptun.common.utils.now
+import hu.kocsisgeri.betterneptun.common.utils.plus
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.domain.usecase.timetable.AddLocalEventUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.timetable.DeleteLocalEventUseCase
@@ -11,15 +11,18 @@ import hu.kocsisgeri.betterneptun.domain.usecase.timetable.GetEventsUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.ViewMode
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.toComposeEvent
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.update
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDateRange
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.nextOrSame
+import kotlinx.datetime.previousOrSame
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.temporal.TemporalAdjusters
+import kotlin.time.Duration.Companion.days
 
 @KoinViewModel
 class TimetableViewModel(
@@ -29,42 +32,16 @@ class TimetableViewModel(
     private val deleteLocalEventUseCase: DeleteLocalEventUseCase
 ) : ComposeViewModel() {
 
-    private val events = getEventsUseCase()
+    private val maxPageCount = Int.MAX_VALUE
+    private val initialPage = maxPageCount / 2
+    private val baseDate = LocalDateTime.now()
 
+    private val events = getEventsUseCase()
+        .stateWhileSubscribed(emptyList())
     private val currentSelected = MutableStateFlow(defaultSelected)
 
     private val _viewMode = MutableStateFlow(ViewMode.WEEK)
     val viewMode = _viewMode.stateWhileSubscribed()
-
-    private val _selectedDate = MutableStateFlow(LocalDate.now())
-    val selectedDate = _selectedDate.stateWhileSubscribed()
-
-    private val _times = MutableStateFlow("6:23")
-
-    val weeks = combine(
-        selectedDate,
-        viewMode,
-        _times,
-        events,
-    ) { selectedDate, mode, times, events ->
-        listOf(
-            createWeekData(
-                times = times,
-                dateRange = findDateRange(mode, selectedDate.previous(mode)),
-                events = events
-            ),
-            createWeekData(
-                times = times,
-                dateRange = findDateRange(mode, selectedDate),
-                events = events
-            ),
-            createWeekData(
-                times = times,
-                dateRange = findDateRange(mode, selectedDate.next(mode)),
-                events = events
-            )
-        )
-    }.stateWhileSubscribed(emptyList())
 
     val selectedEvent = combine(
         currentSelected,
@@ -75,58 +52,37 @@ class TimetableViewModel(
         }
     }.stateWhileSubscribed(null)
 
-    fun selectEvent(eventId: Long?) {
-        currentSelected.value = eventId
-    }
-
-    fun clearSelectedEvent() {
-        currentSelected.tryEmit(null)
-    }
-
-    fun addEvent(event: CalendarItem.LocalEvent) {
-        viewModelScope.launchReportingErrors {
-            addLocalEventsUseCase(event)
+    fun getWeekDataForPage(page: Int): WeekData {
+        val offset = (page - initialPage).toLong()
+        val targetDate = when (viewMode.value) {
+            ViewMode.WEEK -> baseDate.plus((offset * 7).days)
+            ViewMode.DAY -> baseDate.plus(offset.days)
         }
-    }
 
-    fun deleteEvent(eventId: Long) {
-        viewModelScope.launchReportingErrors {
-            deleteLocalEventUseCase(eventId)
-            clearSelectedEvent()
-        }
-    }
+        val dateRange = findDateRange(viewMode.value, targetDate)
 
-    fun next() {
-        _selectedDate.update { it.next(viewMode.value) }
-    }
-
-    fun previous() {
-        _selectedDate.update { it.previous(viewMode.value) }
-    }
-
-    fun setViewMode(mode: ViewMode) {
-        _viewMode.value = mode
+        return createWeekData(
+            times = "0:23",
+            dateRange = dateRange,
+            events = events.value
+        )
     }
 
     fun findDateRange(
         mode: ViewMode,
-        date: LocalDate
+        date: LocalDateTime
     ): LocalDateRange = when (mode) {
-        ViewMode.FULL_WEEK -> {
-            val monday = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val friday = monday.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
-
-            LocalDateRange(monday, friday)
-        }
-
         ViewMode.WEEK -> {
-            val monday = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val friday = monday.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY))
+            val monday = date.date.previousOrSame(DayOfWeek.MONDAY)
+            val friday = monday.nextOrSame(DayOfWeek.SUNDAY)
 
-            LocalDateRange(monday, friday)
+            LocalDateRange(
+                start = monday,
+                endInclusive = friday
+            )
         }
 
-        ViewMode.DAY -> LocalDateRange(date, date)
+        ViewMode.DAY -> LocalDateRange(date.date, date.date)
     }
 
     fun createWeekData(
@@ -140,26 +96,27 @@ class TimetableViewModel(
 
         return WeekData(
             dateRange = dateRange,
-            start = LocalTime.of(minHour, 0),
-            end = LocalTime.of(maxHour, 0)
+            start = LocalTime(minHour, 0),
+            end = LocalTime(maxHour, 59)
         ).apply {
-            events.filter { it.startTime.toLocalDate() in dateRange }.forEach {
+            events.filter { it.startTime.date in dateRange }.forEach {
                 add(it.toComposeEvent())
             }
         }
     }
 
-    private fun LocalDate.previous(viewMode: ViewMode): LocalDate {
-        return when(viewMode) {
-            ViewMode.WEEK, ViewMode.FULL_WEEK -> minusWeeks(1)
-            ViewMode.DAY -> minusDays(1)
-        }
+    fun selectEvent(eventId: Long?) { currentSelected.value = eventId }
+    fun clearSelectedEvent() { currentSelected.tryEmit(null) }
+    fun setViewMode(mode: ViewMode) { _viewMode.value = mode }
+
+    fun addEvent(event: CalendarItem.LocalEvent) {
+        viewModelScope.launchReportingErrors { addLocalEventsUseCase(event) }
     }
 
-    private fun LocalDate.next(viewMode: ViewMode): LocalDate {
-        return when(viewMode) {
-            ViewMode.WEEK, ViewMode.FULL_WEEK -> plusWeeks(1)
-            ViewMode.DAY -> plusDays(1)
+    fun deleteEvent(eventId: Long) {
+        viewModelScope.launchReportingErrors {
+            deleteLocalEventUseCase(eventId)
+            clearSelectedEvent()
         }
     }
 }

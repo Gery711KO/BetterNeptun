@@ -1,15 +1,15 @@
 package hu.kocsisgeri.betterneptun.domain.usecase.subjects
 
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.AcademicRepository
 import hu.kocsisgeri.betterneptun.domain.usecase.UseCase
 import org.koin.core.annotation.Factory
 
 @Factory
-class FetchSubjectsUseCase(private val neptunRepository: NeptunRepository): UseCase() {
+class FetchSubjectsUseCase(private val academicRepository: AcademicRepository): UseCase() {
 
-    suspend operator fun invoke(termId: String?) = withLock {
+    suspend operator fun invoke(termId: String?) = withReturningLock {
         termId?.let {
-            neptunRepository.fetchSubjects(termId)
-        }
+            academicRepository.fetchSubjects(termId)
+        } != null
     }
 }

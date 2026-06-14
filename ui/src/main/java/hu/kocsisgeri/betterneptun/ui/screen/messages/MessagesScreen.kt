@@ -18,17 +18,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.rounded.ArrowUpward
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -41,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,32 +48,32 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import hu.kocsisgeri.betterneptun.common.utils.DateUtils
+import hu.kocsisgeri.betterneptun.common.utils.formatApiDate
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Message
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
-import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
-import hu.kocsisgeri.betterneptun.ui.core.composable.ScrollBar
-import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
-import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.designsystem.R
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.AvatarImage
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.ScrollBar
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.rememberShimmerProgress
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.sharedShimmer
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.sharedBoundsAnimation
+import hu.kocsisgeri.betterneptun.ui.theme.Armata
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import java.time.LocalDateTime
 
 @Composable
 fun MessagesScreen(
@@ -88,7 +85,6 @@ fun MessagesScreen(
     MessagesContent(
         messages = messages,
         onBackClick = navigator::navigateBack,
-        onRetryClick = viewModel::refresh,
         onLoadMore = viewModel::loadMore,
         onMessageClick = { message ->
             navigator.navigateTo(MessageDetailDestination(message.id))
@@ -100,7 +96,6 @@ fun MessagesScreen(
 @Composable
 fun MessagesContent(
     messages: MessagesPager,
-    onRetryClick: () -> Unit,
     onBackClick: () -> Unit,
     onLoadMore: () -> Unit,
     onMessageClick: (Message) -> Unit
@@ -184,7 +179,6 @@ fun MessagesContent(
                 .clip(BetterNeptunTheme.shapes.large)
         ) {
             messages(messages, onMessageClick)
-            errorMessage(messages, onRetryClick)
             loadingMessage(messages)
             endMessage(messages)
         }
@@ -200,10 +194,10 @@ private fun LazyListScope.messages(
     messages: MessagesPager,
     onMessageClick: (Message) -> Unit
 ) {
-    itemsIndexed(
+    items(
         items = messages.messages,
-        key = { _, message -> message.id }
-    ) { index, message ->
+        key = { message -> message.id }
+    ) { message ->
         MessageItem(
             modifier = Modifier.animateItem(),
             message = message,
@@ -239,66 +233,16 @@ private fun LazyListScope.endMessage(messages: MessagesPager) {
 }
 
 private fun LazyListScope.loadingMessage(messages: MessagesPager) {
-    if (messages.isLoadingNextMessages) {
+    if (messages.isLoadingNextMessages || messages.error != null) {
         item(key = "LOADING_ITEM") {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            ) {
-                CircularProgressIndicator(
-                    color = BetterNeptunTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Üzenetek betöltése...",
-                    style = BetterNeptunTheme.typography.bodyMedium,
-                    color = BetterNeptunTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
+            val shimmerProgress = rememberShimmerProgress()
 
-private fun LazyListScope.errorMessage(
-    messages: MessagesPager,
-    onRetryClick: () -> Unit
-) {
-    messages.error?.let {
-        item(key = "ERROR_MESSAGE") {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(BetterNeptunTheme.dimens.medium),
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Warning,
-                    contentDescription = null,
-                    modifier = Modifier.size(BetterNeptunTheme.dimens.iconGiant),
-                    tint = BetterNeptunTheme.colorScheme.error
+            repeat(if (messages.messages.isEmpty()) 10 else 1) {
+                MessageItemLoading(
+                    modifier = Modifier,
+                    progress = shimmerProgress
                 )
-                Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.medium))
-                Text(
-                    text = "Hiba történt az üzenetek betőltése közben.",
-                    style = BetterNeptunTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    color = BetterNeptunTheme.colorScheme.onBackground
-                )
-                Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.large))
-                Button(
-                    onClick = onRetryClick,
-                    shape = BetterNeptunTheme.shapes.medium,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BetterNeptunTheme.colorScheme.primary,
-                        contentColor = BetterNeptunTheme.colorScheme.onPrimary
-                    )
-                ) {
-                    Text("Újra")
-                }
+                Spacer(Modifier.height(BetterNeptunTheme.dimens.extraSmall / 2))
             }
         }
     }
@@ -339,8 +283,7 @@ fun MessageItem(
         },
         leadingContent = {
             AvatarImage(
-                modifier = Modifier
-                    .size(BetterNeptunTheme.dimens.iconHuge)
+                modifier = Modifier.size(BetterNeptunTheme.dimens.iconHuge)
                     .clip(CircleShape),
                 avatar = message.senderAvatar
             )
@@ -355,7 +298,7 @@ fun MessageItem(
                     horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.small)
                 ) {
                     Text(
-                        text = DateUtils.formatDate(message.date),
+                        text = message.date.formatApiDate(),
                         style = BetterNeptunTheme.typography.labelSmall.copy(
                             fontWeight = if (message.isNew) {
                                 FontWeight.ExtraBold
@@ -380,6 +323,66 @@ fun MessageItem(
     )
 }
 
+@Composable
+fun MessageItemLoading(
+    modifier: Modifier = Modifier,
+    progress: State<Float>,
+) {
+    val shimmerProgress by progress
+
+    ListItem(
+        modifier = modifier.clip(BetterNeptunTheme.shapes.small),
+        headlineContent = {
+            Text(
+                text = "",
+                fontFamily = Armata,
+                style = BetterNeptunTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth(.5f)
+                    .padding(bottom = BetterNeptunTheme.dimens.small / 2)
+                    .sharedShimmer(shimmerProgress),
+            )
+        },
+        supportingContent = {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .sharedShimmer(shimmerProgress),
+                text = "",
+                style = BetterNeptunTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        leadingContent = {
+            Box(
+                modifier = Modifier.size(BetterNeptunTheme.dimens.iconHuge)
+                    .clip(CircleShape)
+                    .sharedShimmer(shimmerProgress),
+            )
+        },
+        trailingContent = {
+            Box(
+                modifier = Modifier.height(BetterNeptunTheme.dimens.extraLarge),
+                contentAlignment = Alignment.TopEnd
+            ) {
+                Text(
+                    text = List(30) { " " }.joinToString(""),
+                    style = BetterNeptunTheme.typography.labelSmall,
+                    color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.sharedShimmer(shimmerProgress)
+                )
+            }
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = BetterNeptunTheme.colorScheme.primaryContainer
+        )
+    )
+}
+
 @PreviewLightDark
 @PreviewWrapper(PreviewThemeProvider::class)
 @Composable
@@ -391,7 +394,7 @@ fun MessagesSuccessPreview() {
                     id = "1",
                     name = "Kovács János",
                     subject = "Vizsga eredmény",
-                    date = LocalDateTime.of(2023, 10, 25, 14, 30),
+                    date = LocalDateTime(2023, 10, 25, 14, 30),
                     isNew = true,
                     senderAvatar = Avatar.MonogramAvatar(
                         monogram = "KJ",
@@ -402,7 +405,7 @@ fun MessagesSuccessPreview() {
                     id = "2",
                     name = "Neptun Rendszer",
                     subject = "Kurzusfelvétel",
-                    date = LocalDateTime.of(2023, 10, 24, 9, 15),
+                    date = LocalDateTime(2023, 10, 24, 9, 15),
                     isNew = false,
                     senderAvatar = Avatar.SystemAvatar
                 ),
@@ -410,7 +413,7 @@ fun MessagesSuccessPreview() {
                     id = "3",
                     name = "Kósa Kálmán",
                     subject = "Elmaradt előadás",
-                    date = LocalDateTime.of(2023, 10, 23, 18, 0),
+                    date = LocalDateTime(2023, 10, 23, 18, 0),
                     isNew = true,
                     senderAvatar = Avatar.MonogramAvatar(
                         monogram = "KK",
@@ -420,7 +423,6 @@ fun MessagesSuccessPreview() {
             ),
             isLoadingNextMessages = false
         ),
-        onRetryClick = {},
         onBackClick = {},
         onLoadMore = {},
         onMessageClick = {}
@@ -435,7 +437,6 @@ fun MessagesLoadingPreview() {
         messages = MessagesPager(
             isLoadingNextMessages = true
         ),
-        onRetryClick = {},
         onBackClick = {},
         onLoadMore = {},
         onMessageClick = {}
@@ -451,7 +452,6 @@ fun MessagesErrorPreview() {
             error = "Hiba történt az üzenetek betöltése közben.",
             isLoadingNextMessages = false
         ),
-        onRetryClick = {},
         onBackClick = {},
         onLoadMore = {},
         onMessageClick = {}

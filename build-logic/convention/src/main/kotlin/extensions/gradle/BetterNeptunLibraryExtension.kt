@@ -101,6 +101,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
 
             if (autoConfigureModules) includeProjects(
                 getAllowedProjects(layer.allowedProjectDependencies)
+                    .filter { it != moduleString }
             )
 
             configExtra()
@@ -112,12 +113,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         }
     }
 
-    private fun Project.moduleStringFromLayerAndSuffix(): String =
-        ":" + projectDir.path
-            .split("BetterNeptun\\")
-            .last()
-            .split("\\")
-            .joinToString(":") { it }
+    private fun Project.moduleStringFromLayerAndSuffix(): String = project.path
 
     private fun Project.includeProjects(projects: List<String>) {
         logger.lifecycle("Auto configure: $projects")
@@ -139,7 +135,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         allowed: List<ProjectModule>
     ) {
         val allowedDeps = allowed.map {
-            it.path + if (it.isParentModule) ":*" else ""
+            it.path + if (it.isPackageModule) ":*" else ""
         }
 
         val allowedDependenciesJoined = allowedDeps.joinToString { it }

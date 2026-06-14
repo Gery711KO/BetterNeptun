@@ -1,13 +1,13 @@
 package hu.kocsisgeri.betterneptun.domain.usecase.semester
 
 import hu.kocsisgeri.betterneptun.domain.model.ChartColor
-import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
-import hu.kocsisgeri.betterneptun.domain.repository.neptun.NeptunRepository
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
+import hu.kocsisgeri.betterneptun.domain.repository.neptun.AcademicRepository
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Factory
 
 @Factory
-class GetSemesterAveragesUseCase(private val neptunRepository: NeptunRepository) {
+class GetSemesterAveragesUseCase(private val academicRepository: AcademicRepository) {
 
     operator fun <S> invoke(
         mapDataSet: (
@@ -15,10 +15,10 @@ class GetSemesterAveragesUseCase(private val neptunRepository: NeptunRepository)
             chartLabel: ChartLabel,
             chartColor: ChartColor
         ) -> S
-    ) = neptunRepository.averages.map {
+    ) = academicRepository.averages.map {
         when (it) {
-            is ApiResult.Error -> ApiResult.Error(it.error)
-            is ApiResult.Loading -> ApiResult.Loading
+            is ApiResult.Error -> it
+            is ApiResult.Loading -> it
             is ApiResult.Success -> {
                 val normalAverages = it.data.map { model ->
                     model.normalAverage ?: 0.0

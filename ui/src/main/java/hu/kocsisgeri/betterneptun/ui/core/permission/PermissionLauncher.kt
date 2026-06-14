@@ -11,6 +11,17 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 
+/**
+ * Creates and remembers a [PermissionHandler.Launcher] that integrates with the Compose lifecycle.
+ *
+ * This function initializes a [rememberLauncherForActivityResult] to handle single permission
+ * requests and automatically refreshes the state of the provided [permissionHandler]
+ * whenever the lifecycle resumes (ensuring the UI stays in sync if permissions are changed
+ * in the system settings).
+ *
+ * @param permissionHandler The handler used to manage and refresh permission states.
+ * @return A [PermissionHandler.Launcher] instance capable of launching permission requests.
+ */
 @Composable
 fun rememberPermissionLauncher(permissionHandler: PermissionHandler): PermissionHandler.Launcher {
     val context = LocalContext.current

@@ -1,6 +1,6 @@
 package hu.kocsisgeri.betterneptun.domain.repository.login
 
-import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
@@ -59,4 +59,10 @@ interface LoginRepository {
      * @param shouldAutoLogin True if automatic login should be enabled, false otherwise.
      */
     fun saveAutoLoginPreference(shouldAutoLogin: Boolean)
+
+    /**
+     * Checks whether an automatic login can be performed based on the presence of
+     * saved credentials and the user's auto-login preference..
+     */
+    fun checkIfAutoLoginPossibly()
 }

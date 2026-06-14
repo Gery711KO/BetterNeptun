@@ -1,14 +1,11 @@
 package hu.kocsisgeri.betterneptun.domain.usecase
 
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
-import java.time.LocalDateTime
-import kotlin.time.Duration
 
 /**
  * Base class for domain-level use cases providing synchronization mechanisms to prevent concurrent execution.
@@ -75,5 +72,25 @@ abstract class UseCase {
                 .w("This action is currently locked. Suspending until completion.")
         }
         mutex.withLock { block() }
+    }
+
+    /**
+     * Executes the given [block] exclusively. If the lock is already held by another
+     * execution, this method suspends until the lock is released before the next in line
+     * is executed.
+     *
+     * If this function is called 3 times in the following order A -> B -> C.
+     * A waiting line is formed it will be executed in a First In First Out order.
+     *
+     * @param block The suspending action to be performed after the lock becomes available.
+     * @return The result from the [Mutex] withLock body as [T].
+     */
+    protected suspend fun <T> withReturningLock(block: suspend () -> T): T {
+        if (mutex.isLocked) {
+            Timber
+                .tag("LOCKED")
+                .w("This action is currently locked. Suspending until completion.")
+        }
+        return mutex.withLock { block() }
     }
 }
