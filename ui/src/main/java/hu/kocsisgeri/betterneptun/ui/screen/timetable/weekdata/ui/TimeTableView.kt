@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -12,16 +13,19 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.common.utils.clockTickFlow
+import hu.kocsisgeri.betterneptun.common.utils.now
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.isLandscape
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components.AllDayEventsRow
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components.DayHeaderRow
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components.EventsPane
@@ -39,6 +43,7 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekView
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.metrics.rememberWeekViewMetrics
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.defaultWeekViewColors
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.style.defaultWeekViewStyle
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlin.time.Duration.Companion.hours
@@ -51,13 +56,29 @@ fun TimeTableView(
     eventConfig: EventConfig = EventConfig(),
     actions: WeekViewActions = WeekViewActions(),
 ) {
-    var localScalingFactor by remember { mutableFloatStateOf(weekViewConfig.scalingFactor) }
-    val activeWeekConfig = weekViewConfig.copy(scalingFactor = localScalingFactor)
+    val isLandscape = isLandscape()
+    val orientationScaling = if (isLandscape) 0.8f else 1.0f
+
+    var localScalingFactor by remember(weekViewConfig.scalingFactor, orientationScaling) {
+        mutableFloatStateOf(weekViewConfig.scalingFactor * orientationScaling)
+    }
+
+    val activeWeekConfig = remember(weekViewConfig, localScalingFactor) {
+        weekViewConfig.copy(scalingFactor = localScalingFactor)
+    }
+
+    val activeEventConfig = remember(eventConfig, isLandscape) {
+        if (isLandscape) {
+            eventConfig.copy(alwaysUseFullName = true)
+        } else eventConfig
+    }
+
+    val currentActions by rememberUpdatedState(actions)
 
     Box(
         modifier =
             modifier
-                .pointerInput(Unit) {
+                .pointerInput(activeWeekConfig.minScalingFactor, activeWeekConfig.maxScalingFactor) {
                     awaitEachGesture {
                         awaitFirstDown(requireUnconsumed = false)
                         do {
@@ -73,7 +94,7 @@ fun TimeTableView(
                                             )
                                     if (newScalingFactor != localScalingFactor) {
                                         localScalingFactor = newScalingFactor
-                                        actions.onScalingFactorChange(newScalingFactor)
+                                        currentActions.onScalingFactorChange(newScalingFactor)
                                     }
                                     event.changes.forEach { it.consume() }
                                 }
@@ -100,7 +121,15 @@ fun TimeTableView(
             weekData = weekData,
             topContent = { pagerState ->
                 Column {
-                    MonthHeaderRow(weekData(pagerState.settledPage).dateRange.start)
+                    if (!isLandscape) {
+                        MonthHeaderRow(weekData(pagerState.settledPage).dateRange.start)
+                        Spacer(Modifier.height(BetterNeptunTheme.dimens.small))
+                    } else {
+                        val currentData by rememberUpdatedState(weekData(pagerState.settledPage))
+                        LaunchedEffect(currentData) {
+                            currentActions.onDateTitleChanged(currentData.dateRange.start)
+                        }
+                    }
                     HorizontalPager(
                         state = pagerState,
                         userScrollEnabled = false,
@@ -123,7 +152,7 @@ fun TimeTableView(
                                 columnWidth = width,
                                 style = style,
                                 highlightCurrentDay = activeWeekConfig.highlightCurrentDay,
-                                eventConfig = eventConfig,
+                                eventConfig = activeEventConfig,
                             )
                             if (data.getMultiDayEvents().isNotEmpty()) {
                                 MultiDayEventsRow(
@@ -131,8 +160,8 @@ fun TimeTableView(
                                     multiDayEvents = data.getMultiDayEvents(),
                                     leftOffsetDp = metrics.leftOffsetDp,
                                     columnWidth = width,
-                                    onEventClick = actions.onEventClick,
-                                    onEventLongPress = actions.onEventLongPress,
+                                    onEventClick = currentActions.onEventClick,
+                                    onEventLongPress = currentActions.onEventLongPress,
                                 )
                             }
 
@@ -142,8 +171,8 @@ fun TimeTableView(
                                     allDayEvents = data.getAllDayEvents(),
                                     leftOffsetDp = metrics.leftOffsetDp,
                                     columnWidth = width,
-                                    onEventClick = actions.onEventClick,
-                                    onEventLongPress = actions.onEventLongPress,
+                                    onEventClick = currentActions.onEventClick,
+                                    onEventLongPress = currentActions.onEventLongPress,
                                 )
                             }
                         }
@@ -205,17 +234,17 @@ fun TimeTableView(
 
                                 if (newScalingFactor != localScalingFactor) {
                                     localScalingFactor = newScalingFactor
-                                    actions.onScalingFactorChange(newScalingFactor)
+                                    currentActions.onScalingFactorChange(newScalingFactor)
                                 }
                             },
-                            onSelectionChanged = actions.onTimeSlotClick
+                            onSelectionChanged = currentActions.onTimeSlotClick
                         )
                         EventsPane(
                             days = metrics.days,
                             events = data.getSingleEvents(),
-                            eventConfig = eventConfig,
-                            onEventClick = actions.onEventClick,
-                            onEventLongPress = actions.onEventLongPress,
+                            eventConfig = activeEventConfig,
+                            onEventClick = currentActions.onEventClick,
+                            onEventLongPress = currentActions.onEventLongPress,
                             columnWidth = width,
                             gridHeightDp = metrics.gridHeightDp,
                             gridStartTime = metrics.gridStartTime,

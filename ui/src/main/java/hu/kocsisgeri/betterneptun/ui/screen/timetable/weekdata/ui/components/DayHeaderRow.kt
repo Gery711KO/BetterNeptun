@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,7 +45,7 @@ internal fun DayHeaderRow(
         Box(modifier = Modifier.size(leftOffsetDp, topOffsetDp))
         days.forEach { date ->
             val isToday = date == today
-            val boxModifier =
+            val boxModifier = remember(highlightCurrentDay, isToday) {
                 if (highlightCurrentDay && isToday) {
                     Modifier
                         .width(columnWidth)
@@ -59,7 +60,8 @@ internal fun DayHeaderRow(
                         .width(columnWidth)
                         .padding(4.dp)
                 }
-            val textStyle =
+            }
+            val textStyle = remember(highlightCurrentDay, isToday) {
                 if (highlightCurrentDay && isToday) {
                     TextStyle(
                         fontSize = 13.sp,
@@ -75,6 +77,7 @@ internal fun DayHeaderRow(
                         textAlign = TextAlign.Center,
                     )
                 }
+            }
 
             Column(
                 modifier = boxModifier,

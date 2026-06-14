@@ -25,7 +25,7 @@ fun MonthHeaderRow(
         horizontalArrangement = Arrangement.Center,
         modifier = modifier
             .fillMaxWidth()
-            .padding(BetterNeptunTheme.dimens.medium),
+            .padding(horizontal = BetterNeptunTheme.dimens.medium),
     ) {
         Text(
             text = today.formatYearMonth(

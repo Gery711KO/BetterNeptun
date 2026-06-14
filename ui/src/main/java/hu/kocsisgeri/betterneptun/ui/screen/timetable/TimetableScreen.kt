@@ -1,10 +1,17 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -22,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
@@ -31,12 +39,14 @@ import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.designsystem.R
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.isLandscape
 import hu.kocsisgeri.betterneptun.ui.navigation.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.AddEventDialog
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.CourseDetailDialog
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.ViewMode
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.toComposeEvent
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.TimeTableView
+import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.components.MonthHeaderRow
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.EventConfig
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.WeekViewConfig
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData
@@ -44,6 +54,7 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekView
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateRange
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -96,6 +107,7 @@ fun TimetableContent(
 ) {
     var showAddEventDialog by remember { mutableStateOf(false) }
     var initialDate by remember { mutableStateOf<LocalDateTime?>(null) }
+    var currentMonthDate by remember { mutableStateOf<LocalDate?>(null) }
 
     CourseDetailDialog(
         selectedEvent = currentSelectedEvent,
@@ -121,15 +133,22 @@ fun TimetableContent(
         topBar = {
             TimeTableScreenTopBar(
                 viewMode = viewMode,
+                currentMonthDate = currentMonthDate,
                 onNavigateBack = onNavigateBack,
                 onViewModeChange = onViewModeChange
             )
         },
         bottomBar = {
+            val safePadding = WindowInsets.safeContent.asPaddingValues()
+
             Box(
                 contentAlignment = Alignment.BottomEnd,
                 modifier = Modifier
-                    .padding(BetterNeptunTheme.dimens.screenPadding)
+                    .padding(
+                        start = safePadding.calculateStartPadding(LocalLayoutDirection.current),
+                        end = safePadding.calculateEndPadding(LocalLayoutDirection.current),
+                        bottom = BetterNeptunTheme.dimens.screenPadding,
+                    )
                     .fillMaxWidth()
             ) {
                 FloatingActionButton(
@@ -148,7 +167,12 @@ fun TimetableContent(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = paddingValues.calculateTopPadding())
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                    start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
+                    end = paddingValues.calculateEndPadding(LocalLayoutDirection.current),
+                    bottom = BetterNeptunTheme.dimens.screenPadding
+                )
                 .padding(horizontal = BetterNeptunTheme.dimens.screenPadding)
                 .clip(BetterNeptunTheme.shapes.large)
         ) {
@@ -157,9 +181,7 @@ fun TimetableContent(
                 weekViewConfig = WeekViewConfig(
                     showCurrentTimeIndicator = true,
                     highlightCurrentDay = true,
-                    contentPadding = PaddingValues(
-                        bottom = paddingValues.calculateBottomPadding()
-                    )
+                    contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding())
                 ),
                 eventConfig = EventConfig(
                     showSubtitle = true,
@@ -176,6 +198,9 @@ fun TimetableContent(
 
                         initialDate = it
                     },
+                    onDateTitleChanged = {
+                        currentMonthDate = it
+                    }
                 ),
                 modifier = Modifier.fillMaxSize()
             )
@@ -188,14 +213,24 @@ fun TimetableContent(
 private fun TimeTableScreenTopBar(
     viewMode: ViewMode,
     onNavigateBack: () -> Unit,
-    onViewModeChange: (ViewMode) -> Unit
+    onViewModeChange: (ViewMode) -> Unit,
+    currentMonthDate: LocalDate?
 ) {
     TopAppBar(
         title = {
-            Text(
-                text = "Órarend",
-                style = BetterNeptunTheme.typography.titleLarge
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Órarend",
+                    style = BetterNeptunTheme.typography.titleLarge
+                )
+                if (isLandscape()) currentMonthDate?.let {
+                    MonthHeaderRow(currentMonthDate)
+                }
+            }
+
         },
         navigationIcon = {
             IconButton(onClick = onNavigateBack) {

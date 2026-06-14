@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 fun clockTickFlow(tickType: TickType = TickType.MINUTE) = flow {
     while(true) {
@@ -20,14 +21,14 @@ fun clockTickFlow(tickType: TickType = TickType.MINUTE) = flow {
                     date = now.date,
                     time = LocalTime(now.hour, now.minute, 0).plus(1.minutes)
                 )
-                nextMinute.diffEpochSeconds(now)
+                nextMinute.diffEpochSeconds(now).seconds.inWholeMilliseconds
             }
             TickType.HOUR -> {
                 val nextHour = LocalDateTime(
                     date = now.date,
                     time = LocalTime(now.hour, 0, 0).plus(1.hours)
                 )
-                nextHour.diffEpochSeconds(now)
+                nextHour.diffEpochSeconds(now).seconds.inWholeMilliseconds
             }
         }
 
