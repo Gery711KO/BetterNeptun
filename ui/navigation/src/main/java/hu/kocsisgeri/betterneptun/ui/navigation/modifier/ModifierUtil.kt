@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.navigation.modifier
 
+import android.content.res.Configuration
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
@@ -9,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import hu.kocsisgeri.betterneptun.ui.theme.sharedTransitionScope
 
@@ -26,9 +28,11 @@ fun Modifier.sharedBoundsAnimation(key: Any): Modifier = composed {
     }
 }
 
-
 fun Modifier.renderShared(): Modifier = composed {
     with(sharedTransitionScope) {
         renderInSharedTransitionScopeOverlay()
     }
 }
+
+@Composable
+fun isLandscape() = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE

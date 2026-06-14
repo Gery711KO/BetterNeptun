@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.rounded.List
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,6 +36,8 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
@@ -65,7 +70,10 @@ import hu.kocsisgeri.betterneptun.ui.designsystem.composable.rememberShimmerProg
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.sharedShimmer
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.MessageDetailDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.isLandscape
 import hu.kocsisgeri.betterneptun.ui.navigation.modifier.sharedBoundsAnimation
+import hu.kocsisgeri.betterneptun.ui.screen.messages.detail.MessageDetailContent
+import hu.kocsisgeri.betterneptun.ui.screen.messages.detail.MessageDetailViewModel
 import hu.kocsisgeri.betterneptun.ui.theme.Armata
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
@@ -74,6 +82,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun MessagesScreen(
@@ -81,14 +90,79 @@ fun MessagesScreen(
     navigator: Navigator = koinInject()
 ) {
     val messages by viewModel.listItems.collectAsStateWithLifecycle()
+    val selectedMessageId by viewModel.selectedMessageId.collectAsStateWithLifecycle()
 
-    MessagesContent(
-        messages = messages,
-        onBackClick = navigator::navigateBack,
-        onLoadMore = viewModel::loadMore,
-        onMessageClick = { message ->
-            navigator.navigateTo(MessageDetailDestination(message.id))
+    if (isLandscape()) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BetterNeptunTheme.colorScheme.background)
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                MessagesContent(
+                    messages = messages,
+                    selectedMessageId = selectedMessageId,
+                    onBackClick = navigator::navigateBack,
+                    onLoadMore = viewModel::loadMore,
+                    onMessageClick = { message ->
+                        viewModel.selectMessage(message.id)
+                    }
+                )
+            }
+            Box(modifier = Modifier.weight(1.5f)) {
+                selectedMessageId?.let { messageId ->
+                    MessageDetailPane(messageId = messageId)
+                } ?: NoSelectedMessageContent()
+            }
         }
+    } else {
+        MessagesContent(
+            messages = messages,
+            onBackClick = navigator::navigateBack,
+            onLoadMore = viewModel::loadMore,
+            onMessageClick = { message ->
+                navigator.navigateTo(MessageDetailDestination(message.id))
+            },
+        )
+    }
+}
+
+@Composable
+private fun NoSelectedMessageContent() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.List,
+                contentDescription = null,
+                modifier = Modifier.size(BetterNeptunTheme.dimens.iconGiant),
+                tint = BetterNeptunTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            )
+            Spacer(Modifier.height(BetterNeptunTheme.dimens.medium))
+            Text(
+                text = "Válassz ki egy üzenetet\na megtekintéshez",
+                style = BetterNeptunTheme.typography.bodyLarge,
+                color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+fun MessageDetailPane(messageId: String) {
+    val viewModel: MessageDetailViewModel = koinViewModel(
+        key = messageId,
+        parameters = { parametersOf(messageId) }
+    )
+    val message by viewModel.message.collectAsStateWithLifecycle()
+
+    MessageDetailContent(
+        message = message,
+        showTopBar = false,
+        onBackClick = null,
     )
 }
 
@@ -98,7 +172,8 @@ fun MessagesContent(
     messages: MessagesPager,
     onBackClick: () -> Unit,
     onLoadMore: () -> Unit,
-    onMessageClick: (Message) -> Unit
+    onMessageClick: (Message) -> Unit,
+    selectedMessageId: String? = null,
 ) {
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
@@ -124,30 +199,15 @@ fun MessagesContent(
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .sharedBoundsAnimation(LocalizationKey.HOME_MENU_MESSAGES),
         topBar = {
-            LargeTopAppBar(
-                title = {
-                    Text(
-                        text = "Üzenetek",
-                        fontFamily = Armata,
-                        fontWeight = FontWeight.Bold,
-                        style = BetterNeptunTheme.typography.titleLarge
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Vissza"
-                        )
-                    }
-                },
+            if (isLandscape()) TopAppBar(
+                title = { TopBarTitle() },
+                navigationIcon = { TopBarNavigationIcon(onBackClick) },
+                colors = topBarDefaultColors()
+            ) else LargeTopAppBar(
+                title = { TopBarTitle() },
+                navigationIcon = { TopBarNavigationIcon(onBackClick) },
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BetterNeptunTheme.colorScheme.background,
-                    scrolledContainerColor = BetterNeptunTheme.colorScheme.background,
-                    navigationIconContentColor = BetterNeptunTheme.colorScheme.onBackground,
-                    titleContentColor = BetterNeptunTheme.colorScheme.onBackground,
-                )
+                colors = topBarDefaultColors()
             )
         },
         floatingActionButton = {
@@ -178,7 +238,7 @@ fun MessagesContent(
                 .padding(horizontal = BetterNeptunTheme.dimens.paddingSmall)
                 .clip(BetterNeptunTheme.shapes.large)
         ) {
-            messages(messages, onMessageClick)
+            messages(messages, selectedMessageId, onMessageClick)
             loadingMessage(messages)
             endMessage(messages)
         }
@@ -190,8 +250,176 @@ fun MessagesContent(
     }
 }
 
+@Composable
+private fun topBarDefaultColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
+    containerColor = BetterNeptunTheme.colorScheme.background,
+    scrolledContainerColor = BetterNeptunTheme.colorScheme.background,
+    navigationIconContentColor = BetterNeptunTheme.colorScheme.onBackground,
+    titleContentColor = BetterNeptunTheme.colorScheme.onBackground,
+)
+
+@Composable
+private fun TopBarNavigationIcon(onBackClick: () -> Unit) {
+    IconButton(onClick = onBackClick) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_back),
+            contentDescription = "Vissza"
+        )
+    }
+}
+
+@Composable
+private fun TopBarTitle() {
+    Text(
+        text = "Üzenetek",
+        fontFamily = Armata,
+        fontWeight = FontWeight.Bold,
+        style = BetterNeptunTheme.typography.titleLarge
+    )
+}
+
+@Composable
+fun MessageItem(
+    message: Message,
+    modifier: Modifier = Modifier,
+    isSelected: Boolean = false,
+    onClick: () -> Unit
+) {
+    ListItem(
+        modifier = modifier
+            .clip(BetterNeptunTheme.shapes.small)
+            .clickable(onClick = onClick),
+        headlineContent = {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = message.name,
+                fontFamily = Armata,
+                fontWeight = if (message.isNew) FontWeight.ExtraBold else FontWeight.Medium,
+                style = BetterNeptunTheme.typography.bodyLarge,
+                color = if (message.isNew) BetterNeptunTheme.colorScheme.primary
+                else BetterNeptunTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        supportingContent = {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = message.subject,
+                style = BetterNeptunTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        leadingContent = {
+            AvatarImage(
+                modifier = Modifier
+                    .size(BetterNeptunTheme.dimens.iconHuge)
+                    .clip(CircleShape),
+                avatar = message.senderAvatar
+            )
+        },
+        trailingContent = {
+            Box(
+                modifier = Modifier.height(BetterNeptunTheme.dimens.extraLarge),
+                contentAlignment = Alignment.TopEnd
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.small)
+                ) {
+                    Text(
+                        text = message.date.formatApiDate(),
+                        style = BetterNeptunTheme.typography.labelSmall.copy(
+                            fontWeight = if (message.isNew) {
+                                FontWeight.ExtraBold
+                            } else {
+                                FontWeight.Normal
+                            }
+                        ),
+                        color = BetterNeptunTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (message.isNew) {
+                        Badge(
+                            containerColor = BetterNeptunTheme.colorScheme.primary,
+                            modifier = Modifier.size(BetterNeptunTheme.dimens.badgeSize)
+                        )
+                    }
+                }
+            }
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = if (isSelected) BetterNeptunTheme.colorScheme.secondaryContainer
+            else BetterNeptunTheme.colorScheme.primaryContainer
+        )
+    )
+}
+
+@Composable
+fun MessageItemLoading(
+    modifier: Modifier = Modifier,
+    progress: State<Float>,
+) {
+    val shimmerProgress by progress
+
+    ListItem(
+        modifier = modifier.clip(BetterNeptunTheme.shapes.small),
+        headlineContent = {
+            Text(
+                text = "",
+                fontFamily = Armata,
+                style = BetterNeptunTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth(.5f)
+                    .padding(bottom = BetterNeptunTheme.dimens.small / 2)
+                    .sharedShimmer(shimmerProgress),
+            )
+        },
+        supportingContent = {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .sharedShimmer(shimmerProgress),
+                text = "",
+                style = BetterNeptunTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        leadingContent = {
+            Box(
+                modifier = Modifier
+                    .size(BetterNeptunTheme.dimens.iconHuge)
+                    .clip(CircleShape)
+                    .sharedShimmer(shimmerProgress),
+            )
+        },
+        trailingContent = {
+            Box(
+                modifier = Modifier.height(BetterNeptunTheme.dimens.extraLarge),
+                contentAlignment = Alignment.TopEnd
+            ) {
+                Text(
+                    text = List(30) { " " }.joinToString(""),
+                    style = BetterNeptunTheme.typography.labelSmall,
+                    color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.sharedShimmer(shimmerProgress)
+                )
+            }
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = BetterNeptunTheme.colorScheme.primaryContainer
+        )
+    )
+}
+
 private fun LazyListScope.messages(
     messages: MessagesPager,
+    selectedMessageId: String?,
     onMessageClick: (Message) -> Unit
 ) {
     items(
@@ -201,6 +429,7 @@ private fun LazyListScope.messages(
         MessageItem(
             modifier = Modifier.animateItem(),
             message = message,
+            isSelected = message.id == selectedMessageId,
             onClick = { onMessageClick(message) }
         )
     }
@@ -248,141 +477,6 @@ private fun LazyListScope.loadingMessage(messages: MessagesPager) {
     }
 }
 
-@Composable
-fun MessageItem(
-    message: Message,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    ListItem(
-        modifier = modifier
-            .clip(BetterNeptunTheme.shapes.small)
-            .clickable(onClick = onClick),
-        headlineContent = {
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = message.name,
-                fontFamily = Armata,
-                fontWeight = if (message.isNew) FontWeight.ExtraBold else FontWeight.Medium,
-                style = BetterNeptunTheme.typography.bodyLarge,
-                color = if (message.isNew) BetterNeptunTheme.colorScheme.primary
-                else BetterNeptunTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        supportingContent = {
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = message.subject,
-                style = BetterNeptunTheme.typography.bodyMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
-            )
-        },
-        leadingContent = {
-            AvatarImage(
-                modifier = Modifier.size(BetterNeptunTheme.dimens.iconHuge)
-                    .clip(CircleShape),
-                avatar = message.senderAvatar
-            )
-        },
-        trailingContent = {
-            Box(
-                modifier = Modifier.height(BetterNeptunTheme.dimens.extraLarge),
-                contentAlignment = Alignment.TopEnd
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.small)
-                ) {
-                    Text(
-                        text = message.date.formatApiDate(),
-                        style = BetterNeptunTheme.typography.labelSmall.copy(
-                            fontWeight = if (message.isNew) {
-                                FontWeight.ExtraBold
-                            } else {
-                                FontWeight.Normal
-                            }
-                        ),
-                        color = BetterNeptunTheme.colorScheme.onSurfaceVariant
-                    )
-                    if (message.isNew) {
-                        Badge(
-                            containerColor = BetterNeptunTheme.colorScheme.primary,
-                            modifier = Modifier.size(BetterNeptunTheme.dimens.badgeSize)
-                        )
-                    }
-                }
-            }
-        },
-        colors = ListItemDefaults.colors(
-            containerColor = BetterNeptunTheme.colorScheme.primaryContainer
-        )
-    )
-}
-
-@Composable
-fun MessageItemLoading(
-    modifier: Modifier = Modifier,
-    progress: State<Float>,
-) {
-    val shimmerProgress by progress
-
-    ListItem(
-        modifier = modifier.clip(BetterNeptunTheme.shapes.small),
-        headlineContent = {
-            Text(
-                text = "",
-                fontFamily = Armata,
-                style = BetterNeptunTheme.typography.bodyLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth(.5f)
-                    .padding(bottom = BetterNeptunTheme.dimens.small / 2)
-                    .sharedShimmer(shimmerProgress),
-            )
-        },
-        supportingContent = {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .sharedShimmer(shimmerProgress),
-                text = "",
-                style = BetterNeptunTheme.typography.bodyMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
-            )
-        },
-        leadingContent = {
-            Box(
-                modifier = Modifier.size(BetterNeptunTheme.dimens.iconHuge)
-                    .clip(CircleShape)
-                    .sharedShimmer(shimmerProgress),
-            )
-        },
-        trailingContent = {
-            Box(
-                modifier = Modifier.height(BetterNeptunTheme.dimens.extraLarge),
-                contentAlignment = Alignment.TopEnd
-            ) {
-                Text(
-                    text = List(30) { " " }.joinToString(""),
-                    style = BetterNeptunTheme.typography.labelSmall,
-                    color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.sharedShimmer(shimmerProgress)
-                )
-            }
-        },
-        colors = ListItemDefaults.colors(
-            containerColor = BetterNeptunTheme.colorScheme.primaryContainer
-        )
-    )
-}
-
 @PreviewLightDark
 @PreviewWrapper(PreviewThemeProvider::class)
 @Composable
@@ -425,7 +519,7 @@ fun MessagesSuccessPreview() {
         ),
         onBackClick = {},
         onLoadMore = {},
-        onMessageClick = {}
+        onMessageClick = {},
     )
 }
 
@@ -439,7 +533,7 @@ fun MessagesLoadingPreview() {
         ),
         onBackClick = {},
         onLoadMore = {},
-        onMessageClick = {}
+        onMessageClick = {},
     )
 }
 
@@ -454,6 +548,6 @@ fun MessagesErrorPreview() {
         ),
         onBackClick = {},
         onLoadMore = {},
-        onMessageClick = {}
+        onMessageClick = {},
     )
 }

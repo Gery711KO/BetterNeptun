@@ -11,6 +11,8 @@ import hu.kocsisgeri.betterneptun.domain.usecase.messages.LoadMoreMessagesUseCas
 import hu.kocsisgeri.betterneptun.domain.usecase.messages.RefreshMessagesUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ErrorHandlingComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.designsystem.R
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.KoinViewModel
 
@@ -21,6 +23,9 @@ class MessagesViewModel(
     private val loadMoreMessagesUseCase: LoadMoreMessagesUseCase,
     errorRegistry: ErrorRegistry,
 ) : ErrorHandlingComposeViewModel(errorRegistry) {
+
+    private val _selectedMessageId = MutableStateFlow<String?>(null)
+    val selectedMessageId = _selectedMessageId.asStateFlow()
 
     val listItems = getMessagesPagerUseCase()
         .registerToGeneralErrors { pager ->
@@ -55,5 +60,9 @@ class MessagesViewModel(
         viewModelScope.launchReportingErrors {
             loadMoreMessagesUseCase()
         }
+    }
+
+    fun selectMessage(id: String?) {
+        _selectedMessageId.value = id
     }
 }

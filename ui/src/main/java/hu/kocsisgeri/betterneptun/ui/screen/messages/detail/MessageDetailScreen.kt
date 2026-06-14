@@ -1,9 +1,12 @@
 package hu.kocsisgeri.betterneptun.ui.screen.messages.detail
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,7 +32,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,7 +50,9 @@ import hu.kocsisgeri.betterneptun.ui.designsystem.R
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.HtmlText
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.isLandscape
 import hu.kocsisgeri.betterneptun.ui.theme.Armata
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
 import kotlinx.datetime.LocalDateTime
 import org.koin.compose.koinInject
@@ -62,6 +69,7 @@ fun MessageDetailScreen(
 
     MessageDetailContent(
         message = message,
+        showTopBar = true,
         onBackClick = { navigator.navigateBack() },
     )
 }
@@ -70,20 +78,23 @@ fun MessageDetailScreen(
 @Composable
 fun MessageDetailContent(
     message: Message?,
-    onBackClick: () -> Unit,
+    showTopBar: Boolean = true,
+    onBackClick: (() -> Unit)? = null,
 ) {
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
+            if (showTopBar) TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = "Vissza"
-                        )
+                    if (onBackClick != null) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_back),
+                                contentDescription = "Vissza"
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -99,7 +110,20 @@ fun MessageDetailContent(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .then(
+                        if (isLandscape()) {
+                            Modifier.padding(
+                                start = BetterNeptunTheme.dimens.itemSpacing,
+                                end = paddingValues.calculateEndPadding(
+                                    LocalLayoutDirection.current
+                                ),
+                                top = paddingValues.calculateTopPadding(),
+                                bottom = paddingValues.calculateBottomPadding()
+                            )
+                        } else {
+                            Modifier.padding(paddingValues)
+                        }
+                    )
             ) {
                 Column(
                     modifier = Modifier
@@ -217,6 +241,5 @@ fun MessageDetailContentPreview() {
                 )
             )
         ),
-        onBackClick = {},
     )
 }
