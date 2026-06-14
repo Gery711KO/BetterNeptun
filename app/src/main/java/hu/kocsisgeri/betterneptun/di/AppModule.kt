@@ -24,5 +24,6 @@ class AppModule {
     fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
     @Single
-    fun provideApplicationScope(): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    fun provideApplicationScope(): CoroutineScope =
+        CoroutineScope(SupervisorJob() + Dispatchers.Default)
 }

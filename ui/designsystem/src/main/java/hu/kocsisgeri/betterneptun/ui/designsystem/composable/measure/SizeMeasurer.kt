@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.core.composable.measure
+package hu.kocsisgeri.betterneptun.ui.designsystem.composable.measure
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight

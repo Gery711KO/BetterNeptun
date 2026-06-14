@@ -1,6 +1,6 @@
 package hu.kocsisgeri.betterneptun.domain.repository.neptun
 
-import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Average
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Term

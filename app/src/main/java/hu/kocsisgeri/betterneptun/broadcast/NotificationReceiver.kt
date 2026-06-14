@@ -7,8 +7,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import hu.kocsisgeri.betterneptun.ui.R
 import hu.kocsisgeri.betterneptun.ui.activity.main.MainActivity
+import hu.kocsisgeri.betterneptun.ui.designsystem.R
 
 class NotificationReceiver : BroadcastReceiver() {
 

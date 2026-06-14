@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.domain.initializable
 
+import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
@@ -17,11 +18,9 @@ interface Initializer {
     val initializationState: StateFlow<State>
 
     /**
-     * Starts the initialization process using the provided [scope].
-     *
-     * @param scope The coroutine scope in which the initialization logic will be executed.
+     * Starts the initialization process.
      */
-    fun initialize(scope: CoroutineScope)
+    fun initialize()
 
     /**
      * Represents the possible states of the initialization process.
@@ -48,8 +47,15 @@ interface Initializer {
         /**
          * Represents a failed initialization state.
          *
-         * @property errorMessage A description of the error that occurred during the process.
+         * @property errorContent A description of the error that occurred during the process
+         * encapsulated in an [ErrorContent] object.
          */
-        data class Error(val errorMessage: String): State
+        data class Error(val errorContent: ErrorContent): State
+
+        val doneLoading: Boolean get() = when (this) {
+            is Error,
+            Initialized -> true
+            else -> false
+        }
     }
 }

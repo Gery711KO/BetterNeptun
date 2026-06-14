@@ -26,5 +26,5 @@ interface TokenManager {
      * Refreshes the authentication token.
      * @return The newly obtained token string.
      */
-    suspend fun refreshToken(): String
+    suspend fun refreshToken(): String?
 }

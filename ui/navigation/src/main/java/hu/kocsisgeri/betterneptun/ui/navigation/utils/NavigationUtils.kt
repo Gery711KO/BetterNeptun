@@ -1,38 +1,10 @@
 package hu.kocsisgeri.betterneptun.ui.navigation.utils
 
-import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.scene.Scene
-import hu.kocsisgeri.betterneptun.ui.navigation.LocalSharedTransitionScope
 import hu.kocsisgeri.betterneptun.ui.navigation.transition.Transition
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
-
-/**
- * Retrieves the current [SharedTransitionScope].
- *
- * This property provides a convenient way to access the scope required for defining
- * shared element transitions within Composable functions.
- */
-val sharedTransitionScope: SharedTransitionScope
-    @Composable get() = LocalSharedTransitionScope.current
-
-/**
- * Provides the current [SharedTransitionScope] to the composition tree.
- * This allows child composables to access the transition scope using the [sharedTransitionScope]
- * property without needing to pass it explicitly through the hierarchy.
- *
- * @param content The composable content that will have access to the provided scope.
- */
-@Composable
-fun SharedTransitionScope.ProvideSharedTransitionScope(content: @Composable () -> Unit) {
-    CompositionLocalProvider(
-        LocalSharedTransitionScope provides this,
-        content = content
-    )
-}
 
 /**
  * Checks if the [Scene]'s key matches the specified [destination] class type.

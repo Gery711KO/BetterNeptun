@@ -29,11 +29,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
-import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.core.modifier.sharedBoundsAnimation
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
-import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.designsystem.R
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.AddEventDialog
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.dialog.CourseDetailDialog
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.ViewMode
@@ -43,6 +41,8 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.EventCo
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.WeekViewConfig
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekViewActions
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDateRange
 import kotlinx.datetime.LocalDateTime
@@ -135,7 +135,7 @@ fun TimetableContent(
                 FloatingActionButton(
                     onClick = { showAddEventDialog = true },
                     containerColor = BetterNeptunTheme.colorScheme.primary,
-                    contentColor = BetterNeptunTheme.colorScheme.onPrimary
+                    contentColor = BetterNeptunTheme.colorScheme.onPrimary,
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_event),

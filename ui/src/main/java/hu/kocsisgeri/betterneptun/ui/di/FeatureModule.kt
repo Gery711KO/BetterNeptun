@@ -2,6 +2,7 @@ package hu.kocsisgeri.betterneptun.ui.di
 
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.*
 import hu.kocsisgeri.betterneptun.ui.navigation.registry.navigationEntry
+import hu.kocsisgeri.betterneptun.ui.screen.error.GeneralErrorScreen
 import hu.kocsisgeri.betterneptun.ui.screen.home.HomeScreen
 import hu.kocsisgeri.betterneptun.ui.screen.loading.LoadingScreen
 import hu.kocsisgeri.betterneptun.ui.screen.login.LoginScreen
@@ -24,6 +25,7 @@ import org.koin.core.annotation.Single
 @Module
 @Configuration
 class FeatureModule {
+
     @Single @Qualifier(HomeDestination::class)
     fun home() = navigationEntry<HomeDestination> { HomeScreen() }
 
@@ -50,4 +52,7 @@ class FeatureModule {
 
     @Single @Qualifier(TimetableDestination::class)
     fun timetable() = navigationEntry<TimetableDestination> { TimetableScreen(it.selected) }
+
+    @Single @Qualifier(GeneralErrorDestination::class)
+    fun generalError() = navigationEntry<GeneralErrorDestination> { GeneralErrorScreen() }
 }

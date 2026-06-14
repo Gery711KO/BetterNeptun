@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.core.theme
+package hu.kocsisgeri.betterneptun.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes

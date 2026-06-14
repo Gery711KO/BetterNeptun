@@ -1,9 +1,13 @@
-package hu.kocsisgeri.betterneptun.ui.core.theme
+package hu.kocsisgeri.betterneptun.ui.theme
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Color
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalLookaheadAnimationVisualDebugApi
+import androidx.compose.animation.LookaheadAnimationVisualDebugging
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
@@ -19,13 +23,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.compositionLocalWithComputedDefaultOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.PreviewWrapperProvider
 import androidx.core.view.WindowCompat
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
-import hu.kocsisgeri.betterneptun.ui.navigation.utils.ProvideSharedTransitionScope
+
+internal val LocalSharedTransitionScope =
+    compositionLocalWithComputedDefaultOf<SharedTransitionScope> {
+        error("No shared transition scope provided")
+    }
 
 object BetterNeptunTheme {
     val colorScheme: ColorScheme
@@ -140,27 +149,55 @@ fun BetterNeptunTheme(
     }
 }
 
+/**
+ * Retrieves the current [SharedTransitionScope].
+ *
+ * This property provides a convenient way to access the scope required for defining
+ * shared element transitions within Composable functions.
+ */
+val sharedTransitionScope: SharedTransitionScope
+    @Composable get() = LocalSharedTransitionScope.current
+
+/**
+ * Provides the current [SharedTransitionScope] to the composition tree.
+ * This allows child composables to access the transition scope using the [sharedTransitionScope]
+ * property without needing to pass it explicitly through the hierarchy.
+ *
+ * @param content The composable content that will have access to the provided scope.
+ */
+@Composable
+fun SharedTransitionScope.ProvideSharedTransitionScope(content: @Composable () -> Unit) {
+    CompositionLocalProvider(
+        LocalSharedTransitionScope provides this,
+        content = content
+    )
+}
+
 class PreviewThemeProvider : PreviewWrapperProvider {
 
+    @SuppressLint("DisallowLookaheadAnimationVisualDebug")
+    @OptIn(ExperimentalLookaheadAnimationVisualDebugApi::class)
     @Composable
     override fun Wrap(content: @Composable (() -> Unit)) {
-        AnimatedContent(true) { visible ->
-            if (visible) BetterNeptunTheme(
-                darkTheme = isSystemInDarkTheme(),
-                content = {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = BetterNeptunTheme.colorScheme.background,
-                        content = {
-                            CompositionLocalProvider(LocalNavAnimatedContentScope provides this) {
-                                SharedTransitionLayout {
-                                    ProvideSharedTransitionScope(content)
+        LookaheadAnimationVisualDebugging {
+            AnimatedContent(true) { visible ->
+                if (visible) BetterNeptunTheme(
+                    darkTheme = isSystemInDarkTheme(),
+                    content = {
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = BetterNeptunTheme.colorScheme.background,
+                            content = {
+                                CompositionLocalProvider(LocalNavAnimatedContentScope provides this) {
+                                    SharedTransitionLayout {
+                                        ProvideSharedTransitionScope(content)
+                                    }
                                 }
                             }
-                        }
-                    )
-                }
-            )
+                        )
+                    }
+                )
+            }
         }
     }
 }

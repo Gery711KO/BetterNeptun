@@ -7,8 +7,8 @@ import org.koin.core.annotation.Factory
 @Factory
 class RefreshMessagesUseCase(private val messagesRepository: MessagesRepository): UseCase() {
 
-    suspend operator fun invoke() = withLock {
-        if (messagesRepository.messages.value.messages.isEmpty()) {
+    suspend operator fun invoke(force: Boolean = false) = withLock {
+        if (messagesRepository.messages.value.messages.isEmpty() || force) {
             messagesRepository.fetchMessages(isRefresh = true)
         } else {
             messagesRepository.checkForMessageUpdates()

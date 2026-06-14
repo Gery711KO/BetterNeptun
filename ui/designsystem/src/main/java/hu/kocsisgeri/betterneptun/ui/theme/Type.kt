@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.core.theme
+package hu.kocsisgeri.betterneptun.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import hu.kocsisgeri.betterneptun.ui.R
+import hu.kocsisgeri.betterneptun.ui.designsystem.R
 
 // Defining the Armata font family. 
 // Since armata.xml is a downloadable font, 

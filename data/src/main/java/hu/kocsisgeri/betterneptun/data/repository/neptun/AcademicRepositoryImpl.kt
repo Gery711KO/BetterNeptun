@@ -6,7 +6,7 @@ import hu.kocsisgeri.betterneptun.data.mapper.toSubjectDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toTermDomain
 import hu.kocsisgeri.betterneptun.data.util.runApiCall
 import hu.kocsisgeri.betterneptun.domain.clearable.BaseClearable
-import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Average
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Term
@@ -25,19 +25,28 @@ internal class AcademicRepositoryImpl internal constructor(
     override val averages = clearableStateFlow<ApiResult<List<Average>>>(ApiResult.Loading)
 
     override suspend fun fetchSubjects(termId: String) {
-        subjects.runApiCall(ioDispatcher) {
+        subjects.runApiCall(
+            dispatcher = ioDispatcher,
+            errorMessage = "Failed to fetch subjects."
+        ) {
             networkDataSource.getTakenSubjects(termId).data.toSubjectDomain()
         }
     }
 
     override suspend fun fetchTerms() {
-        terms.runApiCall(ioDispatcher) {
+        terms.runApiCall(
+            dispatcher = ioDispatcher,
+            errorMessage = "Failed to fetch terms."
+        ) {
             networkDataSource.getTerms().data.toTermDomain()
         }
     }
 
     override suspend fun fetchTermAverages() {
-        averages.runApiCall(ioDispatcher) {
+        averages.runApiCall(
+            dispatcher = ioDispatcher,
+            errorMessage = "Failed to fetch term averages."
+        ) {
             networkDataSource.getTermAverages()
                 .data
                 .termAveragesByTrainings
