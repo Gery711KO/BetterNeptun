@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import hu.kocsisgeri.betterneptun.common.utils.formatYearMonth
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.localization.localized
-import hu.kocsisgeri.betterneptun.ui.core.theme.BetterNeptunTheme
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format.MonthNames
 

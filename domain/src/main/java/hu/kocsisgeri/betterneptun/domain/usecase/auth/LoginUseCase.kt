@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.domain.usecase.auth
 
-import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.StudentData
 import hu.kocsisgeri.betterneptun.domain.repository.login.LoginRepository
 import hu.kocsisgeri.betterneptun.domain.usecase.UseCase
@@ -13,7 +14,7 @@ class LoginUseCase(private val loginRepository: LoginRepository): UseCase() {
 
     operator fun invoke(input: Input) = lockedFlow {
         if (input.neptunCode.isNullOrEmpty() || input.password.isNullOrEmpty()) {
-            emit(Result.Error("No credentials found."))
+            emit(Result.Error(ErrorContent.Snackbar("No credentials found.")))
         } else {
             emit(Result.Loading)
 
@@ -32,7 +33,7 @@ class LoginUseCase(private val loginRepository: LoginRepository): UseCase() {
                 ).map { result ->
                     when (result) {
                         is ApiResult.Loading -> Result.Loading
-                        is ApiResult.Error -> Result.Error(result.error)
+                        is ApiResult.Error -> Result.Error(ErrorContent.Snackbar(result.error))
                         is ApiResult.Success -> Result.Success(result.data)
                     }
                 }
@@ -49,7 +50,7 @@ class LoginUseCase(private val loginRepository: LoginRepository): UseCase() {
     sealed interface Result {
 
         data object Loading: Result
-        data class Error(val message: String): Result
+        data class Error(val errorContent: ErrorContent): Result
         data class Success(val studentData: StudentData): Result
     }
 }

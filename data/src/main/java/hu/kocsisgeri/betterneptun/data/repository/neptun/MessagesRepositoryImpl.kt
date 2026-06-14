@@ -4,7 +4,9 @@ import hu.kocsisgeri.betterneptun.core.network.model.neptun.PostIdsRequestDto
 import hu.kocsisgeri.betterneptun.data.datasource.NetworkDataSource
 import hu.kocsisgeri.betterneptun.data.mapper.toAvatarDomain
 import hu.kocsisgeri.betterneptun.data.mapper.toMessageDomain
+import hu.kocsisgeri.betterneptun.data.util.runApiCall
 import hu.kocsisgeri.betterneptun.domain.clearable.BaseClearable
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessageDetail
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
@@ -26,12 +28,12 @@ internal class MessagesRepositoryImpl internal constructor(
     override var currentMessagePage = 1
 
     override val messages = clearableStateFlow(MessagesPager())
-    override val unreadMessagesCount: MutableStateFlow<Int?> = clearableStateFlow(null)
+    override val unreadMessagesCount: MutableStateFlow<ApiResult<Int>> = clearableStateFlow(ApiResult.Loading)
 
     override suspend fun checkForMessageUpdates() {
         withContext(ioDispatcher) {
             fetchUnreadMessages()
-            val newMessages = unreadMessagesCount.value ?: 0
+            val newMessages = (unreadMessagesCount.value as? ApiResult.Success)?.data ?: 0
 
             if (newMessages > 0) fetchMessages(isRefresh = true)
         }
@@ -109,8 +111,11 @@ internal class MessagesRepositoryImpl internal constructor(
     }
 
     override suspend fun fetchUnreadMessages() {
-        networkDataSource.getUnreadMessageCount().let {
-            unreadMessagesCount.value = it.data.count
+        unreadMessagesCount.runApiCall(
+            errorMessage = "Failed to fetch unread message count.",
+            dispatcher = ioDispatcher
+        ) {
+            networkDataSource.getUnreadMessageCount().data.count
         }
     }
 

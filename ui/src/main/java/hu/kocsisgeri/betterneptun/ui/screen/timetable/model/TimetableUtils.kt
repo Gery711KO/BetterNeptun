@@ -2,10 +2,10 @@ package hu.kocsisgeri.betterneptun.ui.screen.timetable.model
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.core.graphics.ColorUtils
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.Event
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.TimeSpan
+import hu.kocsisgeri.betterneptun.ui.theme.isColorDark
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import java.util.concurrent.TimeUnit
@@ -42,8 +42,4 @@ fun CalendarItem.getTime(): Float {
 
 fun CalendarItem.getPercent(): Int {
     return (100f - (getRemainingTime() / getTime()) * 100f).roundToInt()
-}
-
-fun isColorDark(color: Int): Boolean {
-    return ColorUtils.calculateLuminance(color) < 0.5;
 }

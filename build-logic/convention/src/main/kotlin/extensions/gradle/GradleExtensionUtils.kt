@@ -16,7 +16,7 @@ import org.gradle.kotlin.dsl.getByType
 internal const val BETTER_NEPTUN_EXTENSION_NAME = "betterNeptun"
 
 val filteredModules = projectModules
-    .filter { it.isParentModule }
+    .filter { it.isPackageModule }
     .map { it.path }
     .plus(":app")
 

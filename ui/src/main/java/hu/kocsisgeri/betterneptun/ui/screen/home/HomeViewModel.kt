@@ -1,14 +1,16 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
+import hu.kocsisgeri.betterneptun.common.utils.TickType
+import hu.kocsisgeri.betterneptun.common.utils.clockTickFlow
 import hu.kocsisgeri.betterneptun.common.utils.getTimeLeft
-import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.error.ErrorRegistry
+import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
+import hu.kocsisgeri.betterneptun.domain.model.UiResult
 import hu.kocsisgeri.betterneptun.domain.usecase.home.FetchUnreadMessagesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetCurrentCoursesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetNextCourseUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetStudentDataUseCase
-import hu.kocsisgeri.betterneptun.ui.core.ComposeViewModel
-import hu.kocsisgeri.betterneptun.common.utils.TickType
-import hu.kocsisgeri.betterneptun.common.utils.clockTickFlow
+import hu.kocsisgeri.betterneptun.ui.core.ErrorHandlingComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.getTimeUntil
@@ -16,6 +18,7 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.getPercent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
@@ -24,10 +27,11 @@ class HomeViewModel(
     getCurrentCoursesUseCase: GetCurrentCoursesUseCase,
     getNextCourseUseCase: GetNextCourseUseCase,
     getStudentDataUseCase: GetStudentDataUseCase,
-) : ComposeViewModel() {
+    errorRegistry: ErrorRegistry,
+) : ErrorHandlingComposeViewModel(errorRegistry) {
 
     val refresher = MutableSharedFlow<Unit>(0, 10)
-    val refreshProgress = MutableSharedFlow<ApiResult<Unit>>(1, 50)
+    val refreshProgress = MutableSharedFlow<UiResult<Unit>>(1, 50)
 
     val currentCourses = getCurrentCoursesUseCase { event ->
         CurrentCourseDetail(
@@ -55,7 +59,11 @@ class HomeViewModel(
     val studentData = getStudentDataUseCase().stateWhileSubscribed()
 
     val unreadMessages = refresher.flatMapLatest {
-        fetchUnreadMessagesUseCase()
+        fetchUnreadMessagesUseCase().registerApiResultToGeneralErrors {
+            ErrorContent.Snackbar(it)
+        }.map { result ->
+            (result as? UiResult.Success)?.data
+        }
     }.stateWhileSubscribed(null)
 
     init {

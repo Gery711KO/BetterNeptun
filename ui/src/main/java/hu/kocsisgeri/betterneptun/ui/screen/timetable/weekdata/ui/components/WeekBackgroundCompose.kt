@@ -25,8 +25,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import hu.kocsisgeri.betterneptun.common.utils.now
-import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurer
-import hu.kocsisgeri.betterneptun.ui.core.composable.measure.SizeMeasurerScope
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.measure.SizeMeasurer
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.measure.SizeMeasurerScope
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.config.WeekViewConfig
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.TimeSpan
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData

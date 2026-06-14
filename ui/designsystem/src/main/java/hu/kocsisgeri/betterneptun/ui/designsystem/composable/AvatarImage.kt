@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.core.composable
+package hu.kocsisgeri.betterneptun.ui.designsystem.composable
 
 import android.util.Base64
 import androidx.compose.foundation.background
@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
-import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.isColorDark
+import hu.kocsisgeri.betterneptun.ui.theme.isColorDark
 
 @Composable
 fun AvatarImage(

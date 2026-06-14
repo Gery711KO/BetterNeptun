@@ -2,7 +2,6 @@ package hu.kocsisgeri.betterneptun.ui.screen.timetable
 
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
-import hu.kocsisgeri.betterneptun.common.utils.minus
 import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.common.utils.plus
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
@@ -15,12 +14,10 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.toComposeEvent
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.update
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDateRange
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
-import kotlinx.datetime.atTime
 import kotlinx.datetime.nextOrSame
 import kotlinx.datetime.previousOrSame
 import org.koin.core.annotation.InjectedParam

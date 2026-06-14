@@ -24,6 +24,11 @@ interface Transition {
 
     companion object {
 
+        fun crossFadeTransition(scope: AnimatedContentTransitionScope<Scene<NavKey>>) =
+            with(scope) {
+                fadeIn(tween(400)) togetherWith fadeOut(tween(400))
+            }
+
         fun sharedTransition(scope: AnimatedContentTransitionScope<Scene<NavKey>>) =
             with(scope) {
                 fadeIn() togetherWith fadeOut()

@@ -152,15 +152,11 @@ fun TimeTableView(
             },
             sideContent = { scrollState, weekData ->
                 TimeAxisColumn(
-                    now = now.time,
                     timeLabels = weekData.metrics.timeLabels,
-                    gridStartTime = weekData.metrics.gridStartTime,
-                    gridEndTime = weekData.metrics.effectiveEndTime,
                     rowHeightDp = weekData.metrics.rowHeightDp,
                     gridHeightDp = weekData.metrics.gridHeightDp,
                     leftOffsetDp = weekData.metrics.leftOffsetDp,
                     scrollState = scrollState,
-                    showNowIndicator = activeWeekConfig.showCurrentTimeIndicator,
                     contentPadding = activeWeekConfig.contentPadding,
                     style = style,
                     modifier = Modifier.padding(top = size.height)

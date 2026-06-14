@@ -1,4 +1,4 @@
-package hu.kocsisgeri.betterneptun.ui.core.theme
+package hu.kocsisgeri.betterneptun.ui.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf

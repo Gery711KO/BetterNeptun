@@ -2,7 +2,7 @@ package hu.kocsisgeri.betterneptun.domain.usecase.home
 
 import hu.kocsisgeri.betterneptun.domain.repository.neptun.MessagesRepository
 import hu.kocsisgeri.betterneptun.domain.usecase.UseCase
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.emitAll
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -11,6 +11,6 @@ class FetchUnreadMessagesUseCase(private val messagesRepository: MessagesReposit
     operator fun invoke() = lockedFlow {
         messagesRepository.fetchUnreadMessages()
 
-        emit(messagesRepository.unreadMessagesCount.first())
+        emitAll(messagesRepository.unreadMessagesCount)
     }
 }

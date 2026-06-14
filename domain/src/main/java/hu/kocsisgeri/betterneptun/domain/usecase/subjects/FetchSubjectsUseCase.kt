@@ -7,9 +7,9 @@ import org.koin.core.annotation.Factory
 @Factory
 class FetchSubjectsUseCase(private val academicRepository: AcademicRepository): UseCase() {
 
-    suspend operator fun invoke(termId: String?) = withLock {
+    suspend operator fun invoke(termId: String?) = withReturningLock {
         termId?.let {
             academicRepository.fetchSubjects(termId)
-        }
+        } != null
     }
 }

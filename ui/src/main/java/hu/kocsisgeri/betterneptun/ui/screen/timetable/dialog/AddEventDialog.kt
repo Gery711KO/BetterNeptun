@@ -69,7 +69,7 @@ import hu.kocsisgeri.betterneptun.common.utils.formatTimePickerDate
 import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.common.utils.plus
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
-import hu.kocsisgeri.betterneptun.ui.R
+import hu.kocsisgeri.betterneptun.ui.designsystem.R
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -92,7 +92,7 @@ fun AddEventDialog(
     if (show) {
         val title = remember {
             DialogData.TextInputData(
-                initialValue = event?.title?: "",
+                initialValue = event?.title ?: "",
                 label = "Cim",
                 leadingIcon = R.drawable.ic_event,
                 format = { it }
@@ -119,7 +119,7 @@ fun AddEventDialog(
         }
         val date = remember {
             DialogData.TextInputData(
-                initialValue = event?.startTime ?: startDate?: LocalDateTime.now(),
+                initialValue = event?.startTime ?: startDate ?: LocalDateTime.now(),
                 label = "Dátum",
                 leadingIcon = R.drawable.ic_calendar,
                 format = { it.formatDatePickerDate() },
@@ -134,7 +134,7 @@ fun AddEventDialog(
         }
         val startTime = remember {
             DialogData.TextInputData(
-                initialValue = event?.startTime ?: startDate?: LocalDateTime.now(),
+                initialValue = event?.startTime ?: startDate ?: LocalDateTime.now(),
                 label = "Kezdés",
                 leadingIcon = R.drawable.ic_schedule,
                 withDialog = { input ->
@@ -226,7 +226,7 @@ private fun DialogContent(
 
                 CustomTextField(
                     value = dialogData.title.formattedValue,
-                    label  = dialogData.title.label,
+                    label = dialogData.title.label,
                     onValueChange = dialogData.title.onValueChange,
                     leadingIcon = painterResource(dialogData.title.leadingIcon),
                     trailingIcon = {
@@ -429,7 +429,7 @@ private fun TextFieldMimicCard(
         shape = MaterialTheme.shapes.small,
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outline),
         colors = CardDefaults.cardColors(
-            containerColor =  MaterialTheme.colorScheme.primaryContainer,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
         )
     ) {
         Row(
@@ -615,7 +615,12 @@ private fun TimePickerAlertDialog(
             DialogTextButton(
                 text = "OK",
                 onClick = {
-                    onTimeSelected(LocalDateTime(initialTime.date, LocalTime(timePickerState.hour, timePickerState.minute)))
+                    onTimeSelected(
+                        LocalDateTime(
+                            initialTime.date,
+                            LocalTime(timePickerState.hour, timePickerState.minute)
+                        )
+                    )
                     onDismissRequest()
                 }
             )

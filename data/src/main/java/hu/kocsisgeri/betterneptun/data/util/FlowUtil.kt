@@ -1,12 +1,11 @@
 package hu.kocsisgeri.betterneptun.data.util
 
-import hu.kocsisgeri.betterneptun.domain.model.neptun.ApiResult
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import retrofit2.HttpException
@@ -14,6 +13,7 @@ import java.io.IOException
 
 suspend fun <T : Any> MutableStateFlow<ApiResult<T>>.runApiCall(
     dispatcher: CoroutineDispatcher,
+    errorMessage: String? = null,
     block: suspend () -> T
 ) {
     withContext(dispatcher) {
@@ -21,13 +21,13 @@ suspend fun <T : Any> MutableStateFlow<ApiResult<T>>.runApiCall(
             value = ApiResult.Loading
             value = ApiResult.Success(block())
         } catch (exception: HttpException) {
-            value = ApiResult.Error(exception.message ?: "Network error.")
+            value = ApiResult.Error(errorMessage?: exception.message ?: "Network error.")
         } catch (exception: IOException) {
-            value = ApiResult.Error(exception.message ?: "Something went wrong.")
+            value = ApiResult.Error(errorMessage?: exception.message ?: "Something went wrong.")
         } catch (exception: SerializationException) {
-            value = ApiResult.Error(exception.message ?: "Serialization error.")
+            value = ApiResult.Error(errorMessage?: exception.message ?: "Serialization error.")
         } catch (exception: CancellationException) {
-            value = ApiResult.Error(exception.message ?: "Operation canceled.")
+            value = ApiResult.Error(errorMessage?: exception.message ?: "Operation canceled.")
         }
     }
 }
@@ -55,21 +55,21 @@ suspend fun <T : Any> MutableSharedFlow<ApiResult<T>>.runApiCall(
 fun <T : Any> runApiCall(
     onResult: (T?) -> Unit,
     block: suspend () -> T,
-) = callbackFlow {
+) = flow {
     try {
-        send(ApiResult.Loading)
+        emit(ApiResult.Loading)
         val result = block()
         onResult(result)
-        send(ApiResult.Success(result))
+        emit(ApiResult.Success(result))
     } catch (exception: HttpException) {
-        send(ApiResult.Error(exception.message ?: "Network error."))
+        emit(ApiResult.Error(exception.message ?: "Network error."))
     } catch (exception: IOException) {
-        send(ApiResult.Error(exception.message ?: "Something went wrong."))
+        emit(ApiResult.Error(exception.message ?: "Something went wrong."))
     } catch (exception: SerializationException) {
-        send(ApiResult.Error(exception.message ?: "Serialization error."))
+        emit(ApiResult.Error(exception.message ?: "Serialization error."))
     } catch (exception: CancellationException) {
-        send(ApiResult.Error(exception.message ?: "Operation canceled."))
+        emit(ApiResult.Error(exception.message ?: "Operation canceled."))
+    } catch (exception: Exception) {
+        emit(ApiResult.Error(exception.message ?: "Unknown error."))
     }
-
-    awaitClose()
 }

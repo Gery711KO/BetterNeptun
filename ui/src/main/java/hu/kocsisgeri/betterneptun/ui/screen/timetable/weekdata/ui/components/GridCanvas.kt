@@ -104,7 +104,7 @@ internal fun GridCanvas(
                             isMultiTouch = true
                             val zoom = event.calculateZoom()
                             if (zoom != 1f) {
-                                onZoom(event.calculateZoom())
+                                onZoom(zoom)
                                 event.changes.forEach { it.consume() }
                             }
                         } else if (event.changes.size == 1) {

@@ -24,7 +24,13 @@ abstract class AndroidBaseConventionPlugin: Plugin<Project> {
             target.dependencies {
                 implementDependencies(
                     libs,
-                    listOf(Dependency(aliases = listOf("kotlinx-datetime")))
+                    listOf(
+                        Dependency(aliases = listOf("kotlinx-datetime")),
+                        Dependency(
+                            type = Dependency.Type.BUNDLE,
+                            aliases = listOf("connectivityAndroid")
+                        )
+                    )
                 )
             }
 

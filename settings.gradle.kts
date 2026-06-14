@@ -22,6 +22,7 @@ dependencyResolutionManagement {
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
         maven("https://jetbrains.space")
+        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
     }
 
     versionCatalogs {
@@ -45,3 +46,4 @@ include(":core:database")
 include(":core:network")
 
 include(":ui:navigation")
+include(":ui:designsystem")

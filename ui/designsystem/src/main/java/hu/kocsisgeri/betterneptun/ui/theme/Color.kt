@@ -1,9 +1,10 @@
-package hu.kocsisgeri.betterneptun.ui.core.theme
+package hu.kocsisgeri.betterneptun.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.ColorUtils
 
 val Black = Color(0xFF000000)
 val White = Color(0xFFFFFFFF)
@@ -84,4 +85,8 @@ fun themeBasedColor(
         if (isDarkTheme) darkColor
         else lightColor
     }
+}
+
+fun isColorDark(color: Int): Boolean {
+    return ColorUtils.calculateLuminance(color) < 0.5;
 }

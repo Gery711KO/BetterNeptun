@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.domain.repository.neptun
 
+import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessageDetail
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +22,7 @@ interface MessagesRepository {
     /**
      * A [StateFlow] emitting the number of unread messages. Emits `null` if the count is unknown.
      */
-    val unreadMessagesCount: StateFlow<Int?>
+    val unreadMessagesCount: StateFlow<ApiResult<Int>>
 
     /**
      * Checks for new message updates from the remote source.

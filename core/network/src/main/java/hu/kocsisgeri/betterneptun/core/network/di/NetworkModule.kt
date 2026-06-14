@@ -36,7 +36,7 @@ class NetworkModule {
 
     @Single
     @Named("MainClient")
-    fun provideAuthHttpClient(
+    fun provideMainHttpClient(
         @Provided tokenManager: TokenManager,
         ktorLogger: Logger
     ) = HttpClient(OkHttp) {

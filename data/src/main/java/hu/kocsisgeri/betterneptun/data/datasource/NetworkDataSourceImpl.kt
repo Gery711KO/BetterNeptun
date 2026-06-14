@@ -1,6 +1,10 @@
 package hu.kocsisgeri.betterneptun.data.datasource
 
+import hu.kocsisgeri.betterneptun.core.network.api.AuthApiService
 import hu.kocsisgeri.betterneptun.core.network.api.MainApiService
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.ApiResponseDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.AuthenticationRequestDto
+import hu.kocsisgeri.betterneptun.core.network.model.neptun.AuthenticationResponseDto
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.PostIdsRequestDto
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -9,8 +13,15 @@ import org.koin.core.annotation.Singleton
 @Singleton
 internal class NetworkDataSourceImpl(
     private val api: MainApiService,
+    private val authApi: AuthApiService,
     private val ioDispatcher: CoroutineDispatcher,
 ) : NetworkDataSource {
+
+    override suspend fun getUserToken(
+        body: AuthenticationRequestDto
+    ): ApiResponseDto<AuthenticationResponseDto> = withContext(ioDispatcher) {
+        authApi.authenticate(body)
+    }
 
     override suspend fun getUserInfo() =
         withContext(ioDispatcher) {

@@ -101,6 +101,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
 
             if (autoConfigureModules) includeProjects(
                 getAllowedProjects(layer.allowedProjectDependencies)
+                    .filter { it != moduleString }
             )
 
             configExtra()
@@ -134,7 +135,7 @@ class BetterNeptunLibraryExtension(private val project: Project) {
         allowed: List<ProjectModule>
     ) {
         val allowedDeps = allowed.map {
-            it.path + if (it.isParentModule) ":*" else ""
+            it.path + if (it.isPackageModule) ":*" else ""
         }
 
         val allowedDependenciesJoined = allowedDeps.joinToString { it }

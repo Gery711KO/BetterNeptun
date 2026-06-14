@@ -4,6 +4,7 @@ import hu.kocsisgeri.betterneptun.core.network.api.AuthApiService
 import hu.kocsisgeri.betterneptun.core.network.model.neptun.AuthenticationRequestDto
 import hu.kocsisgeri.betterneptun.data.datasource.LocalCacheKeys
 import hu.kocsisgeri.betterneptun.data.datasource.LocalDataSource
+import hu.kocsisgeri.betterneptun.domain.auth.LogoutRequester
 import hu.kocsisgeri.betterneptun.domain.token.TokenManager
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -13,7 +14,8 @@ import org.koin.core.annotation.Singleton
 @Singleton
 internal class TokenManagerImpl(
     private val localDataSource: LocalDataSource,
-    private val authApiService: AuthApiService
+    private val authApiService: AuthApiService,
+    private val logoutRequester: LogoutRequester,
 ) : TokenManager {
 
     private val mutex = Mutex()
@@ -32,7 +34,7 @@ internal class TokenManagerImpl(
         localDataSource.deleteFromSharedPreferences(TOKEN_KEY)
     }
 
-    override suspend fun refreshToken(): String = mutex.withLock {
+    override suspend fun refreshToken(): String? = mutex.withLock {
         val currentUser = localDataSource
             .getFromSharedPreferences<AuthenticationRequestDto?>(
                 key = LocalCacheKeys.CURRENT_USER,
@@ -42,10 +44,15 @@ internal class TokenManagerImpl(
 
         checkNotNull(currentUser) { "No user found." }
 
-        authApiService.authenticate(currentUser).run {
-            saveToken(data.accessToken)
+        try {
+            authApiService.authenticate(currentUser).run {
+                saveToken(data.accessToken)
 
-            data.accessToken
+                data.accessToken
+            }
+        } catch (_: Exception) {
+            logoutRequester.requestLogout()
+            null
         }
     }
 

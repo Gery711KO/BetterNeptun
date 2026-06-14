@@ -41,12 +41,12 @@ import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Message
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessageDetail
-import hu.kocsisgeri.betterneptun.ui.R
-import hu.kocsisgeri.betterneptun.ui.core.composable.AvatarImage
-import hu.kocsisgeri.betterneptun.ui.core.composable.HtmlText
-import hu.kocsisgeri.betterneptun.ui.core.theme.Armata
-import hu.kocsisgeri.betterneptun.ui.core.theme.PreviewThemeProvider
+import hu.kocsisgeri.betterneptun.ui.designsystem.R
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.AvatarImage
+import hu.kocsisgeri.betterneptun.ui.designsystem.composable.HtmlText
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.theme.Armata
+import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
 import kotlinx.datetime.LocalDateTime
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel

@@ -1,61 +1,70 @@
 package extensions.gradle
 
-import extensions.gradle.BaseLayers.Common
-
 val projectModules = BaseLayers.entries.filterIsInstance<ProjectModule>() +
         SpecialLayers.entries.filterIsInstance<ProjectModule>()
 
 interface ProjectModule {
     val path: String
-    val isParentModule: Boolean
+    val isPackageModule: Boolean
     val allowedProjectDependencies: List<ProjectModule>
 }
 
 enum class BaseLayers(
     override val path: String,
-    override val isParentModule: Boolean,
+    override val isPackageModule: Boolean,
     override val allowedProjectDependencies: List<ProjectModule>
 ): ProjectModule {
     Common(
         path = ":common",
-        isParentModule = true,
+        isPackageModule = true,
         allowedProjectDependencies = emptyList()
     ),
     Domain(
         path = ":domain",
-        isParentModule = false,
+        isPackageModule = false,
         allowedProjectDependencies = emptyList()
     ),
     Localization(
         path = ":localization",
-        isParentModule = false,
+        isPackageModule = false,
         allowedProjectDependencies = listOf(Common, Domain)
     ),
     Core(
         path = ":core",
-        isParentModule = true,
+        isPackageModule = true,
         allowedProjectDependencies = listOf(Common, Domain)
     ),
     Data(
         path = ":data",
-        isParentModule = false,
+        isPackageModule = false,
         allowedProjectDependencies = listOf(Common, Core, Domain)
     ),
     Ui(
         path = ":ui",
-        isParentModule = false,
-        allowedProjectDependencies = listOf(Common, Domain, Localization, SpecialLayers.Navigation)
+        isPackageModule = false,
+        allowedProjectDependencies = listOf(
+            Common,
+            Domain,
+            Localization,
+            SpecialLayers.Navigation,
+            SpecialLayers.Theme
+        )
     ),
 }
 
 enum class SpecialLayers(
     override val path: String,
-    override val isParentModule: Boolean,
+    override val isPackageModule: Boolean,
     override val allowedProjectDependencies: List<ProjectModule>
 ): ProjectModule {
+    Theme(
+        path = ":ui:designsystem",
+        isPackageModule = false,
+        allowedProjectDependencies = listOf(BaseLayers.Common, BaseLayers.Domain)
+    ),
     Navigation(
         path = ":ui:navigation",
-        isParentModule = false,
-        allowedProjectDependencies = listOf(Common)
-    ),
+        isPackageModule = false,
+        allowedProjectDependencies = listOf(BaseLayers.Common, BaseLayers.Domain, Theme)
+    )
 }
