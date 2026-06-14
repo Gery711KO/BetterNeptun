@@ -179,25 +179,23 @@ class PreviewThemeProvider : PreviewWrapperProvider {
     @OptIn(ExperimentalLookaheadAnimationVisualDebugApi::class)
     @Composable
     override fun Wrap(content: @Composable (() -> Unit)) {
-        LookaheadAnimationVisualDebugging {
-            AnimatedContent(true) { visible ->
-                if (visible) BetterNeptunTheme(
-                    darkTheme = isSystemInDarkTheme(),
-                    content = {
-                        Surface(
-                            modifier = Modifier.fillMaxSize(),
-                            color = BetterNeptunTheme.colorScheme.background,
-                            content = {
-                                CompositionLocalProvider(LocalNavAnimatedContentScope provides this) {
-                                    SharedTransitionLayout {
-                                        ProvideSharedTransitionScope(content)
-                                    }
+        AnimatedContent(true) { visible ->
+            if (visible) BetterNeptunTheme(
+                darkTheme = isSystemInDarkTheme(),
+                content = {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = BetterNeptunTheme.colorScheme.background,
+                        content = {
+                            CompositionLocalProvider(LocalNavAnimatedContentScope provides this) {
+                                SharedTransitionLayout {
+                                    ProvideSharedTransitionScope(content)
                                 }
                             }
-                        )
-                    }
-                )
-            }
+                        }
+                    )
+                }
+            )
         }
     }
 }

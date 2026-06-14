@@ -1,5 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.screen.home
 
+import android.content.res.Configuration
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -44,6 +45,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -55,6 +57,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -123,6 +126,9 @@ fun HomeScreen(
         onLaunchPermissionRequest = {
             launcher.launch(it)
         },
+        onDismissPermissionRequest = {
+            permissionHandler.dismissPermission(it)
+        },
         onNavigate = { navigator.navigateTo(it) }
     )
 }
@@ -137,6 +143,7 @@ private fun HomeContent(
     permissions: List<PermissionData>,
     refreshProgress: UiResult<Unit>?,
     onLaunchPermissionRequest: (PermissionData) -> Unit,
+    onDismissPermissionRequest: (PermissionData) -> Unit,
     onRefresh: () -> Unit,
     onNavigate: (NavKey) -> Unit,
 ) {
@@ -153,6 +160,9 @@ private fun HomeContent(
             }
         }
     }
+
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Scaffold(
         containerColor = BetterNeptunTheme.colorScheme.background,
@@ -174,32 +184,65 @@ private fun HomeContent(
                         modifier = Modifier.animateItem(),
                     )
                 }
-                if (visibleDisclaimers.isNotEmpty()) item("DISCLAIMERS") {
-                    PermissionDisclaimerCarousel(
-                        permissions = visibleDisclaimers,
-                        onLaunchPermissionRequest = onLaunchPermissionRequest,
-                        modifier = Modifier.animateItem(),
-                    )
+
+                if (visibleDisclaimers.isNotEmpty()) {
+                    item("DISCLAIMERS") {
+                        PermissionDisclaimerCarousel(
+                            permissions = visibleDisclaimers,
+                            onLaunchPermissionRequest = onLaunchPermissionRequest,
+                            onDismissPermissionRequest = onDismissPermissionRequest,
+                            modifier = Modifier.animateItem(),
+                        )
+                    }
                 }
-                if (currentCourses.isNotEmpty()) item("ONGOING_COURSE") {
-                    CurrentlyOngoingCourses(
-                        currentCourses = currentCourses,
-                        modifier = Modifier.animateItem(),
-                        onCourseClick = { onNavigate(TimetableDestination(it)) }
-                    )
-                }
-                if (nextCourseState != null) item("NEXT_COURSE") {
-                    NextCourseCard(
-                        course = nextCourseState,
-                        modifier = Modifier.animateItem(),
-                        onCourseClick = { onNavigate(TimetableDestination(it)) }
-                    )
-                }
-                item("NAVIGATION_GRID") {
-                    NavigationGrid(
-                        onNavigate = onNavigate,
-                        modifier = Modifier.animateItem()
-                    )
+
+                if (isLandscape) {
+                    item("BODY") {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.groupSpacing)
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(2/5f),
+                                verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.groupSpacing)
+                            ) {
+                                CurrentlyOngoingCourses(
+                                    currentCourses = currentCourses,
+                                    onCourseClick = { onNavigate(TimetableDestination(it)) }
+                                )
+                                NextCourseCard(
+                                    course = nextCourseState,
+                                    onCourseClick = { onNavigate(TimetableDestination(it)) }
+                                )
+                            }
+                            NavigationGrid(
+                                modifier = Modifier.weight(3/5f),
+                                columns = 3,
+                                onNavigate = onNavigate
+                            )
+                        }
+                    }
+                } else {
+                    item("ONGOING_COURSE") {
+                        CurrentlyOngoingCourses(
+                            currentCourses = currentCourses,
+                            modifier = Modifier.animateItem(),
+                            onCourseClick = { onNavigate(TimetableDestination(it)) }
+                        )
+                    }
+                    item("NEXT_COURSE") {
+                        NextCourseCard(
+                            course = nextCourseState,
+                            modifier = Modifier.animateItem(),
+                            onCourseClick = { onNavigate(TimetableDestination(it)) }
+                        )
+                    }
+                    item("NAVIGATION_GRID") {
+                        NavigationGrid(
+                            onNavigate = onNavigate,
+                            modifier = Modifier.animateItem()
+                        )
+                    }
                 }
             }
 
@@ -221,6 +264,7 @@ private fun PermissionDisclaimerCarousel(
     permissions: List<PermissionData>,
     modifier: Modifier = Modifier,
     onLaunchPermissionRequest: (PermissionData) -> Unit,
+    onDismissPermissionRequest: (PermissionData) -> Unit,
 ) {
     val lazyListState = rememberPagerState { permissions.size }
 
@@ -228,7 +272,7 @@ private fun PermissionDisclaimerCarousel(
         SizeMeasurer {
             HorizontalPager(
                 pageSpacing = BetterNeptunTheme.dimens.paddingSmall,
-                contentPadding = PaddingValues(horizontal = BetterNeptunTheme.dimens.screenPadding),
+                contentPadding = PaddingValues(horizontal = BetterNeptunTheme.dimens.itemSpacing),
                 state = lazyListState,
                 modifier = modifier.fillMaxWidth(),
             ) { page ->
@@ -236,6 +280,7 @@ private fun PermissionDisclaimerCarousel(
                     PermissionDisclaimerCard(
                         disclaimer = permission.disclaimer,
                         onRequest = { onLaunchPermissionRequest(permission) },
+                        onDismiss = { onDismissPermissionRequest(permission) },
                         modifier = Modifier.fillAvailableSpace()
                     )
                 }
@@ -248,8 +293,12 @@ private fun PermissionDisclaimerCarousel(
 private fun SizeMeasurerScope.PermissionDisclaimerCard(
     disclaimer: PermissionDisclaimer,
     onRequest: () -> Unit,
+    onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Card(
         modifier = modifier,
         shape = BetterNeptunTheme.shapes.large,
@@ -258,33 +307,39 @@ private fun SizeMeasurerScope.PermissionDisclaimerCard(
             contentColor = BetterNeptunTheme.colorScheme.onTertiaryContainer
         )
     ) {
-        Column(modifier = Modifier.padding(BetterNeptunTheme.dimens.paddingLarge)) {
-            Text(
-                text = disclaimer.humanReadablePermissionName.localized(),
-                style = BetterNeptunTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = BetterNeptunTheme.colorScheme.onTertiaryContainer
-            )
-            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingSmall))
-            Text(
-                text = disclaimer.disclaimer.localized(),
-                style = BetterNeptunTheme.typography.bodyMedium,
-                color = BetterNeptunTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
-            )
-            Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.groupSpacing))
-            Spacer(Modifier.weight(1f, isSizeMeasured))
-            Button(
-                onClick = onRequest,
-                modifier = Modifier.align(Alignment.End),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = BetterNeptunTheme.colorScheme.tertiary,
-                    contentColor = BetterNeptunTheme.colorScheme.onTertiary
-                ),
-                shape = BetterNeptunTheme.shapes.medium
+        if (isLandscape) {
+            Row(
+                modifier = Modifier
+                    .padding(BetterNeptunTheme.dimens.paddingLarge)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.paddingMedium)
             ) {
-                Text(
-                    text = LocalizationKey.PERMISSION_BUTTON_PERMIT.localized(),
-                    fontWeight = FontWeight.Bold
+                PermissionDisclaimerContent(
+                    title = disclaimer.humanReadablePermissionName.localized(),
+                    description = disclaimer.disclaimer.localized(),
+                    modifier = Modifier.weight(1f)
+                )
+                PermissionDisclaimerActions(
+                    onPermit = onRequest,
+                    onLater = onDismiss,
+                    isVertical = true,
+                    modifier = Modifier.width(IntrinsicSize.Max)
+                )
+            }
+        } else {
+            Column(modifier = Modifier.padding(BetterNeptunTheme.dimens.paddingLarge)) {
+                PermissionDisclaimerContent(
+                    title = disclaimer.humanReadablePermissionName.localized(),
+                    description = disclaimer.disclaimer.localized()
+                )
+                Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.groupSpacing))
+                Spacer(Modifier.weight(1f, isSizeMeasured))
+                PermissionDisclaimerActions(
+                    onPermit = onRequest,
+                    onLater = onDismiss,
+                    isVertical = false,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -292,18 +347,102 @@ private fun SizeMeasurerScope.PermissionDisclaimerCard(
 }
 
 @Composable
+private fun SizeMeasurerScope.PermissionDisclaimerContent(
+    title: String,
+    description: String,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = title,
+            style = BetterNeptunTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = BetterNeptunTheme.colorScheme.onTertiaryContainer
+        )
+        Spacer(Modifier.weight(1f, isSizeMeasured))
+        Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingSmall))
+        Text(
+            text = description,
+            style = BetterNeptunTheme.typography.bodyMedium,
+            color = BetterNeptunTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+        )
+    }
+}
+
+@Composable
+private fun PermissionDisclaimerActions(
+    onPermit: () -> Unit,
+    onLater: () -> Unit,
+    isVertical: Boolean,
+    modifier: Modifier = Modifier
+) {
+    if (isVertical) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.paddingSmall),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier
+        ) {
+            PermissionButtons(onPermit, onLater, isVertical = true)
+        }
+    } else {
+        Row(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.spacedBy(
+                BetterNeptunTheme.dimens.paddingSmall,
+                Alignment.End
+            ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            PermissionButtons(onPermit, onLater, isVertical = false)
+        }
+    }
+}
+
+@Composable
+private fun PermissionButtons(
+    onPermit: () -> Unit,
+    onLater: () -> Unit,
+    isVertical: Boolean
+) {
+    Button(
+        onClick = onPermit,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = BetterNeptunTheme.colorScheme.tertiary,
+            contentColor = BetterNeptunTheme.colorScheme.onTertiary
+        ),
+        shape = BetterNeptunTheme.shapes.medium,
+        modifier = if (isVertical) Modifier.fillMaxWidth() else Modifier,
+    ) {
+        Text(
+            text = LocalizationKey.PERMISSION_BUTTON_PERMIT.localized(),
+            fontWeight = FontWeight.Bold
+        )
+    }
+    TextButton(
+        onClick = onLater,
+        colors = ButtonDefaults.textButtonColors(
+            contentColor = BetterNeptunTheme.colorScheme.onTertiaryContainer
+        ),
+        modifier = if (isVertical) Modifier.fillMaxWidth() else Modifier,
+    ) {
+        Text(
+            text = "Later",
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
 @OptIn(ExperimentalGridApi::class)
 private fun NavigationGrid(
     modifier: Modifier = Modifier,
+    columns: Int = 2,
     onNavigate: (NavKey) -> Unit
 ) {
     val gap = BetterNeptunTheme.dimens.paddingSmall
     Grid(
         config = {
-            columns(
-                GridTrackSize.Percentage(0.5f),
-                GridTrackSize.Percentage(0.5f),
-            )
+            columns(*Array(columns) { GridTrackSize.Percentage(1f / columns) })
             rows(GridTrackSize.MaxContent)
 
             gap(gap)
@@ -381,6 +520,11 @@ private fun CurrentlyOngoingCourses(
                 )
             }
         }
+    } else {
+        EmptyHomeCard(
+            text = "Nincs éppen tartó óra",
+            modifier = modifier
+        )
     }
 }
 
@@ -565,7 +709,7 @@ fun NextCourseCard(
     modifier: Modifier = Modifier,
     onCourseClick: (id: Long) -> Unit,
 ) {
-    course?.let {
+    if (course != null) {
         Card(
             shape = BetterNeptunTheme.shapes.large,
             colors = CardDefaults.cardColors(
@@ -573,7 +717,7 @@ fun NextCourseCard(
                 contentColor = BetterNeptunTheme.colorScheme.onSurfaceVariant
             ),
             onClick = {
-                onCourseClick(it.id)
+                onCourseClick(course.id)
             },
             modifier = modifier
                 .sharedBoundsAnimation(
@@ -668,6 +812,41 @@ fun NextCourseCard(
                 }
             }
         }
+    } else {
+        EmptyHomeCard(
+            text = "Nincs több óra mára",
+            modifier = modifier
+        )
+    }
+}
+
+@Composable
+private fun EmptyHomeCard(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = BetterNeptunTheme.dimens.itemSpacing),
+        shape = BetterNeptunTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = BetterNeptunTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            contentColor = BetterNeptunTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(BetterNeptunTheme.dimens.paddingLarge)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                style = BetterNeptunTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 
@@ -746,10 +925,8 @@ fun CourseInfoRow(
     }
 }
 
-@Preview
-@PreviewWrapper(PreviewThemeProvider::class)
 @Composable
-fun HomeScreenPreview() {
+private fun HomeScreenPreviewContent() {
     val currentCourse = CurrentCourseDetail(
         id = 11,
         title = "Mobil szoftverfejlesztés",
@@ -784,10 +961,25 @@ fun HomeScreenPreview() {
         unreadMessages = 5,
         currentCourses = listOf(currentCourse),
         nextCourseState = nextCourse,
-        refreshProgress = null,
         permissions = emptyList(),
+        refreshProgress = null,
         onRefresh = {},
         onLaunchPermissionRequest = {},
+        onDismissPermissionRequest = {},
         onNavigate = {}
     )
+}
+
+@Preview(device = "spec:parent=pixel_5,orientation=landscape")
+@PreviewWrapper(PreviewThemeProvider::class)
+@Composable
+fun HomeScreenLandscapePreview() {
+    HomeScreenPreviewContent()
+}
+
+@Preview
+@PreviewWrapper(PreviewThemeProvider::class)
+@Composable
+fun HomeScreenPreview() {
+    HomeScreenPreviewContent()
 }

@@ -31,6 +31,13 @@ interface PermissionHandler {
     fun refreshPermissions()
 
     /**
+     * Temporarily hides a permission for 30 days.
+     *
+     * @param permission The [PermissionData] to dismiss.
+     */
+    fun dismissPermission(permission: PermissionData)
+
+    /**
      * Interface responsible for launching the system permission request process.
      */
     interface Launcher {

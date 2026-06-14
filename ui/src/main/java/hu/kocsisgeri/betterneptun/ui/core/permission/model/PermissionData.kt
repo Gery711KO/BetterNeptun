@@ -15,7 +15,9 @@ abstract class PermissionData {
      * The unique identifier used to persist whether this specific [permission]
      * has been requested for the first time.
      */
-    protected val cacheKey = "first_time_asking_$permission"
+    protected val isFirstTimeAskingPermission = "first_time_asking_$permission"
+
+    val dismissedUntil = "dismissed_until_$permission"
 
     /**
      * The specific Android manifest permission string (e.g., [android.Manifest.permission.POST_NOTIFICATIONS]).

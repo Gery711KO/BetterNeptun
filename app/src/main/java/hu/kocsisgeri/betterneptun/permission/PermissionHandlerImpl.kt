@@ -1,6 +1,13 @@
 package hu.kocsisgeri.betterneptun.permission
 
 import android.app.Activity
+import android.content.SharedPreferences
+import hu.kocsisgeri.betterneptun.common.utils.isBefore
+import hu.kocsisgeri.betterneptun.common.utils.now
+import hu.kocsisgeri.betterneptun.common.utils.plus
+import hu.kocsisgeri.betterneptun.common.utils.serialization.Serialization
+import hu.kocsisgeri.betterneptun.data.util.get
+import hu.kocsisgeri.betterneptun.data.util.put
 import hu.kocsisgeri.betterneptun.ui.core.permission.PermissionHandler
 import hu.kocsisgeri.betterneptun.ui.core.permission.model.PermissionData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,10 +19,13 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.datetime.LocalDateTime
 import org.koin.core.annotation.Singleton
+import kotlin.time.Duration.Companion.days
 
 @Singleton
 class PermissionHandlerImpl(
+    private val sharedPreferences: SharedPreferences,
     private val handledPermissions: List<PermissionData>,
 ) : PermissionHandler {
 
@@ -39,7 +49,20 @@ class PermissionHandlerImpl(
         }
         .flatMapLatest {
             flowOf(
-                handledPermissions.map {
+                handledPermissions.filter { permission ->
+                    val dismissedUntil = sharedPreferences.get<String?>(
+                        key = permission.dismissedUntil,
+                        defaultValue = null
+                    )?.let {
+                        Serialization.instance.decodeFromString<LocalDateTime>(it)
+                    }
+
+                    if (dismissedUntil != null) {
+                        LocalDateTime.now().isBefore(dismissedUntil).not()
+                    } else {
+                        true
+                    }
+                }.map {
                     it.apply { refreshPermissionState(activity) }
                 }
             )
@@ -49,6 +72,15 @@ class PermissionHandlerImpl(
 
     override fun refreshPermissions() {
         refresher.tryEmit(Unit)
+    }
+
+    override fun dismissPermission(permission: PermissionData) {
+        val until = LocalDateTime.now().plus(30.days)
+        sharedPreferences.put(
+            permission.dismissedUntil,
+            Serialization.instance.encodeToString(until)
+        )
+        refreshPermissions()
     }
 
     companion object {

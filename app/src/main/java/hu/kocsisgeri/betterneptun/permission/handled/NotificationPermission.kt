@@ -40,7 +40,7 @@ class NotificationPermission(
         context: Context,
         launcher: ManagedActivityResultLauncher<String, Boolean>
     ) {
-        sharedPreferences.put(cacheKey, false)
+        sharedPreferences.put(isFirstTimeAskingPermission, false)
 
         when (permissionState) {
             State.Granted -> {
@@ -69,7 +69,7 @@ class NotificationPermission(
         }
 
         val isFirstTimeAskingPermission = sharedPreferences.get(
-            key = cacheKey,
+            key = isFirstTimeAskingPermission,
             defaultValue = false
         )
 
