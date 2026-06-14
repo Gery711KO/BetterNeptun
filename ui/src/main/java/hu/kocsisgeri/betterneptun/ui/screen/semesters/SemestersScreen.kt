@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CornerSize
@@ -56,7 +55,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -64,7 +62,6 @@ import hu.kocsisgeri.betterneptun.domain.model.ChartColor
 import hu.kocsisgeri.betterneptun.domain.model.UiResult
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.designsystem.R
-import hu.kocsisgeri.betterneptun.ui.designsystem.composable.LoadingLottie
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.RandomWidthBox
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.randomTextSize
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.rememberShimmerProgress
@@ -573,13 +570,6 @@ private fun commonGridProperties(): GridProperties {
     }
 }
 
-@Composable
-private fun LoadingIndicator() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        LoadingLottie()
-    }
-}
-
 private fun mapLines(
     averagesResult: UiResult.Success<List<LineData>>,
     primaryColor: Color,
@@ -622,6 +612,10 @@ private fun mapBars(
     )
 }
 
+@Preview(
+    name = "Phone - Landscape",
+    device = "spec:width=411dp,height=891dp,orientation=landscape,dpi=420",
+)
 @PreviewLightDark
 @PreviewWrapper(PreviewThemeProvider::class)
 @Composable
@@ -686,9 +680,12 @@ private fun SemestersScreenSuccessPreview() {
     }
 }
 
+@Preview(
+    name = "Phone - Landscape",
+    device = "spec:width=411dp,height=891dp,orientation=landscape,dpi=420",
+)
 @PreviewLightDark
 @PreviewWrapper(PreviewThemeProvider::class)
-@PreviewScreenSizes
 @Composable
 private fun SemestersScreenLoadingPreview() {
     SemestersContent(
@@ -698,15 +695,4 @@ private fun SemestersScreenLoadingPreview() {
         onSelectTab = {},
         onBackClick = {},
     )
-}
-
-@Preview(
-    name = "Phone - Landscape",
-    device = "spec:width=411dp,height=891dp,orientation=landscape,dpi=420",
-    showSystemUi = true,
-)
-@PreviewWrapper(PreviewThemeProvider::class)
-@Composable
-private fun SemestersScreenLandscapePreview() {
-    SemestersScreenSuccessPreview()
 }
