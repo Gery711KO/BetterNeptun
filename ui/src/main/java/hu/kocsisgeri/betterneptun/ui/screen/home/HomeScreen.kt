@@ -62,6 +62,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
@@ -970,7 +971,11 @@ private fun HomeScreenPreviewContent() {
     )
 }
 
-@Preview(device = "spec:parent=pixel_5,orientation=landscape")
+@Preview(
+    name = "Phone - Landscape",
+    device = "spec:width=411dp,height=891dp,orientation=landscape,dpi=420",
+    showSystemUi = true,
+)
 @PreviewWrapper(PreviewThemeProvider::class)
 @Composable
 fun HomeScreenLandscapePreview() {
