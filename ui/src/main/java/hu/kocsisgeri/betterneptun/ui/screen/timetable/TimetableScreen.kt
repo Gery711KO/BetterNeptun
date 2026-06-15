@@ -70,7 +70,7 @@ fun TimetableScreen(
     viewModel: TimetableViewModel = koinViewModel { parametersOf(initialId) },
     navigator: Navigator = koinInject()
 ) {
-    val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
+    val viewMode = viewModel.viewMode
     val currentSelectedEvent by viewModel.selectedEvent.collectAsStateWithLifecycle()
 
     TimetableContent(

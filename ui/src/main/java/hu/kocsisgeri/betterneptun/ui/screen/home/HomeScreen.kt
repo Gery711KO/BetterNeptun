@@ -62,7 +62,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
@@ -88,6 +87,8 @@ import hu.kocsisgeri.betterneptun.ui.navigation.destination.SemestersDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SettingsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.SubjectsDestination
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.TimetableDestination
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.hideFromTransition
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.isLandscape
 import hu.kocsisgeri.betterneptun.ui.navigation.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
@@ -148,6 +149,7 @@ private fun HomeContent(
     onRefresh: () -> Unit,
     onNavigate: (NavKey) -> Unit,
 ) {
+    val isLandscape = isLandscape()
     val isRefreshing = refreshProgress is UiResult.Loading
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
@@ -161,9 +163,6 @@ private fun HomeContent(
             }
         }
     }
-
-    val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Scaffold(
         containerColor = BetterNeptunTheme.colorScheme.background,
@@ -348,7 +347,7 @@ private fun SizeMeasurerScope.PermissionDisclaimerCard(
 }
 
 @Composable
-private fun SizeMeasurerScope.PermissionDisclaimerContent(
+private fun PermissionDisclaimerContent(
     title: String,
     description: String,
     modifier: Modifier = Modifier
@@ -360,7 +359,6 @@ private fun SizeMeasurerScope.PermissionDisclaimerContent(
             fontWeight = FontWeight.Bold,
             color = BetterNeptunTheme.colorScheme.onTertiaryContainer
         )
-        Spacer(Modifier.weight(1f, isSizeMeasured))
         Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingSmall))
         Text(
             text = description,
@@ -882,7 +880,7 @@ fun NavButton(
             Icon(
                 painter = icon,
                 contentDescription = null,
-                modifier = Modifier.size(BetterNeptunTheme.dimens.iconExtraLarge),
+                modifier = Modifier.size(BetterNeptunTheme.dimens.iconExtraLarge)
             )
             Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.paddingSmall))
             Text(

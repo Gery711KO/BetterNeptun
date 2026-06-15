@@ -133,7 +133,7 @@ fun TimeTableView(
                     HorizontalPager(
                         state = pagerState,
                         userScrollEnabled = false,
-                        key = { page -> weekData(page).dateRange.toString() }
+                        key = { page -> weekData(page).dateRange.toString() + "_top" }
                     ) { page ->
                         val data = weekData(page)
                         val metrics = metrics(data, activeWeekConfig)
@@ -194,7 +194,7 @@ fun TimeTableView(
             gridContent = { pagerState, scrollState, maxWidth ->
                 HorizontalPager(
                     state = pagerState,
-                    key = { page -> weekData(page).dateRange.toString() }
+                    key = { page -> weekData(page).dateRange.toString() + "_grid" }
                 ) { page ->
                     val data = weekData(page)
                     val metrics = metrics(data, activeWeekConfig)

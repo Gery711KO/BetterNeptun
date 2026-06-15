@@ -23,14 +23,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.transformWhile
-import kotlinx.coroutines.withTimeout
 import org.koin.core.annotation.KoinViewModel
-import kotlin.time.Duration.Companion.seconds
 
 @KoinViewModel
 class SemestersViewModel(
@@ -70,7 +64,7 @@ class SemestersViewModel(
 
     val uiState = combine(
         credits.map { it.mapToUiResult() },
-        averages.mapNotNull { it.mapToUiResult() },
+        averages.map { it.mapToUiResult() },
     ) { credits, averages ->
         credits to averages
     }.stateWhileSubscribed(UiResult.Loading to UiResult.Loading)
@@ -115,6 +109,13 @@ class SemestersViewModel(
 
         viewModelScope.launchReportingErrors {
             fetchInitialData()
+        }
+    }
+
+    fun onTabSelected(tabIndex: Int) {
+        when (tabIndex) {
+            0 -> viewModelScope.launchReportingErrors { fetchTermsUseCase() }
+            1 -> viewModelScope.launchReportingErrors { fetchTermAveragesUseCase() }
         }
     }
 

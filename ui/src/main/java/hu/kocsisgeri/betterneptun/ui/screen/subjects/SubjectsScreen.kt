@@ -168,7 +168,7 @@ private fun FilterItems(
             }
 
             is UiResult.Loading -> {
-                items(1) {
+                items(Random.nextInt(5, 10)) {
                     Box(
                         modifier = Modifier
                             .sharedShimmer(progress)
@@ -199,7 +199,7 @@ private fun SubjectsList(listState: UiResult<List<Subject>>?) {
         verticalArrangement = Arrangement.spacedBy(BetterNeptunTheme.dimens.itemSpacing)
     ) {
         when (listState) {
-            is UiResult.Loading -> items(Random.nextInt(5, 10)) {
+            is UiResult.Loading -> items(1) {
                 SubjectItemLoading(loadingProgress)
             }
 

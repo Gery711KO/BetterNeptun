@@ -87,9 +87,9 @@ fun AddEventDialog(
     onDismissRequest: () -> Unit,
     onAddEvent: (CalendarItem.LocalEvent) -> Unit,
 ) {
-    val newEventId = remember { System.currentTimeMillis() }
-
     if (show) {
+        val newEventId = remember { System.currentTimeMillis() }
+
         val title = remember {
             DialogData.TextInputData(
                 initialValue = event?.title ?: "",

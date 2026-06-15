@@ -2,21 +2,28 @@ package hu.kocsisgeri.betterneptun.ui.error
 
 import hu.kocsisgeri.betterneptun.domain.error.ErrorReceiver
 import hu.kocsisgeri.betterneptun.domain.error.ErrorRegistry
+import hu.kocsisgeri.betterneptun.domain.error.ErrorScreenContentProvider
 import hu.kocsisgeri.betterneptun.domain.error.ErrorSender
 import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
+import hu.kocsisgeri.betterneptun.domain.error.model.ErrorEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.onEach
 import org.koin.core.annotation.Singleton
 
 @Singleton
-class ErrorRegistryImpl: ErrorRegistry, ErrorSender, ErrorReceiver {
+class ErrorRegistryImpl: ErrorRegistry, ErrorSender, ErrorReceiver, ErrorScreenContentProvider {
 
     override val errorCallback =
-        MutableSharedFlow<ErrorContent>(
+        MutableSharedFlow<ErrorEvent>(
             replay = 10,
             extraBufferCapacity = 10
         )
+
+    override val errorContent = MutableSharedFlow<ErrorContent.FullScreen>(
+        replay = 1,
+        extraBufferCapacity = 1
+    )
 
     override fun <T> Flow<T>.registerToGeneralErrors(
         contentResolver: suspend (T) -> ErrorContent?
@@ -27,6 +34,10 @@ class ErrorRegistryImpl: ErrorRegistry, ErrorSender, ErrorReceiver {
     }
 
     override fun send(error: ErrorContent) {
-        errorCallback.tryEmit(error)
+        errorCallback.tryEmit(ErrorEvent(error))
+    }
+
+    override fun setErrorContent(errorContent: ErrorContent.FullScreen) {
+        this.errorContent.tryEmit(errorContent)
     }
 }

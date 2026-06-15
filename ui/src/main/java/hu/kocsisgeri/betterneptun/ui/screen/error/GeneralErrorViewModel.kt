@@ -3,6 +3,7 @@ package hu.kocsisgeri.betterneptun.ui.screen.error
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.error.ErrorReceiver
+import hu.kocsisgeri.betterneptun.domain.error.ErrorScreenContentProvider
 import hu.kocsisgeri.betterneptun.domain.error.model.ErrorAction
 import hu.kocsisgeri.betterneptun.domain.error.ErrorSender
 import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
@@ -21,8 +22,7 @@ import kotlin.time.Duration.Companion.seconds
 @KoinViewModel
 class GeneralErrorViewModel(
     private val navigator: Navigator,
-    private val errorSender: ErrorSender,
-    errorReceiver: ErrorReceiver,
+    errorReceiver: ErrorScreenContentProvider,
 ): ComposeViewModel() {
 
     private val mutex = Mutex()
@@ -30,8 +30,7 @@ class GeneralErrorViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.stateWhileSubscribed()
 
-    val latestErrorContent = errorReceiver.errorCallback
-        .filterIsInstance<ErrorContent.FullScreen>()
+    val latestErrorContent = errorReceiver.errorContent
         .stateWhileSubscribed(null)
 
     fun launchAction(errorAction: ErrorAction) {

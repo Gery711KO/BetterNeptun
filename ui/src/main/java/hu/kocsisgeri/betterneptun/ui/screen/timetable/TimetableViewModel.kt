@@ -1,5 +1,10 @@
 package hu.kocsisgeri.betterneptun.ui.screen.timetable
 
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.common.utils.now
@@ -14,6 +19,7 @@ import hu.kocsisgeri.betterneptun.ui.screen.timetable.model.toComposeEvent
 import hu.kocsisgeri.betterneptun.ui.screen.timetable.weekdata.ui.event.WeekData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDateRange
 import kotlinx.datetime.LocalDateTime
@@ -36,16 +42,25 @@ class TimetableViewModel(
     private val initialPage = maxPageCount / 2
     private val baseDate = LocalDateTime.now()
 
+    private var eventsState = mutableStateOf<List<CalendarItem>>(
+        emptyList()
+    )
+    private var _viewModeState = mutableStateOf<ViewMode>(
+        ViewMode.WEEK
+    )
+    val viewMode by derivedStateOf {
+        _viewModeState.value
+    }
+
     private val events = getEventsUseCase()
         .stateWhileSubscribed(emptyList())
     private val currentSelected = MutableStateFlow(defaultSelected)
 
-    private val _viewMode = MutableStateFlow(ViewMode.WEEK)
-    val viewMode = _viewMode.stateWhileSubscribed()
-
     val selectedEvent = combine(
         currentSelected,
-        events
+        events.onEach {
+            eventsState.value = it
+        }
     ) { currentSelectedEventId, events ->
         events.find { event ->
             event.id == currentSelectedEventId
@@ -53,19 +68,23 @@ class TimetableViewModel(
     }.stateWhileSubscribed(null)
 
     fun getWeekDataForPage(page: Int): WeekData {
-        val offset = (page - initialPage).toLong()
-        val targetDate = when (viewMode.value) {
-            ViewMode.WEEK -> baseDate.plus((offset * 7).days)
-            ViewMode.DAY -> baseDate.plus(offset.days)
+        val weekData by derivedStateOf {
+            val offset = (page - initialPage).toLong()
+            val targetDate = when (viewMode) {
+                ViewMode.WEEK -> baseDate.plus((offset * 7).days)
+                ViewMode.DAY -> baseDate.plus(offset.days)
+            }
+
+            val dateRange = findDateRange(viewMode, targetDate)
+
+            createWeekData(
+                times = "0:23",
+                dateRange = dateRange,
+                events = eventsState.value
+            )
         }
 
-        val dateRange = findDateRange(viewMode.value, targetDate)
-
-        return createWeekData(
-            times = "0:23",
-            dateRange = dateRange,
-            events = events.value
-        )
+        return weekData
     }
 
     fun findDateRange(
@@ -105,12 +124,22 @@ class TimetableViewModel(
         }
     }
 
-    fun selectEvent(eventId: Long?) { currentSelected.value = eventId }
-    fun clearSelectedEvent() { currentSelected.tryEmit(null) }
-    fun setViewMode(mode: ViewMode) { _viewMode.value = mode }
+    fun selectEvent(eventId: Long?) {
+        currentSelected.value = eventId
+    }
+
+    fun clearSelectedEvent() {
+        currentSelected.tryEmit(null)
+    }
+
+    fun setViewMode(mode: ViewMode) {
+        _viewModeState.value = mode
+    }
 
     fun addEvent(event: CalendarItem.LocalEvent) {
-        viewModelScope.launchReportingErrors { addLocalEventsUseCase(event) }
+        viewModelScope.launchReportingErrors {
+            addLocalEventsUseCase(event)
+        }
     }
 
     fun deleteEvent(eventId: Long) {

@@ -1,6 +1,6 @@
 package hu.kocsisgeri.betterneptun.domain.error
 
-import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
+import hu.kocsisgeri.betterneptun.domain.error.model.ErrorEvent
 import kotlinx.coroutines.flow.SharedFlow
 
 /**
@@ -9,12 +9,12 @@ import kotlinx.coroutines.flow.SharedFlow
  * This interface is used by classes that catch or generate errors and need to
  * broadcast them to observers, such as UI components for displaying error messages.
  *
- * @property errorCallback A [SharedFlow] emitting [ErrorContent] objects representing the errors occurred.
+ * @property errorCallback A [SharedFlow] emitting [ErrorEvent] objects representing the errors occurred.
  */
 interface ErrorReceiver {
 
     /**
-     * A [SharedFlow] that broadcasts [ErrorContent] events to be handled by observers.
+     * A [SharedFlow] that broadcasts [ErrorEvent] events to be handled by observers.
      */
-    val errorCallback: SharedFlow<ErrorContent>
+    val errorCallback: SharedFlow<ErrorEvent>
 }

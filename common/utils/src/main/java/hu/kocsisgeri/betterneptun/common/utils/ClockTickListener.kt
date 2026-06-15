@@ -9,6 +9,8 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 fun clockTickFlow(tickType: TickType = TickType.MINUTE) = flow {
+    emit(LocalDateTime.now())
+
     while(true) {
         val now = LocalDateTime.now()
 
@@ -32,7 +34,7 @@ fun clockTickFlow(tickType: TickType = TickType.MINUTE) = flow {
             }
         }
 
-        val safeDelay = if (delayMillis > 0) delayMillis else 1L
+        val safeDelay = if (delayMillis <= 0) delayMillis else 1L
 
         delay(safeDelay)
 

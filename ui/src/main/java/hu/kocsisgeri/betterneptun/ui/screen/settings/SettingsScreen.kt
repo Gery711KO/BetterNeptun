@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +25,8 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -31,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,6 +49,7 @@ import hu.kocsisgeri.betterneptun.ui.BuildConfig
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import hu.kocsisgeri.betterneptun.ui.theme.PreviewThemeProvider
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
+import hu.kocsisgeri.betterneptun.ui.navigation.modifier.isLandscape
 import hu.kocsisgeri.betterneptun.ui.navigation.modifier.sharedBoundsAnimation
 import hu.kocsisgeri.betterneptun.ui.screen.settings.model.SettingsRadioOption
 import org.koin.androidx.compose.koinViewModel
@@ -82,8 +88,12 @@ fun SettingsContent(
     onLogout: () -> Unit,
     onBackClick: () -> Unit,
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scrollState = rememberScrollState()
+    val scrollBehavior = if (isLandscape()) {
+        TopAppBarDefaults.pinnedScrollBehavior()
+    } else {
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    }
 
     Scaffold(
         topBar = {
@@ -102,6 +112,10 @@ fun SettingsContent(
                 .fillMaxSize()
                 .padding(top = paddingValues.calculateTopPadding())
                 .padding(horizontal = BetterNeptunTheme.dimens.screenPadding)
+                .padding(
+                    start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
+                    end = paddingValues.calculateEndPadding(LocalLayoutDirection.current)
+                )
                 .clip(BetterNeptunTheme.shapes.large)
                 .verticalScroll(scrollState)
                 .padding(bottom = paddingValues.calculateBottomPadding()),
@@ -129,29 +143,43 @@ private fun SettingsScreenTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
     onBackClick: () -> Unit
 ) {
-    LargeTopAppBar(
-        title = {
-            Text(
-                text = LocalizationKey.SETTINGS_TITLE.localized(),
-                style = BetterNeptunTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Bold
-                )
-            )
-        },
+    if(isLandscape()) TopAppBar(
+        title = { TopBarTitle() },
+        navigationIcon = { TopBarNavigationIcon(onBackClick) },
         scrollBehavior = scrollBehavior,
-        navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Vissza"
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = BetterNeptunTheme.colorScheme.background,
-            scrolledContainerColor = BetterNeptunTheme.colorScheme.background,
-            navigationIconContentColor = BetterNeptunTheme.colorScheme.onSurface,
-            titleContentColor = BetterNeptunTheme.colorScheme.onSurface,
+        colors = topAppBarColors()
+    ) else LargeTopAppBar(
+        title = { TopBarTitle() },
+        scrollBehavior = scrollBehavior,
+        navigationIcon = { TopBarNavigationIcon(onBackClick) },
+        colors = topAppBarColors()
+    )
+}
+
+@Composable
+private fun topAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
+    containerColor = BetterNeptunTheme.colorScheme.background,
+    scrolledContainerColor = BetterNeptunTheme.colorScheme.background,
+    navigationIconContentColor = BetterNeptunTheme.colorScheme.onSurface,
+    titleContentColor = BetterNeptunTheme.colorScheme.onSurface,
+)
+
+@Composable
+private fun TopBarNavigationIcon(onBackClick: () -> Unit) {
+    IconButton(onClick = onBackClick) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "Vissza"
+        )
+    }
+}
+
+@Composable
+private fun TopBarTitle() {
+    Text(
+        text = LocalizationKey.SETTINGS_TITLE.localized(),
+        style = BetterNeptunTheme.typography.headlineMedium.copy(
+            fontWeight = FontWeight.Bold
         )
     )
 }

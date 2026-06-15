@@ -34,7 +34,9 @@ import androidx.navigation3.ui.defaultPredictivePopTransitionSpec
 import androidx.navigation3.ui.defaultTransitionSpec
 import androidx.navigationevent.NavigationEvent
 import hu.kocsisgeri.betterneptun.domain.error.ErrorReceiver
+import hu.kocsisgeri.betterneptun.domain.error.ErrorScreenContentProvider
 import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
+import hu.kocsisgeri.betterneptun.domain.error.model.ErrorEvent
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.snackbar.StackedSnackbarAnimation
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.snackbar.StackedSnackbarDuration
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.snackbar.StackedSnackbarHost
@@ -48,7 +50,6 @@ import hu.kocsisgeri.betterneptun.ui.navigation.transition.SplashTransition
 import hu.kocsisgeri.betterneptun.ui.navigation.transition.Transition
 import hu.kocsisgeri.betterneptun.ui.navigation.utils.isSubclassOf
 import hu.kocsisgeri.betterneptun.ui.theme.ProvideSharedTransitionScope
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
@@ -57,7 +58,6 @@ import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.core.annotation.KoinExperimentalAPI
 import timber.log.Timber
@@ -241,6 +241,7 @@ private data class DefaultNavigator(
     @Composable
     override fun Content() {
         val errorHandler = koinInject<ErrorReceiver>()
+        val errorContentProvider = koinInject<ErrorScreenContentProvider>()
 
         val snackbarHostState = rememberStackedSnackbarHostState(
             maxStack = 5,
@@ -250,10 +251,9 @@ private data class DefaultNavigator(
         LaunchedEffect(errorHandler) {
             errorHandler
                 .errorCallback
-                .errorControllerGate(
-                    scope = this,
-                    snackbarHostState = snackbarHostState
-                )
+                .errorControllerGate(snackbarHostState = snackbarHostState) {
+                    errorContentProvider.setErrorContent(it)
+                }
         }
 
         Scaffold(
@@ -333,9 +333,9 @@ private data class DefaultNavigator(
         }
     }
 
-    private suspend fun <T> Flow<T>.errorControllerGate(
-        scope: CoroutineScope,
-        snackbarHostState: StackedSnackbarHostState
+    private suspend fun Flow<ErrorEvent>.errorControllerGate(
+        snackbarHostState: StackedSnackbarHostState,
+        onSetErrorContent: (ErrorContent.FullScreen) -> Unit
     ) = onEach { error ->
         Timber.tag("ERROR-GATE").d("[$currentScreen] - Error received: $error")
     }.buffer(Channel.UNLIMITED).flatMapConcat { error ->
@@ -348,8 +348,9 @@ private data class DefaultNavigator(
             .onEach { (error, source) ->
                 Timber.tag("ERROR-GATE").d("[$source] - Currently processing: $error")
             }
-    }.collect { (errorContent, source) ->
+    }.collect { (event, source) ->
         val canNavigateToError = source::class == currentScreen::class
+        val errorContent = event.receiveContent()
 
         if (!canNavigateToError && errorContent is ErrorContent.FullScreen) {
             Timber.tag("ERROR-GATE").d("[$source] - Navigation is not possible to: $errorContent")
@@ -357,6 +358,7 @@ private data class DefaultNavigator(
 
         when (errorContent) {
             is ErrorContent.FullScreen if canNavigateToError -> {
+                onSetErrorContent(errorContent)
                 if (currentScreen != GeneralErrorDestination) {
                     if (errorContent.inclusive) navigateToInclusive(
                         GeneralErrorDestination
@@ -364,12 +366,10 @@ private data class DefaultNavigator(
                 }
             }
 
-            is ErrorContent.Snackbar -> scope.launch {
-                snackbarHostState.showWarningSnackbar(
-                    title = errorContent.text,
-                    duration = StackedSnackbarDuration.Short
-                )
-            }
+            is ErrorContent.Snackbar -> snackbarHostState.showWarningSnackbar(
+                title = errorContent.text,
+                duration = StackedSnackbarDuration.Short
+            )
 
             is ErrorContent.PopUp if canNavigateToError -> {
                 // TODO

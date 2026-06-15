@@ -53,7 +53,7 @@ internal fun WeekBackgroundCompose(
     val pagerState = rememberPagerState(initialPage = maxPages / 2) { maxPages }
     val syncedPager = rememberPagerState(initialPage = maxPages / 2) { maxPages }
 
-    val currentItem by remember(pagerState.currentPage) {
+    val currentItem by remember(pagerState) {
         derivedStateOf { weekData(pagerState.currentPage) }
     }
 

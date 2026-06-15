@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -180,7 +179,11 @@ fun MessagesContent(
 ) {
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scrollBehavior = if (isLandscape()) {
+        TopAppBarDefaults.pinnedScrollBehavior()
+    } else {
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    }
 
     val shouldLoadMore by remember {
         snapshotFlow { listState.layoutInfo }.map { info ->
@@ -199,13 +202,15 @@ fun MessagesContent(
 
     Scaffold(
         modifier = Modifier
+            .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .sharedBoundsAnimation(LocalizationKey.HOME_MENU_MESSAGES),
         topBar = {
             if (isLandscape()) TopAppBar(
                 title = { TopBarTitle() },
                 navigationIcon = { TopBarNavigationIcon(onBackClick) },
-                colors = topBarDefaultColors()
+                colors = topBarDefaultColors(),
+                scrollBehavior = scrollBehavior
             ) else LargeTopAppBar(
                 title = { TopBarTitle() },
                 navigationIcon = { TopBarNavigationIcon(onBackClick) },
@@ -240,10 +245,10 @@ fun MessagesContent(
                 .then(
                     if (isLandscape()) {
                         Modifier.padding(
-                            end = paddingValues.calculateStartPadding(
+                            start = paddingValues.calculateStartPadding(
                                 LocalLayoutDirection.current
                             ),
-                            start = BetterNeptunTheme.dimens.extraSmall,
+                            end = BetterNeptunTheme.dimens.extraSmall,
                             top = paddingValues.calculateTopPadding(),
                             bottom = paddingValues.calculateBottomPadding()
                         )
