@@ -1,5 +1,7 @@
 package extensions.gradle
 
+import extensions.gradle.BaseLayers.Localization
+
 val projectModules = BaseLayers.entries.filterIsInstance<ProjectModule>() +
         SpecialLayers.entries.filterIsInstance<ProjectModule>()
 
@@ -60,7 +62,7 @@ enum class SpecialLayers(
     Theme(
         path = ":ui:designsystem",
         isPackageModule = false,
-        allowedProjectDependencies = listOf(BaseLayers.Common, BaseLayers.Domain)
+        allowedProjectDependencies = listOf(BaseLayers.Common, BaseLayers.Domain,  Localization)
     ),
     Navigation(
         path = ":ui:navigation",

@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -240,21 +241,21 @@ private fun NormalStackedSnackbarItem(
 
                 Column {
                     Text(
-                        text = data.title,
+                        text = data.title.localized(),
                         overflow = TextOverflow.Ellipsis,
                         style = BetterNeptunTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Bold,
                         ),
                     )
-                    if (data.description.isNullOrEmpty().not()) {
+                    if (data.description != null) {
                         Text(
-                            text = data.description,
+                            text = data.description.localized(),
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                             style = BetterNeptunTheme.typography.labelMedium,
                         )
                     }
-                    if (data.actionTitle.isNullOrEmpty().not()) {
+                    if (data.actionTitle != null) {
                         Box(
                             Modifier
                                 .fillMaxWidth()
@@ -262,7 +263,7 @@ private fun NormalStackedSnackbarItem(
                             contentAlignment = Alignment.BottomEnd,
                         ) {
                             Text(
-                                data.actionTitle,
+                                data.actionTitle.localized(),
                                 modifier = Modifier.clickable {
                                     onActionClicked.invoke()
                                 },

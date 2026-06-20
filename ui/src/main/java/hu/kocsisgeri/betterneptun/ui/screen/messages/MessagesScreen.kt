@@ -65,6 +65,7 @@ import hu.kocsisgeri.betterneptun.domain.model.neptun.Avatar
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Message
 import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.designsystem.R
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.AvatarImage
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.ScrollBar
@@ -144,7 +145,7 @@ private fun NoSelectedMessageContent() {
             )
             Spacer(Modifier.height(BetterNeptunTheme.dimens.medium))
             Text(
-                text = "Válassz ki egy üzenetet\na megtekintéshez",
+                text = LocalizationKey.MESSAGES_LANDSCAPE_DETAIL_EMPTY.localized(),
                 style = BetterNeptunTheme.typography.bodyLarge,
                 color = BetterNeptunTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -292,7 +293,7 @@ private fun TopBarNavigationIcon(onBackClick: () -> Unit) {
 @Composable
 private fun TopBarTitle() {
     Text(
-        text = "Üzenetek",
+        text = LocalizationKey.HOME_MENU_MESSAGES.localized(),
         fontFamily = Armata,
         fontWeight = FontWeight.Bold,
         style = BetterNeptunTheme.typography.titleLarge
@@ -472,7 +473,7 @@ private fun LazyListScope.endMessage(messages: MessagesPager) {
                 )
                 Spacer(modifier = Modifier.height(BetterNeptunTheme.dimens.medium))
                 Text(
-                    text = "A lista végére értél, nem lehet több üzenet betölteni.",
+                    text = LocalizationKey.MESSAGES_LIST_END_REACHED.localized(),
                     style = BetterNeptunTheme.typography.bodyMedium,
                     color = BetterNeptunTheme.colorScheme.onSurfaceVariant
                 )

@@ -61,7 +61,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.ChartColor
 import hu.kocsisgeri.betterneptun.domain.model.UiResult
+import hu.kocsisgeri.betterneptun.domain.service.Localization
+import hu.kocsisgeri.betterneptun.domain.usecase.semester.GetSemesterAveragesUseCase
+import hu.kocsisgeri.betterneptun.domain.usecase.semester.GetSemesterCreditsUseCase
+import hu.kocsisgeri.betterneptun.localization.LocalLocalizer
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.designsystem.R
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.RandomWidthBox
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.randomTextSize
@@ -126,8 +131,8 @@ fun SemestersContent(
     onBackClick: () -> Unit,
 ) {
     val tabs = listOfNotNull(
-        "Kreditek",
-        "Átlagok"
+        LocalizationKey.SEMESTERS_TAB_CREDITS,
+        LocalizationKey.SEMESTERS_TAB_AVERAGES
     )
 
     if (isLandscape()) {
@@ -203,7 +208,7 @@ fun SemestersContent(
 @Composable
 private fun SemestersScreenTopBar(onBackClick: () -> Unit) {
     TopAppBar(
-        title = { Text("Félévek") },
+        title = { Text(LocalizationKey.HOME_MENU_SEMESTERS.localized()) },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Vissza")
@@ -220,7 +225,7 @@ private fun SemestersScreenTopBar(onBackClick: () -> Unit) {
 @Composable
 private fun TabSelector(
     selectedTab: Int,
-    tabs: List<String>,
+    tabs: List<Localization>,
     modifier: Modifier = Modifier,
     onSelectTab: (Int) -> Unit,
     isVertical: Boolean = false
@@ -249,7 +254,7 @@ private fun TabSelector(
                     },
                     label = {
                         Text(
-                            text = title,
+                            text = title.localized(),
                             style = typography.bodyLarge.copy(
                                 fontWeight = if (isSelected) FontWeight.Bold
                                 else FontWeight.Normal
@@ -287,7 +292,7 @@ private fun TabSelector(
                     onClick = { onSelectTab(index) },
                     text = {
                         Text(
-                            text = title,
+                            text = title.localized(),
                             style = typography.bodyLarge.copy(
                                 fontWeight = if (isSelected) FontWeight.Bold
                                 else FontWeight.Normal
@@ -310,6 +315,8 @@ private fun AveragesChart(averagesResult: UiResult<List<LineData>>) {
     when (averagesResult) {
         is UiResult.Loading -> LoadingChart()
         is UiResult.Success -> {
+            val localizer = LocalLocalizer.current
+
             val primaryColor = themeBasedColor(
                 darkColor = Color(0xFF00D138),
                 lightColor = Color(0xFF00751F)
@@ -322,7 +329,16 @@ private fun AveragesChart(averagesResult: UiResult<List<LineData>>) {
                 mapLines(
                     averagesResult = averagesResult,
                     primaryColor = primaryColor,
-                    secondaryColor = secondaryColor
+                    secondaryColor = secondaryColor,
+                    textResolver = {
+                        when (it) {
+                            GetSemesterAveragesUseCase.ChartLabel.Averages ->
+                                localizer.localized(LocalizationKey.SEMESTERS_CHARTLABEL_AVERAGES)
+
+                            GetSemesterAveragesUseCase.ChartLabel.SumAverages ->
+                                localizer.localized(LocalizationKey.SEMESTERS_CHARTLABEL_SUM_AVERAGES)
+                        }
+                    }
                 )
             }
 
@@ -330,7 +346,7 @@ private fun AveragesChart(averagesResult: UiResult<List<LineData>>) {
                 data = lines,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(BetterNeptunTheme.dimens.screenPadding),
                 animationMode = AnimationMode.Together { it * 50L },
                 animationDelay = 100L,
                 minValue = 1.0,
@@ -347,6 +363,7 @@ private fun AveragesChart(averagesResult: UiResult<List<LineData>>) {
 @Composable
 private fun CreditsChart(creditsResult: UiResult<List<ColumnBars>>) {
     val colors = colorScheme
+    val localizer = LocalLocalizer.current
 
     when (creditsResult) {
         is UiResult.Loading -> LoadingChart()
@@ -354,7 +371,16 @@ private fun CreditsChart(creditsResult: UiResult<List<ColumnBars>>) {
             val bars = remember(creditsResult, colors) {
                 mapBars(
                     creditsResult = creditsResult,
-                    colors = colors
+                    colors = colors,
+                    textResolver = {
+                        when (it) {
+                            GetSemesterCreditsUseCase.ChartLabel.TakenCredits ->
+                                localizer.localized(LocalizationKey.SEMESTERS_CHARTLABEL_TAKEN)
+
+                            GetSemesterCreditsUseCase.ChartLabel.FulfilledCredits ->
+                                localizer.localized(LocalizationKey.SEMESTERS_CHARTLABEL_COMPLETED)
+                        }
+                    }
                 )
             }
             val windowInfo = LocalWindowInfo.current
@@ -367,10 +393,13 @@ private fun CreditsChart(creditsResult: UiResult<List<ColumnBars>>) {
                 data = bars,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(BetterNeptunTheme.dimens.screenPadding),
                 animationMode = AnimationMode.Together { it * 50L },
                 barProperties = BarProperties(
-                    cornerRadius = Rectangle(topRight = 6.dp, bottomRight = 6.dp),
+                    cornerRadius = Rectangle(
+                        topRight = BetterNeptunTheme.dimens.small,
+                        bottomRight = BetterNeptunTheme.dimens.small
+                    ),
                     spacing = -(barThickness / 2f),
                     thickness = barThickness
                 ),
@@ -398,7 +427,7 @@ private fun LoadingChart() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(BetterNeptunTheme.dimens.screenPadding),
     ) {
         Column {
             repeat(labels) {
@@ -578,10 +607,11 @@ private fun commonGridProperties(): GridProperties {
 private fun mapLines(
     averagesResult: UiResult.Success<List<LineData>>,
     primaryColor: Color,
-    secondaryColor: Color
+    secondaryColor: Color,
+    textResolver: (GetSemesterAveragesUseCase.ChartLabel) -> String,
 ): List<Line> = averagesResult.data.map { domainLine ->
     Line(
-        label = domainLine.label,
+        label = textResolver(domainLine.label),
         values = domainLine.points,
         color = when (domainLine.color) {
             ChartColor.Primary -> SolidColor(primaryColor)
@@ -597,13 +627,14 @@ private fun mapLines(
 
 private fun mapBars(
     creditsResult: UiResult.Success<List<ColumnBars>>,
-    colors: ColorScheme
+    colors: ColorScheme,
+    textResolver: (GetSemesterCreditsUseCase.ChartLabel) -> String,
 ): List<Bars> = creditsResult.data.map { domainBars ->
     Bars(
         label = domainBars.barLabel,
         values = domainBars.bars.map { domainBar ->
             Bars.Data(
-                label = domainBar.label,
+                label = textResolver(domainBar.label),
                 value = domainBar.value,
                 color = when (domainBar.color) {
                     ChartColor.Primary -> SolidColor(
@@ -629,30 +660,30 @@ private fun SemestersScreenSuccessPreview() {
         val creditsResult = UiResult.Success(
             listOf(
                 ColumnBars(
-                    barLabel = "Felvett",
+                    barLabel = "1",
                     bars = listOf(
                         ColumnBarData(
-                            label = "2021/2022/1",
+                            label = GetSemesterCreditsUseCase.ChartLabel.TakenCredits,
                             value = 1.0,
                             color = ChartColor.Primary
                         ),
                         ColumnBarData(
-                            label = "2021/2022/1",
+                            label = GetSemesterCreditsUseCase.ChartLabel.FulfilledCredits,
                             value = 2.0,
                             color = ChartColor.Primary
                         ),
                     ),
                 ),
                 ColumnBars(
-                    barLabel = "Teljesitett",
+                    barLabel = "2",
                     bars = listOf(
                         ColumnBarData(
-                            label = "2021/2022/2",
+                            label = GetSemesterCreditsUseCase.ChartLabel.TakenCredits,
                             value = 2.0,
                             color = ChartColor.Secondary
                         ),
                         ColumnBarData(
-                            label = "2021/2022/2",
+                            label = GetSemesterCreditsUseCase.ChartLabel.FulfilledCredits,
                             value = 3.0,
                             color = ChartColor.Secondary
                         ),
@@ -663,12 +694,12 @@ private fun SemestersScreenSuccessPreview() {
         val averagesResult = UiResult.Success(
             listOf(
                 LineData(
-                    label = "Átlagok",
+                    label = GetSemesterAveragesUseCase.ChartLabel.Averages,
                     points = listOf(2.0, 3.2),
                     color = ChartColor.Primary
                 ),
                 LineData(
-                    label = "Kommultatív átlagok",
+                    label = GetSemesterAveragesUseCase.ChartLabel.SumAverages,
                     points = listOf(3.0, 4.2),
                     color = ChartColor.Primary
                 ),

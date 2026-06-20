@@ -233,7 +233,7 @@ private fun ChangeableSection(
                     )
 
                     else -> {
-                        val delay = (index * 6)
+                        val delay = (index * 5)
                         add(
                             SettingsRadioOption(
                                 label = LocalizationKey.SETTINGS_SECTION_TIMETABLE_MINUTES(

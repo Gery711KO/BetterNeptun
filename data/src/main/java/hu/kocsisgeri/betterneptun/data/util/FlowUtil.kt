@@ -14,7 +14,6 @@ import java.io.IOException
 
 suspend fun <T : Any> MutableStateFlow<ApiResult<T>>.runApiCall(
     dispatcher: CoroutineDispatcher,
-    errorMessage: String? = null,
     block: suspend () -> T
 ) {
     withContext(dispatcher) {
@@ -22,15 +21,15 @@ suspend fun <T : Any> MutableStateFlow<ApiResult<T>>.runApiCall(
             value = ApiResult.Loading
             value = ApiResult.Success(block())
         } catch (exception: HttpException) {
-            value = ApiResult.Error(errorMessage?: exception.message ?: "Network error.")
+            value = ApiResult.Error(exception.message ?: "Network error.")
         } catch (exception: IOException) {
-            value = ApiResult.Error(errorMessage?: exception.message ?: "Something went wrong.")
+            value = ApiResult.Error(exception.message ?: "Something went wrong.")
         } catch (exception: SerializationException) {
-            value = ApiResult.Error(errorMessage?: exception.message ?: "Serialization error.")
+            value = ApiResult.Error(exception.message ?: "Serialization error.")
         } catch (exception: CancellationException) {
-            value = ApiResult.Error(errorMessage?: exception.message ?: "Operation canceled.")
+            value = ApiResult.Error(exception.message ?: "Operation canceled.")
         } catch (exception: ContentConvertException) {
-            value = ApiResult.Error(errorMessage?: exception.message ?: "Json content error.")
+            value = ApiResult.Error(exception.message ?: "Json content error.")
         }
     }
 }

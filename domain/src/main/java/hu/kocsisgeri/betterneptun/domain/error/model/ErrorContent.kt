@@ -1,6 +1,7 @@
 package hu.kocsisgeri.betterneptun.domain.error.model
 
 import androidx.annotation.RawRes
+import hu.kocsisgeri.betterneptun.domain.service.Localization
 import kotlinx.serialization.Serializable
 
 sealed interface ErrorContent {
@@ -10,18 +11,18 @@ sealed interface ErrorContent {
     @Serializable
     data class FullScreen(
         @RawRes val icon: Int,
-        val title: String,
-        val description: String,
+        val title: Localization,
+        val description: Localization,
         val primaryAction: ErrorAction,
         val secondaryAction: ErrorAction? = null,
         val inclusive: Boolean = false,
     ): ErrorContent
 
     data class PopUp(
-        val title: String,
-        val description: String,
+        val title: Localization,
+        val description: Localization,
         val button: ErrorAction.Normal,
     ) : ErrorContent
 
-    data class Snackbar(val text: String) : ErrorContent
+    data class Snackbar(val text: Localization) : ErrorContent
 }

@@ -19,7 +19,6 @@ interface NavigationEntry {
     val content: @Composable (NavKey) -> Unit
 }
 
-
 /**
  * Creates a [NavigationEntry] for a specific [NavKey] type.
  *

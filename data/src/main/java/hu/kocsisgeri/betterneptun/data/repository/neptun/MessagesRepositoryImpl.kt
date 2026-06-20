@@ -111,10 +111,7 @@ internal class MessagesRepositoryImpl internal constructor(
     }
 
     override suspend fun fetchUnreadMessages() {
-        unreadMessagesCount.runApiCall(
-            errorMessage = "Failed to fetch unread message count.",
-            dispatcher = ioDispatcher
-        ) {
+        unreadMessagesCount.runApiCall(dispatcher = ioDispatcher) {
             networkDataSource.getUnreadMessageCount().data.count
         }
     }

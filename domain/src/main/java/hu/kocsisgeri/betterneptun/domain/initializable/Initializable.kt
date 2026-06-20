@@ -5,7 +5,6 @@ package hu.kocsisgeri.betterneptun.domain.initializable
  */
 interface Initializable {
 
-
     /**
      * Starts the initialization process for the component.
      * This is a suspending function that performs the necessary setup,

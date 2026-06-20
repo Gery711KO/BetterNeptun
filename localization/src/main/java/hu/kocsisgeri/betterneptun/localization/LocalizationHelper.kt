@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import hu.kocsisgeri.betterneptun.domain.service.Localization
 import hu.kocsisgeri.betterneptun.domain.service.LocalizationService
 import hu.kocsisgeri.betterneptun.localization.preview.PreviewLocalizationServiceImpl
 import hu.kocsisgeri.betterneptun.localization.service.LocalizationProviderScope
@@ -32,7 +33,7 @@ val LocalLocalizer =
  * @return The translated string corresponding to the provided [LocalizationKey].
  */
 @Composable
-fun LocalizationKey.localized(): String {
+fun Localization.localized(): String {
     val localizer = LocalLocalizer.current
     val languages by localizer.languages.collectAsStateWithLifecycle()
 
@@ -51,18 +52,14 @@ fun LocalizationKey.localized(): String {
  * @return The translated string corresponding to the provided `key`.
  */
 @Composable
-fun localized(key: String): String {
+fun localized(key: String, vararg args: String): String {
     val localizer = LocalLocalizer.current
     val languages by localizer.languages.collectAsStateWithLifecycle()
 
     return remember(key, languages) {
-        localizer.localized(object : LocalizationKey {
-            override val key: String = key
-            override val args: Array<String> = emptyArray()
-        })
+        localizer.localized(Localization.fromString(key, *args))
     }
 }
-
 
 /**
  * Creates and remembers a [LocalizationProviderScope] for a given [LocalizationService].

@@ -13,7 +13,8 @@ data class BetterNeptunDimens(
     val medium: Dp = 16.dp,
     val large: Dp = 24.dp,
     val extraLarge: Dp = 32.dp,
-    
+    val giant: Dp = 40.dp,
+
     val paddingSmall: Dp = 8.dp,
     val paddingMedium: Dp = 16.dp,
     val paddingLarge: Dp = 20.dp,

@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.designsystem.R
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.modifier.isLandscape
@@ -158,7 +159,7 @@ fun TimetableContent(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_event),
-                        contentDescription = "Esemény hozzáadása"
+                        contentDescription = LocalizationKey.TIMETABLE_ADD_TITLE_NEW.localized()
                     )
                 }
             }
@@ -223,7 +224,7 @@ private fun TimeTableScreenTopBar(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Órarend",
+                    text = LocalizationKey.HOME_MENU_TIMETABLE.localized(),
                     style = BetterNeptunTheme.typography.titleLarge
                 )
                 if (isLandscape()) currentMonthDate?.let {

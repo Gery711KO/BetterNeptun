@@ -10,6 +10,7 @@ import hu.kocsisgeri.betterneptun.domain.usecase.semester.FetchTermsUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.subjects.FetchSubjectsUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.subjects.GetSubjectsUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.subjects.GetTermsUseCase
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.core.ErrorHandlingComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.navigation.Navigator
 import hu.kocsisgeri.betterneptun.ui.navigation.destination.HomeDestination
@@ -43,13 +44,14 @@ class SubjectsViewModel(
             )
         }
     ).registerApiResultToGeneralFullScreenError(
-        description = "Something went wrong during terms fetch, please try again.",
+        title = LocalizationKey.ERROR_FETCH_TERMS,
+        description = LocalizationKey.ERROR_FETCH_DESCRIPTION,
         primaryAction = ErrorAction.Suspend(
-            label = "Retry",
+            label = LocalizationKey.ERROR_BUTTON_RETRY,
             action = { fetchTermsUseCase() }
         ),
         secondaryAction = ErrorAction.Normal(
-            label = "Back to Home",
+            label = LocalizationKey.ERROR_BUTTON_BACKTOHOME,
             action = ErrorAction.PredefinedAction.NavigateBackToHome
         )
     ).onEach { result ->
@@ -60,13 +62,14 @@ class SubjectsViewModel(
 
     private val subjects = getSubjectsUseCase()
         .registerApiResultToGeneralFullScreenError(
-            description = "Something went wrong during subjects fetch, please try again.",
+            title = LocalizationKey.ERROR_FETCH_TERMAVERAGES,
+            description = LocalizationKey.ERROR_FETCH_DESCRIPTION,
             primaryAction = ErrorAction.Suspend(
-                label = "Retry",
+                label = LocalizationKey.ERROR_BUTTON_RETRY,
                 action = { fetchSubjectsUseCase(selectedTerm.value) }
             ),
             secondaryAction = ErrorAction.Normal(
-                label = "Back to Home",
+                label = LocalizationKey.ERROR_BUTTON_BACKTOHOME,
                 action = ErrorAction.PredefinedAction.NavigateBackToHome
             )
         )

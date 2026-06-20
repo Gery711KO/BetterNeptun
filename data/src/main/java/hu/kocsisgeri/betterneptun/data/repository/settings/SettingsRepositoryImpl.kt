@@ -14,6 +14,7 @@ import org.koin.core.annotation.Singleton
 internal class SettingsRepositoryImpl internal constructor(
     private val localDataSource: LocalDataSource,
 ): SettingsRepository, BaseClearable() {
+
     override val storedLanguage = localDataSource.getFromPreferencesDataStore(
         key = LANGUAGE_KEY,
         defaultValue = Language.DEFAULT.key,

@@ -1,7 +1,6 @@
 package hu.kocsisgeri.betterneptun.ui.core
 
 import androidx.annotation.RawRes
-import androidx.navigation3.runtime.NavKey
 import hu.kocsisgeri.betterneptun.domain.R
 import hu.kocsisgeri.betterneptun.domain.error.ErrorRegistry
 import hu.kocsisgeri.betterneptun.domain.error.model.ErrorAction
@@ -9,9 +8,9 @@ import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
 import hu.kocsisgeri.betterneptun.domain.model.ApiResult
 import hu.kocsisgeri.betterneptun.domain.model.UiResult
 import hu.kocsisgeri.betterneptun.domain.model.mapToUiResult
+import hu.kocsisgeri.betterneptun.domain.service.Localization
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlin.reflect.KClass
 
 
 /**
@@ -78,17 +77,18 @@ abstract class ErrorHandlingComposeViewModel(
      *
      * @param T The type of data encapsulated by the [ApiResult].
      */
-    protected fun <T : Any> Flow<ApiResult<T>>.registerApiResultToGeneralSnackBarError() =
-        with(errorRegistry) {
-            registerToGeneralErrors { result ->
-                when (result) {
-                    is ApiResult.Error -> ErrorContent.Snackbar(result.error)
-                    else -> null
-                }
-            }.map { result ->
-                result.mapToUiResult()
+    protected fun <T : Any> Flow<ApiResult<T>>.registerApiResultToGeneralSnackBarError(
+        error: Localization
+    ) = with(errorRegistry) {
+        registerToGeneralErrors { result ->
+            when (result) {
+                is ApiResult.Error -> ErrorContent.Snackbar(error)
+                else -> null
             }
+        }.map { result ->
+            result.mapToUiResult()
         }
+    }
 
     /**
      * Registers errors from an [ApiResult] flow to the [ErrorRegistry] as a full-screen error state
@@ -107,7 +107,8 @@ abstract class ErrorHandlingComposeViewModel(
      * @return A flow of [UiResult], where errors and loading states are represented as [UiResult.Loading].
      */
     protected fun <T : Any> Flow<ApiResult<T>>.registerApiResultToGeneralFullScreenError(
-        description: String,
+        title: Localization,
+        description: Localization,
         primaryAction: ErrorAction,
         @RawRes icon: Int = R.raw.error_lottie,
         secondaryAction: ErrorAction? = null,
@@ -117,7 +118,7 @@ abstract class ErrorHandlingComposeViewModel(
             when (result) {
                 is ApiResult.Error -> ErrorContent.FullScreen(
                     icon = icon,
-                    title = result.error,
+                    title = title,
                     description = description,
                     primaryAction = primaryAction,
                     secondaryAction = secondaryAction,

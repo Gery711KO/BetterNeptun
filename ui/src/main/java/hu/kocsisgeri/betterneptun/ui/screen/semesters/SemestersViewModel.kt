@@ -13,6 +13,7 @@ import hu.kocsisgeri.betterneptun.domain.usecase.semester.FetchTermAveragesUseCa
 import hu.kocsisgeri.betterneptun.domain.usecase.semester.FetchTermsUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.semester.GetSemesterAveragesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.semester.GetSemesterCreditsUseCase
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.core.ErrorHandlingComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.error.fullScreen
 import hu.kocsisgeri.betterneptun.ui.screen.semesters.model.ColumnBarData
@@ -42,7 +43,7 @@ class SemestersViewModel(
                 barLabel = barData.title,
                 bars = barData.bars.map { bar ->
                     ColumnBarData(
-                        label = bar.chartLabel.toLabelString(),
+                        label = bar.chartLabel,
                         value = bar.value,
                         color = bar.chartColor
                     )
@@ -53,9 +54,8 @@ class SemestersViewModel(
 
     private val averages = getSemesterAveragesUseCase(
         mapDataSet = { averageEntries, chartLabel, chartColor ->
-            val label = chartLabel.toLabelString()
             LineData(
-                label = label,
+                label = chartLabel,
                 points = averageEntries,
                 color = chartColor
             )
@@ -81,23 +81,24 @@ class SemestersViewModel(
                     results.all { it is ApiResult.Error } -> {
                         errorSender.send(
                             error = ErrorContent.fullScreen(
-                                title = "Fetching academic data failed",
-                                description = "Something went wrong during credits and averages " +
-                                        "data fetching. Please try again.",
+                                title = LocalizationKey.ERROR_FETCH_ACADEMICDATA,
+                                description = LocalizationKey.ERROR_FETCH_DESCRIPTION,
                                 primaryAction = ErrorAction.Suspend(
-                                    label = "Retry",
+                                    label = LocalizationKey.ERROR_BUTTON_RETRY,
                                     action = { viewModelScope.async { fetchInitialData() }.await() }
                                 ),
                                 secondaryAction = ErrorAction.Normal(
-                                    label = "Back to Home",
+                                    label = LocalizationKey.ERROR_BUTTON_BACKTOHOME,
                                     action = ErrorAction.PredefinedAction.NavigateBackToHome
                                 )
                             )
                         )
                     }
                     results.any { it is ApiResult.Error } -> {
-                        results.filterIsInstance<ApiResult.Error>().forEach { error ->
-                            errorSender.send(ErrorContent.Snackbar(error.error))
+                        results.filterIsInstance<ApiResult.Error>().first().let {
+                            errorSender.send(
+                                ErrorContent.Snackbar(LocalizationKey.ERROR_INITIALIZATION_TITLE)
+                            )
                         }
                     }
                     else -> {
@@ -124,15 +125,5 @@ class SemestersViewModel(
             async { fetchTermsUseCase() },
             async { fetchTermAveragesUseCase() }
         ).awaitAll().any { it }
-    }
-
-    private fun GetSemesterAveragesUseCase.ChartLabel.toLabelString() = when (this) {
-        GetSemesterAveragesUseCase.ChartLabel.Averages -> "Átlagok"
-        GetSemesterAveragesUseCase.ChartLabel.SumAverages -> "Kommultatív átlagok"
-    }
-
-    private fun GetSemesterCreditsUseCase.ChartLabel.toLabelString() = when (this) {
-        GetSemesterCreditsUseCase.ChartLabel.TakenCredits -> "Felvett"
-        GetSemesterCreditsUseCase.ChartLabel.FulfilledCredits -> "Teljesitett"
     }
 }

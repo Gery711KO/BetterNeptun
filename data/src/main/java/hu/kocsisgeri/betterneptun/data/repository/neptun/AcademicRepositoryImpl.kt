@@ -25,28 +25,19 @@ internal class AcademicRepositoryImpl internal constructor(
     override val averages = clearableStateFlow<ApiResult<List<Average>>>(ApiResult.Loading)
 
     override suspend fun fetchSubjects(termId: String) {
-        subjects.runApiCall(
-            dispatcher = ioDispatcher,
-            errorMessage = "Failed to fetch subjects."
-        ) {
+        subjects.runApiCall(dispatcher = ioDispatcher) {
             networkDataSource.getTakenSubjects(termId).data.toSubjectDomain()
         }
     }
 
     override suspend fun fetchTerms() {
-        terms.runApiCall(
-            dispatcher = ioDispatcher,
-            errorMessage = "Failed to fetch terms."
-        ) {
+        terms.runApiCall(dispatcher = ioDispatcher) {
             networkDataSource.getTerms().data.toTermDomain()
         }
     }
 
     override suspend fun fetchTermAverages() {
-        averages.runApiCall(
-            dispatcher = ioDispatcher,
-            errorMessage = "Failed to fetch term averages."
-        ) {
+        averages.runApiCall(dispatcher = ioDispatcher) {
             networkDataSource.getTermAverages()
                 .data
                 .termAveragesByTrainings

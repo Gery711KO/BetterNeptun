@@ -39,6 +39,8 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import hu.kocsisgeri.betterneptun.domain.error.model.ErrorAction
 import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
+import hu.kocsisgeri.betterneptun.domain.service.Localization
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.designsystem.R
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.LoadingLottie
 import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme.dimens
@@ -97,7 +99,7 @@ private fun ErrorScreenContent(
                             modifier = Modifier.animateContentSize()
                         ) {
                             Text(
-                                text = content.primaryAction.label,
+                                text = content.primaryAction.label.localized(),
                                 style = typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -116,7 +118,7 @@ private fun ErrorScreenContent(
                             onClick = { onLaunchAction(cta) }
                         ) {
                             Text(
-                                text = cta.label,
+                                text = cta.label.localized(),
                                 style = typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -145,13 +147,13 @@ private fun ErrorScreenContent(
                     )
                 }
                 Text(
-                    text = content.title,
+                    text = content.title.localized(),
                     style = typography.headlineSmall,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = content.description,
+                    text = content.description.localized(),
                     style = typography.bodyLarge,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
@@ -174,10 +176,10 @@ private fun GeneralErrorScreenPreview() {
         isLoading = false,
         content = ErrorContent.FullScreen(
             icon = R.raw.error_lottie,
-            title = "Hiba",
-            description = "Valami hiba történt, prőbáld újra később.",
+            title = Localization.fromString("Hiba"),
+            description = Localization.fromString("Valami hiba történt, prőbáld újra később."),
             primaryAction = ErrorAction.Normal(
-                label = "Újra",
+                label =  Localization.fromString("Újra"),
                 action = ErrorAction.PredefinedAction.NavigateBackToHome
             )
         ),

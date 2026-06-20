@@ -50,7 +50,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.kocsisgeri.betterneptun.domain.model.UiResult
 import hu.kocsisgeri.betterneptun.domain.model.neptun.Subject
+import hu.kocsisgeri.betterneptun.domain.service.Localization
 import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.randomTextSize
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.rememberShimmerProgress
 import hu.kocsisgeri.betterneptun.ui.designsystem.composable.sharedShimmer
@@ -116,7 +118,7 @@ private fun SubjectsScreenTopAppBar(onBackClick: () -> Unit) {
     TopAppBar(
         title = {
             Text(
-                text = "Kurzusok",
+                text = LocalizationKey.HOME_MENU_COURSES.localized(),
                 style = BetterNeptunTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -295,9 +297,14 @@ fun SubjectItem(subject: Subject) {
                         color = BetterNeptunTheme.colorScheme.outlineVariant
                     )
 
-                    DetailItem(label = "Kredit", value = subject.subjectCredit.toString())
-                    DetailItem(label = "Követelmény", value = subject.subjectRequirement)
-                    DetailItem(label = "Tárgytípus", value = "Kötelezően választott")
+                    DetailItem(
+                        label = LocalizationKey.SUBJECTS_CREDIT.localized(),
+                        value = subject.subjectCredit.toString()
+                    )
+                    DetailItem(
+                        label = LocalizationKey.SUBJECTS_REQUIREMENT.localized(),
+                        value = subject.subjectRequirement
+                    )
                 }
             }
         }

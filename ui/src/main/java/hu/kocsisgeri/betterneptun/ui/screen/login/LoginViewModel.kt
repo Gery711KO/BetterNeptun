@@ -3,6 +3,8 @@ package hu.kocsisgeri.betterneptun.ui.screen.login
 import androidx.lifecycle.viewModelScope
 import hu.kocsisgeri.betterneptun.common.utils.launchReportingErrors
 import hu.kocsisgeri.betterneptun.domain.error.ErrorRegistry
+import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
+import hu.kocsisgeri.betterneptun.domain.service.Localization
 import hu.kocsisgeri.betterneptun.domain.usecase.auth.LoginUseCase
 import hu.kocsisgeri.betterneptun.ui.core.ErrorHandlingComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.login.model.LoginState
@@ -45,7 +47,15 @@ class LoginViewModel(
                 )
             ).registerToGeneralErrors { result ->
                 when (result) {
-                    is LoginUseCase.Result.Error -> result.errorContent
+                    is LoginUseCase.Result.Error -> ErrorContent.Snackbar(
+                        when (result.errorType) {
+                            LoginUseCase.Result.Error.Type.ApiError ->
+                                Localization.fromString("Api error") // TODO
+
+                            LoginUseCase.Result.Error.Type.NoCredentials ->
+                                Localization.fromString("No credentials found.") // TODO
+                        }
+                    )
                     else -> null
                 }
             }.collect { result ->

@@ -52,6 +52,10 @@ interface Initializer {
          */
         data class Error(val errorContent: ErrorContent): State
 
+        /**
+         * Indicates whether the initialization process has reached a terminal state,
+         * returning true if it has either successfully finished or encountered an error.
+         */
         val doneLoading: Boolean get() = when (this) {
             is Error,
             Initialized -> true

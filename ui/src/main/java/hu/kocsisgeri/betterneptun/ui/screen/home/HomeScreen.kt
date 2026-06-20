@@ -424,7 +424,7 @@ private fun PermissionButtons(
         modifier = if (isVertical) Modifier.fillMaxWidth() else Modifier,
     ) {
         Text(
-            text = "Later",
+            text = LocalizationKey.PERMISSION_BUTTON_LATER.localized(),
             fontWeight = FontWeight.Bold
         )
     }
@@ -520,7 +520,7 @@ private fun CurrentlyOngoingCourses(
         }
     } else {
         EmptyHomeCard(
-            text = "Nincs éppen tartó óra",
+            text = LocalizationKey.HOME_ONGOING_COURSE_EMPTY.localized(),
             modifier = modifier
         )
     }
@@ -812,7 +812,7 @@ fun NextCourseCard(
         }
     } else {
         EmptyHomeCard(
-            text = "Nincs több óra mára",
+            text = LocalizationKey.HOME_NEXT_COURSE_EMPTY.localized(),
             modifier = modifier
         )
     }
@@ -826,16 +826,17 @@ private fun EmptyHomeCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = BetterNeptunTheme.dimens.itemSpacing),
+            .padding(horizontal = BetterNeptunTheme.dimens.paddingMedium)
+        ,
         shape = BetterNeptunTheme.shapes.large,
         colors = CardDefaults.cardColors(
             containerColor = BetterNeptunTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            contentColor = BetterNeptunTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            contentColor = BetterNeptunTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
         )
     ) {
         Box(
             modifier = Modifier
-                .padding(BetterNeptunTheme.dimens.paddingLarge)
+                .padding(BetterNeptunTheme.dimens.paddingExtraLarge)
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {

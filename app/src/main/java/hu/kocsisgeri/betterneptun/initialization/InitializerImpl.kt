@@ -6,6 +6,7 @@ import hu.kocsisgeri.betterneptun.domain.error.model.ErrorAction
 import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
 import hu.kocsisgeri.betterneptun.domain.initializable.Initializable
 import hu.kocsisgeri.betterneptun.domain.initializable.Initializer
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.designsystem.R
 import hu.kocsisgeri.betterneptun.ui.error.fullScreen
 import kotlinx.coroutines.CoroutineScope
@@ -39,8 +40,8 @@ internal class InitializerImpl(
                 handleError = {
                     innerState.value = Initializer.State.Error(
                         ErrorContent.fullScreen(
-                            title = "Initialization failed",
-                            description = "Something went wrong please try again.",
+                            title = LocalizationKey.ERROR_INITIALIZATION_TITLE,
+                            description = LocalizationKey.ERROR_FETCH_DESCRIPTION,
                             primaryAction = retryAction(),
                             inclusive = true,
                         )
@@ -57,8 +58,8 @@ internal class InitializerImpl(
                                 if (isInitialized) Initializer.State.Initialized
                                 else Initializer.State.Error(
                                     ErrorContent.fullScreen(
-                                        title = "Server error",
-                                        description = "Servers may be down, please try again later.",
+                                        title = LocalizationKey.ERROR_SERVER_TITLE,
+                                        description = LocalizationKey.ERROR_SERVER_DESCRIPTION,
                                         primaryAction = retryAction(),
                                         inclusive = true,
                                     )
@@ -69,8 +70,8 @@ internal class InitializerImpl(
                         innerState.value = Initializer.State.Error(
                             ErrorContent.FullScreen(
                                 icon = R.raw.network_error_lottie,
-                                title = "Connection error",
-                                description = "You have no internet connection, please check your network connection and try again.",
+                                title = LocalizationKey.ERROR_NETWORK_TITLE,
+                                description = LocalizationKey.ERROR_NETWORK_DESCRIPTION,
                                 primaryAction = retryAction(),
                                 inclusive = true,
                             )
@@ -84,7 +85,7 @@ internal class InitializerImpl(
     }
 
     private fun retryAction() = ErrorAction.Suspend(
-        label = "Retry",
+        label = LocalizationKey.ERROR_BUTTON_RETRY,
         onSuccess = ErrorAction.PredefinedAction.NavigateToLoading,
         action = {
             initialize()

@@ -9,6 +9,7 @@ import hu.kocsisgeri.betterneptun.domain.model.neptun.MessagesPager
 import hu.kocsisgeri.betterneptun.domain.usecase.messages.GetMessagesPagerUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.messages.LoadMoreMessagesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.messages.RefreshMessagesUseCase
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.core.ErrorHandlingComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.designsystem.R
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,21 +32,21 @@ class MessagesViewModel(
         .registerToGeneralErrors { pager ->
             if (pager.messages.isEmpty()) ErrorContent.FullScreen(
                 icon = R.raw.error_lottie,
-                title = "Fetch messages failed",
-                description = "Something went wrong during message fetching, please try again.",
+                title = LocalizationKey.ERROR_FETCH_MESSAGES,
+                description = LocalizationKey.ERROR_FETCH_DESCRIPTION,
                 primaryAction = ErrorAction.Suspend(
-                    label = "Retry",
+                    label = LocalizationKey.ERROR_BUTTON_RETRY,
                     action = {
                         refreshMessagesUseCase(force = true)
                         getMessagesPagerUseCase().first().error == null
                     }
                 ),
                 secondaryAction = ErrorAction.Normal(
-                    label = "Back to Home",
+                    label = LocalizationKey.ERROR_BUTTON_BACKTOHOME,
                     action = ErrorAction.PredefinedAction.NavigateBackToHome
                 )
             ) else {
-                ErrorContent.Snackbar(text = "Couldn't fetch more messages.")
+                ErrorContent.Snackbar(text = LocalizationKey.ERROR_FETCH_LOADMORE)
             }.takeIf { pager.error != null }
         }
         .stateWhileSubscribed(MessagesPager())

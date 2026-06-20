@@ -9,14 +9,15 @@ import com.astro.stockopname.view.fragment.sync.snackbaricon.IcError
 import com.astro.stockopname.view.fragment.sync.snackbaricon.IcInfo
 import com.astro.stockopname.view.fragment.sync.snackbaricon.IcSuccess
 import com.astro.stockopname.view.fragment.sync.snackbaricon.IcWarning
+import hu.kocsisgeri.betterneptun.domain.service.Localization
 
 @Stable
 internal sealed class StackedSnackbarData(val showDuration: StackedSnackbarDuration) {
     data class Normal(
         val type: Type,
-        val title: String,
-        val description: String? = null,
-        val actionTitle: String? = null,
+        val title: Localization,
+        val description: Localization? = null,
+        val actionTitle: Localization? = null,
         val action: (() -> Unit)? = null,
         val duration: StackedSnackbarDuration = StackedSnackbarDuration.Short,
     ) : StackedSnackbarData(duration)

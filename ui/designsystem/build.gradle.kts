@@ -7,7 +7,7 @@ plugins {
 }
 
 betterNeptun {
-    setup(SpecialLayers.Navigation)
+    setup(SpecialLayers.Theme)
     setupCompose()
     setupNavigation3()
 }

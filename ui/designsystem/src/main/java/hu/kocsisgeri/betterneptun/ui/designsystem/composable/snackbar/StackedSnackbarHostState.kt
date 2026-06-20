@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import hu.kocsisgeri.betterneptun.domain.service.Localization
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,9 +69,9 @@ class StackedSnackbarHostState(
     internal val newSnackbarHosted = MutableStateFlow(false)
 
     fun showInfoSnackbar(
-        title: String,
-        description: String? = null,
-        actionTitle: String? = null,
+        title: Localization,
+        description: Localization? = null,
+        actionTitle: Localization? = null,
         action: (() -> Unit)? = null,
         duration: StackedSnackbarDuration = StackedSnackbarDuration.Indefinite,
     ) {
@@ -88,9 +89,9 @@ class StackedSnackbarHostState(
     }
 
     fun showSuccessSnackbar(
-        title: String,
-        description: String? = null,
-        actionTitle: String? = null,
+        title: Localization,
+        description: Localization? = null,
+        actionTitle: Localization? = null,
         action: (() -> Unit)? = null,
         duration: StackedSnackbarDuration = StackedSnackbarDuration.Indefinite,
     ) {
@@ -108,9 +109,9 @@ class StackedSnackbarHostState(
     }
 
     fun showWarningSnackbar(
-        title: String,
-        description: String? = null,
-        actionTitle: String? = null,
+        title: Localization,
+        description: Localization? = null,
+        actionTitle: Localization? = null,
         action: (() -> Unit)? = null,
         duration: StackedSnackbarDuration = StackedSnackbarDuration.Indefinite,
     ) {
@@ -128,9 +129,9 @@ class StackedSnackbarHostState(
     }
 
     fun showErrorSnackbar(
-        title: String,
-        description: String? = null,
-        actionTitle: String? = null,
+        title: Localization,
+        description: Localization? = null,
+        actionTitle: Localization? = null,
         action: (() -> Unit)? = null,
         duration: StackedSnackbarDuration = StackedSnackbarDuration.Indefinite,
     ) {

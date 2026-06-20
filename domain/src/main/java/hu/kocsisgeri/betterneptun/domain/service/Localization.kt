@@ -15,4 +15,18 @@ interface Localization {
      * The arguments used for string formatting and placeholders.
      */
     val args: Array<String>
+
+    companion object {
+
+        /**
+         * Converts a raw string into a [Localization] instance.
+         */
+        fun fromString(
+            text: String,
+            vararg args: String
+        ) = object : Localization {
+            override val key: String = text
+            override val args: Array<String> = arrayOf(*args)
+        }
+    }
 }

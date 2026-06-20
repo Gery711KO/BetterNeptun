@@ -69,7 +69,12 @@ import hu.kocsisgeri.betterneptun.common.utils.formatTimePickerDate
 import hu.kocsisgeri.betterneptun.common.utils.now
 import hu.kocsisgeri.betterneptun.common.utils.plus
 import hu.kocsisgeri.betterneptun.domain.model.neptun.CalendarItem
+import hu.kocsisgeri.betterneptun.domain.service.Localization
+import hu.kocsisgeri.betterneptun.localization.LocalLocalizer
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
+import hu.kocsisgeri.betterneptun.localization.localized
 import hu.kocsisgeri.betterneptun.ui.designsystem.R
+import hu.kocsisgeri.betterneptun.ui.theme.BetterNeptunTheme
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -88,12 +93,13 @@ fun AddEventDialog(
     onAddEvent: (CalendarItem.LocalEvent) -> Unit,
 ) {
     if (show) {
+        val localizer = LocalLocalizer.current
         val newEventId = remember { System.currentTimeMillis() }
 
         val title = remember {
             DialogData.TextInputData(
                 initialValue = event?.title ?: "",
-                label = "Cim",
+                label = localizer.localized(LocalizationKey.TIMETABLE_ADD_INPUT_TITLE),
                 leadingIcon = R.drawable.ic_event,
                 format = { it }
             )
@@ -101,7 +107,7 @@ fun AddEventDialog(
         val location = remember {
             DialogData.TextInputData(
                 initialValue = event?.location ?: "",
-                label = "Helyszin",
+                label = localizer.localized(LocalizationKey.TIMETABLE_ADD_INPUT_LOCATION),
                 leadingIcon = R.drawable.ic_location,
                 format = { it }
             )
@@ -120,7 +126,7 @@ fun AddEventDialog(
         val date = remember {
             DialogData.TextInputData(
                 initialValue = event?.startTime ?: startDate ?: LocalDateTime.now(),
-                label = "Dátum",
+                label = localizer.localized(LocalizationKey.TIMETABLE_ADD_INPUT_DATE),
                 leadingIcon = R.drawable.ic_calendar,
                 format = { it.formatDatePickerDate() },
                 withDialog = { input ->
@@ -135,7 +141,7 @@ fun AddEventDialog(
         val startTime = remember {
             DialogData.TextInputData(
                 initialValue = event?.startTime ?: startDate ?: LocalDateTime.now(),
-                label = "Kezdés",
+                label = localizer.localized(LocalizationKey.TIMETABLE_ADD_INPUT_DATE_START),
                 leadingIcon = R.drawable.ic_schedule,
                 withDialog = { input ->
                     TimePickerAlertDialog(
@@ -150,7 +156,7 @@ fun AddEventDialog(
         val endTime = remember {
             DialogData.TextInputData(
                 initialValue = event?.endTime ?: (startDate ?: LocalDateTime.now()).plus(1.hours),
-                label = "Vége",
+                label = localizer.localized(LocalizationKey.TIMETABLE_ADD_INPUT_DATE_END),
                 leadingIcon = R.drawable.ic_schedule,
                 withDialog = { input ->
                     TimePickerAlertDialog(
@@ -165,8 +171,12 @@ fun AddEventDialog(
 
         DialogContent(
             dialogData = DialogData(
-                dialogTitle = if (event == null) "Új esemény hozzáadása" else "Esemény szerkesztése",
-                dateSectionTitle = "Időpont",
+                dialogTitle = if (event == null) {
+                    LocalizationKey.TIMETABLE_ADD_TITLE_NEW.localized()
+                } else {
+                    LocalizationKey.TIMETABLE_ADD_TITLE_MODIFY.localized()
+                },
+                dateSectionTitle = LocalizationKey.TIMETABLE_ADD_DATE_TITLE.localized(),
                 title = title,
                 location = location,
                 color = selectedColor,
@@ -295,7 +305,7 @@ private fun TitleLeadingIcon(
 ) {
     Box(
         modifier = Modifier
-            .size(24.dp)
+            .size(BetterNeptunTheme.dimens.iconMedium)
             .clip(CircleShape)
             .background(Color(colorInput.value))
             .border(
@@ -318,9 +328,9 @@ private fun ColorPickerPopUp(colorInput: DialogData.ColorInput) {
     ) {
         Column(
             modifier = Modifier.padding(
-                top = 12.dp,
-                start = 12.dp,
-                end = 12.dp
+                top = BetterNeptunTheme.dimens.itemSpacing,
+                start = BetterNeptunTheme.dimens.itemSpacing,
+                end = BetterNeptunTheme.dimens.itemSpacing
             ),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -329,7 +339,7 @@ private fun ColorPickerPopUp(colorInput: DialogData.ColorInput) {
                     chunk.forEach { color ->
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(BetterNeptunTheme.dimens.giant)
                                 .clip(CircleShape)
                                 .background(Color(color))
                                 .clickable {
@@ -351,7 +361,7 @@ private fun ColorPickerPopUp(colorInput: DialogData.ColorInput) {
             }
 
             DropdownMenuItem(
-                text = { Text("Egyéni szín...") },
+                text = { Text(Localization.fromString("Egyéni szín...").localized()) }, // TODO
                 onClick = {
                     colorInput.dialogControl.onToggleDialog(true)
                     colorInput.popUpControl.onToggleDialog(false)
@@ -360,14 +370,14 @@ private fun ColorPickerPopUp(colorInput: DialogData.ColorInput) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(BetterNeptunTheme.dimens.iconSmall)
                     )
                 },
                 trailingIcon = if (colorInput.value !in PREDEFINED_COLORS) {
                     {
                         Box(
                             modifier = Modifier
-                                .size(24.dp)
+                                .size(BetterNeptunTheme.dimens.large)
                                 .clip(CircleShape)
                                 .background(Color(colorInput.value))
                                 .border(
@@ -467,7 +477,7 @@ fun DialogActions(
         verticalAlignment = Alignment.CenterVertically
     ) {
         DialogTextButton(
-            text = "Mégsem",
+            text = LocalizationKey.TIMETABLE_ADD_BUTTON_CANCEL.localized(),
             onClick = onDismissRequest
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -479,7 +489,7 @@ fun DialogActions(
             enabled = isSaveEnabled
         ) {
             Text(
-                text = "Mentés",
+                text = LocalizationKey.TIMETABLE_ADD_BUTTON_SAVE.localized(),
                 style = MaterialTheme.typography.labelMedium
             )
         }
@@ -501,7 +511,7 @@ private fun ColorPickerAlertDialog(colorInput: DialogData.ColorInput) {
                 }
             ) {
                 Text(
-                    text = "OK",
+                    text = LocalizationKey.TIMETABLE_ADD_BUTTON_OK.localized(),
                     style = MaterialTheme.typography.labelMedium
                 )
                 Spacer(Modifier.width(12.dp))
@@ -516,7 +526,7 @@ private fun ColorPickerAlertDialog(colorInput: DialogData.ColorInput) {
         },
         dismissButton = {
             DialogTextButton(
-                text = "Mégsem",
+                text = LocalizationKey.TIMETABLE_ADD_BUTTON_CANCEL.localized(),
                 onClick = { colorInput.dialogControl.onToggleDialog(false) }
             )
         },
@@ -564,7 +574,7 @@ private fun DatePickerAlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             DialogTextButton(
-                text = "OK",
+                text = LocalizationKey.TIMETABLE_ADD_BUTTON_OK.localized(),
                 onClick = {
                     datePickerState.selectedDateMillis?.let {
                         onDateSelected(
@@ -578,7 +588,7 @@ private fun DatePickerAlertDialog(
         },
         dismissButton = {
             DialogTextButton(
-                text = "Mégsem",
+                text = LocalizationKey.TIMETABLE_ADD_BUTTON_CANCEL.localized(),
                 onClick = onDismissRequest
             )
         },
@@ -613,7 +623,7 @@ private fun TimePickerAlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             DialogTextButton(
-                text = "OK",
+                text = LocalizationKey.TIMETABLE_ADD_BUTTON_OK.localized(),
                 onClick = {
                     onTimeSelected(
                         LocalDateTime(
@@ -627,7 +637,7 @@ private fun TimePickerAlertDialog(
         },
         dismissButton = {
             DialogTextButton(
-                text = "Mégsem",
+                text = LocalizationKey.TIMETABLE_ADD_BUTTON_CANCEL.localized(),
                 onClick = onDismissRequest
             )
         },

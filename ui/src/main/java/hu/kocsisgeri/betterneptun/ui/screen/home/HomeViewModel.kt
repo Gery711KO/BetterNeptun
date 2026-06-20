@@ -6,10 +6,12 @@ import hu.kocsisgeri.betterneptun.common.utils.getTimeLeft
 import hu.kocsisgeri.betterneptun.domain.error.ErrorRegistry
 import hu.kocsisgeri.betterneptun.domain.error.model.ErrorContent
 import hu.kocsisgeri.betterneptun.domain.model.UiResult
+import hu.kocsisgeri.betterneptun.domain.service.Localization
 import hu.kocsisgeri.betterneptun.domain.usecase.home.FetchUnreadMessagesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetCurrentCoursesUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetNextCourseUseCase
 import hu.kocsisgeri.betterneptun.domain.usecase.home.GetStudentDataUseCase
+import hu.kocsisgeri.betterneptun.localization.LocalizationKey
 import hu.kocsisgeri.betterneptun.ui.core.ErrorHandlingComposeViewModel
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.CurrentCourseDetail
 import hu.kocsisgeri.betterneptun.ui.screen.home.model.NextCourseDetail
@@ -60,7 +62,7 @@ class HomeViewModel(
 
     val unreadMessages = refresher.flatMapLatest {
         fetchUnreadMessagesUseCase().registerApiResultToGeneralErrors {
-            ErrorContent.Snackbar(it)
+            ErrorContent.Snackbar(Localization.fromString("Failed to fetch unread messages")) // TODO
         }.map { result ->
             (result as? UiResult.Success)?.data
         }
